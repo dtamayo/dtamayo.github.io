@@ -1,0 +1,144 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<title>User's Guide</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="http://fonts.googleapis.com/css?family=Arvo" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+
+
+
+<body>
+<div id="wrapper">
+
+	<div id="header">
+		<div id="logo">
+		
+		</div>
+
+                <!-- This is the tab header -->
+		<div id="menu">
+			<ul>
+				<li class="first current_page_item"><a href="../index.html">Homepage</a></li>
+                <li><a href="../bio.html">Bio</a></li>
+				<li><a href="../research.html">Research</a></li>
+				<li><a href="../teaching.html">Teaching</a></li>
+				<li><a href="../outreach.html">Outreach</a></li>
+				<li class="last"><a href="../OGRE.html">OGRE</a></li>
+			</ul>
+
+			<br class="clearfix" />
+		</div>
+                <!-- This is the end of the tab header -->
+
+	</div>  <!-- closing "header"-->
+
+
+	<div id="page">
+		<div id="content">
+			<div id="post1">
+			<br>
+                                <!-- starts title -->
+                                <h2><font size=48>OGRE User's Guide</font></h2>
+                                <!-- ends title -->
+                               
+			So far, OGRE can only read SWIFT files (and a proprietary code by Doug Hamilton called dI that I use).  It can't yet read a bin.dat file directly,
+			so you have to use the gen_swift script at the bottom of the <a href="download.html">Download</a> page.  This will generate a text file of
+			the output using SWIFT's built-in tools.  Let me know what other formats you'd like to see!
+			<br>
+			<br>
+			Assuming you now have a run.swift file (generated with gen_swift--here's an example file:  <a href="mearth.swift.zip" target="_blank">mearth.swift.zip</a>),
+			go to File -> Open Simulation.  In the dialog, select SWIFT under file type.  Right now there is a bug when it tries to read in XYZ coordinates that
+			will hopefully be resolved soon, so you need to have the output in orbital elements (the default for SWIFT).  Then hit browse, and select your file.
+			If your simulation spans a large number of orbits, you can check the 'Draw full orbit' box to display the osculating orbit rather than the 
+			instantaneous position of the particle.
+			<br>
+			<br>
+			The remove options in the file menu, as well as those in the options menu, are self-explanatory.  The equatorial and ecliptic data file options 
+			in the file menu are there for some applications I had related to moons lying in different orbital planes.  They're used
+			to display a set of orbits that aren't changing in time, for reference.  Ecliptic corresponds to the xy plane that's initially displayed, while
+			equatorial depends on the obliquity of the planet.  I plan to soon generalize this so that you can enter fixed orbits with their elements referenced
+			to an arbitrarily oriented plane, but that's not in yet.  The format for the static orbits is a .csv file (you can save files in this format using
+			Google documents or Excel), where the columns in sequence represent:  The object name (not used), the semimajor axis (in whatever units you're using
+			for the whole simulation--it gets scaled), the eccentricity, the inclination (all angles in degrees, and the reference plane is by default the xy 
+			plane of the simulation), the longitude of the ascending node, the argument of pericenter, the frame at which you want the orbit to first be displayed,
+			the last frame in which you want the orbit to be displayed, and the last three columns are to set the color of the orbit, with values of R(ed), G(reen)
+			 and B(lue).  Despite the color choices and resolution, a nice example of using start and end times for displaying orbits is the first movie on 
+			 the <a href="../OGRE.html">OGRE</a> page.  Here is the associated spreadsheet for the outer satellites (in green) that are displayed in succession:
+			<br>
+			<br>
+			<a href="SatEclMoons.csv.zip" target="_blank">SatEclMoons.csv.zip</a>.
+			<br>
+			<br>
+			Once the simulation loads, you can rotate with the mouse (rotations around the more intuitive two axes are done while holding the left mouse button,
+			but you can also rotate around the third axis by holding the right button), you can zoom in our out, and change the time using the sliders on 
+			the right, jump to a particular frame (timestep in the simulation), or check the play button for it to play automatically (you can set the time
+			step for playing above it, e.g., a time step of 7 will only display every seventh frame).  
+			<br>
+			<br>
+			The transformation settings are displayed on the top left of the simulation window.  These are there to help you choreograph transformations in 
+			the Action Queue, but won't show up in your final movie.  To choreograph a movie, you can stage different actions using the 'Action Type' dropdown
+			menu on the bottom right, and entering parameters for the rotations/zooms/pauses etc. you want to perform at particular points in the movie, and 
+			how long you want the transformation to be spread out over (the 'Span' value in seconds).  These will be recorded in the Action Queue.  You can
+			hit the 'Playback' button on the bottom right to view what your movie will look like, and when you're ready to record your movie, just hit the 
+			'Record button' on the bottom right.  This will create a .mp4 file wherever you choose to put it (it will bring up a dialog).  A nice example of such 
+			sequences is the first movie on the <a href="../OGRE.html">OGRE</a> page, which only uses static orbits to show the Saturn system to 
+			scale and highlight the irregular satellite population.  
+			</div>  <!-- closes post1 -->
+
+			<br class="clearfix" />
+
+		</div>   <!-- closes "content"-->
+
+
+
+                <!-- Begin sidebar -->
+		<div id="sidebar">
+                        <!-- starts image part -->
+			<img src="../tamayo.jpg" alt="" height="232" width="180" />   <!-- Here is a picture of me--> 
+
+                        <br></br>
+
+                    
+				<ul class="list">
+					<li class="first"> <a href="../files/CV.pdf">CV</a></li>
+					<!--<li class="last"> <a href="EmmanouilPapastergisThesis.pdf">PhD dissertation</a></li>-->
+				</ul>
+		
+                        <!-- ends image part -->
+
+                        <!-- starts contact part -->
+			<h3>Contact</h3>
+
+			<ul class="list">
+	                    <li class="first"> 514 Space Sciences Building <br> Cornell University <br> Ithaca, NY 14853 <br> USA </li>
+			    <li>  tel: +1 607-255-6420 </li>
+                            <li class="last"> <script language="JavaScript"><!--
+												var name = "dtamayo";
+												var domain = "astro.cornell.edu";
+												document.write('<a href=\"mailto:' + name + '@' + domain + '\">');
+												document.write(name + '@' + domain + '</a>');
+												// --></script>  </li>
+                        </ul>
+                        <!-- ends contact part -->
+
+		</div>  <!-- closing "sidebar"-->
+		<br class="clearfix" />
+
+
+	</div> <!-- closes sidebar -->
+        <!-- End of sidebar -->
+
+</div>
+
+
+<div id="footer">
+	Copyright (c) 2013 Dan Tamayo. All rights reserved. Design by <a href="http://www.freecsstemplates.org/">CSS Templates</a>.
+</div>
+</body>
+</html>
+			

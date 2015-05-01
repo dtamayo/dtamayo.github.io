@@ -1,0 +1,117 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<title>Installing from Source (Linux)</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="http://fonts.googleapis.com/css?family=Arvo" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+
+
+
+<body>
+<div id="wrapper">
+
+	<div id="header">
+		<div id="logo">
+		
+		</div>
+
+                <!-- This is the tab header -->
+		<div id="menu">
+			<ul>
+				<li class="first current_page_item"><a href="index.html">Homepage</a></li>
+                <li><a href="bio.html">Bio</a></li>
+				<li><a href="research.html">Research</a></li>
+				<li><a href="teaching.html">Teaching</a></li>
+				<li><a href="outreach.html">Outreach</a></li>
+				<li class="last"><a href="OGRE.html">OGRE</a></li>
+			</ul>
+
+			<br class="clearfix" />
+		</div>
+                <!-- This is the end of the tab header -->
+
+	</div>  <!-- closing "header"-->
+
+
+	<div id="page">
+		<div id="content">
+			<div id="post1">
+			<br>
+                                <!-- starts title -->
+                                <h2><font size=48>Installing from Source (Linux)</font></h2>
+                                <!-- ends title -->
+                               
+			<li><h3>Get Qt</h3></li>
+			OGRE uses the amazing user-interface framework Qt for all its windows, buttons, menus etc.  To compile the source code you'll
+			need this first.  Get it at <a href="qt-project.org/downloads">qt-project.org/downloads</a>.
+			
+			<li><h3>Get Git</h3></li>
+			Git will allow you to pull the latest version of the OGRE source code (and lots of other programs!), and update to newer
+			versions easily.  It will also allow you to contribute to the code!  Follow the simple instructions here:
+			<a href="git-scm.com/book/en/Getting-Started-Installing-Git">git-scm.com/book/en/Getting-Started-Installing-Git</a>
+			
+			Special note for Fedora/Red Hat Linux users:  I'm running Red Hat Enterprise Linux Server release 5.9 
+			(check by running cat /etc/issue on the command line).  When I tried
+			'yum install git' I got 'No package git available'.  I had to install EPEL, a list of extra Fedora packages for yum to recognize, 
+			which includes git.  Get the latest version specific to your OS version at 
+			<a href="https://fedoraproject.org/wiki/EPEL">https://fedoraproject.org/wiki/EPEL</a>.
+			
+			
+			
+
+			<br class="clearfix" />
+
+		</div>   <!-- closes "content"-->
+
+
+
+                <!-- Begin sidebar -->
+		<div id="sidebar">
+                        <!-- starts image part -->
+			<img src="tamayo.jpg" alt="" height="232" width="180" />   <!-- Here is a picture of me--> 
+
+                        <br></br>
+
+                    
+				<ul class="list">
+					<li class="first"> <a href="files/CV.pdf">CV</a></li>
+					<!--<li class="last"> <a href="EmmanouilPapastergisThesis.pdf">PhD dissertation</a></li>-->
+				</ul>
+		
+                        <!-- ends image part -->
+
+                        <!-- starts contact part -->
+			<h3>Contact</h3>
+
+			<ul class="list">
+	                    <li class="first"> 514 Space Sciences Building <br> Cornell University <br> Ithaca, NY 14853 <br> USA </li>
+			    <li>  tel: +1 607-255-6420 </li>
+                            <li class="last"> <li class="last"> Email: <script language="JavaScript"><!--
+												var name = "dtamayo";
+												var domain = "astro.cornell.edu";
+												document.write('<a href=\"mailto:' + name + '@' + domain + '\">');
+												document.write(name + '@' + domain + '</a>');
+												// --></script>  </li>
+                        </ul>
+                        <!-- ends contact part -->
+
+		</div>  <!-- closing "sidebar"-->
+		<br class="clearfix" />
+
+
+	</div> <!-- closes sidebar -->
+        <!-- End of sidebar -->
+
+</div>
+
+
+<div id="footer">
+	Copyright (c) 2013 Dan Tamayo. All rights reserved. Design by <a href="http://www.freecsstemplates.org/">CSS Templates</a>.
+</div>
+</body>
+</html>

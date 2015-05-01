@@ -1,0 +1,153 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<title>Download</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="http://fonts.googleapis.com/css?family=Arvo" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+
+
+
+<body>
+<div id="wrapper">
+
+	<div id="header">
+		<div id="logo">
+		
+		</div>
+
+                <!-- This is the tab header -->
+		<div id="menu">
+			<ul>
+				<li class="first current_page_item"><a href="../index.html">Homepage</a></li>
+                <li><a href="../bio.html">Bio</a></li>
+				<li><a href="../research.html">Research</a></li>
+				<li><a href="../teaching.html">Teaching</a></li>
+				<li><a href="../outreach.html">Outreach</a></li>
+				<li class="last"><a href="../OGRE.html">OGRE</a></li>
+			</ul>
+
+			<br class="clearfix" />
+		</div>
+                <!-- This is the end of the tab header -->
+
+	</div>  <!-- closing "header"-->
+
+
+	<div id="page">
+		<div id="content">
+			<div id="post1">
+			<br>
+                                <!-- starts title -->
+                                <h2><font size=48>Download</font></h2>
+                                <!-- ends title -->
+                               
+			I have packaged OGRE and its dependencies into a self-contained executable for Mac OS X.  Get it here:
+			<br>
+			<br>
+			<a href="OGRE-Mac.zip" target="_blank">OGRE for Mac</a>.
+			<br>
+			<br>
+			If you'd like to play around with it, download the sample output file at the bottom of this page, and check 
+			out the <a href="usersguide.html">User's Guide</a>!
+			I am currently working on a Linux version.  Whatever your operating system, since the code is written with Qt (which is designed to be
+			multi-platform), you can always download the source code and compile it on your own machine.  
+			If you have the version control software git, you can get the latest version by typing the following on the command line:
+			<br>
+			<br>
+			<em>git clone https://github.com/dtamayo/OGRE.git</em>
+			<br>
+			<br>
+			If you don't, you can go here:
+			<br>
+			<br>
+			<a href="https://github.com/dtamayo/OGRE">https://github.com/dtamayo/OGRE</a>
+			<br>
+			<br>
+			and download a zipped folder with the code (on the bottom right).  You will also need a couple dependencies--e-mail me at  
+			<script language="JavaScript"><!--
+			var name = "dtamayo";
+			var domain = "astro.cornell.edu";
+			document.write('<a href=\"mailto:' + name + '@' + domain + '\">');
+			document.write(name + '@' + domain + '</a>');
+			// --></script>
+			if you'd like to do this and I'll help you sort them out (I am in the process of writing a how-to guide for getting them).  Getting the 
+			source code is great because then you can edit it for your own purposes, using the extensive <a href="../OGREdoxy/index.html">Source Code Documentation</a>,
+			which includes sections like 'How do I add a menu item?' etc. (go to the related pages tab).
+			<br>
+			<br>
+			Currently the code can only read SWIFT files.  If you use a different integrator, let me know and I can add that format!  I still 
+			need to write a routine that can read SWIFT bin.dat files (let me know if you could help with this!).  For now, I have written a 
+			simple bash script that will repeatedly call tool_follow and concatenate all the particle histories into one text file.  This is
+			the format that OGRE can read.  Download the script below:
+			<br>
+			<br>
+			<a href="gen_swift.zip" target="_blank">gen_swift.zip</a>,
+			<br>
+			<br>
+			put it in the folder where you executed your run (where bin.dat and the input and
+			parameter files reside), and edit the first couple lines (just asks for simple things like the name of the parameter file).  Then run it.
+			<br>
+			<br>
+			Here's a sample .swift file, so you can quickly play around with OGRE.  Make sure to check out the <a href="usersguide.html">User's Guide</a>!
+			<br>
+			<br>
+			<a href="mearth.swift.zip" target="_blank">mearth.swift.zip</a>.
+			</div>  <!-- closes post1 -->
+
+			<br class="clearfix" />
+
+		</div>   <!-- closes "content"-->
+
+
+
+                <!-- Begin sidebar -->
+		<div id="sidebar">
+                        <!-- starts image part -->
+			<img src="../tamayo.jpg" alt="" height="232" width="180" />   <!-- Here is a picture of me--> 
+
+                        <br></br>
+
+                    
+				<ul class="list">
+					<li class="first"> <a href="../files/CV.pdf">CV</a></li>
+					<!--<li class="last"> <a href="EmmanouilPapastergisThesis.pdf">PhD dissertation</a></li>-->
+				</ul>
+		
+                        <!-- ends image part -->
+
+                        <!-- starts contact part -->
+			<h3>Contact</h3>
+
+			<ul class="list">
+	                    <li class="first"> 514 Space Sciences Building <br> Cornell University <br> Ithaca, NY 14853 <br> USA </li>
+			    <li>  tel: +1 607-255-6420 </li>
+                            <li class="last"> <script language="JavaScript"><!--
+												var name = "dtamayo";
+												var domain = "astro.cornell.edu";
+												document.write('<a href=\"mailto:' + name + '@' + domain + '\">');
+												document.write(name + '@' + domain + '</a>');
+												// --></script>  </li>
+                        </ul>
+                        <!-- ends contact part -->
+
+		</div>  <!-- closing "sidebar"-->
+		<br class="clearfix" />
+
+
+	</div> <!-- closes sidebar -->
+        <!-- End of sidebar -->
+
+</div>
+
+
+<div id="footer">
+	Copyright (c) 2013 Dan Tamayo. All rights reserved. Design by <a href="http://www.freecsstemplates.org/">CSS Templates</a>.
+</div>
+</body>
+</html>
+			
