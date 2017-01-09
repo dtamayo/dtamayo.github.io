@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dan Tamayo</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/landing-page.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
+        <div class="container topnav">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand topnav" </a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="research.html">Research</a>
+                    </li>
+                    <li>
+                        <a href="teaching.html">Teaching</a>
+                    </li>
+                    <li>
+                        <a href="files/CV.pdf" target="_blank">CV</a>
+                    </li>
+                    <li>
+                        <a href="contact.html">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Header -->
+    <div class="intro-header"></div>
+
+    <a name="Research"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="main-section-heading">Research</div>
+            </div>
+        </div>
+        <div class="row topbot-buffer">
+            <div class="col-lg-12">
+                <p class="lead">
+                A recurring theme in my research is to analyze the observed orbital architectures of planets, moons or orbital debris to help characterize those systems and learn about their history and possible formation scenarios. In collaboration with Hanno Rein, I have also put a lot of time into developing open-source numerical tools for such work that have been widely adopted by the community.
+                I apply these techniques in our own solar system with the Cassini spacecraft around Saturn, as well as on the rapidly growing sample of planets discovered around other stars. 
+                </p>
+                <i>Undergraduate or first-year graduate authors (with similar course loads) are marked with asterisks (*), and more senior graduate students with carets (^).</i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="imglinkrow">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-sm-3">
+                    <a href=#Exoplanets>
+                    <figure>
+                    <img class="img-responsive center-block" src="pix/exoplanets.jpg" alt="">
+                    <figcaption>Exoplanets</figcaption>
+                    </figure>
+                    </a>
+                </div>
+                <div class="col-sm-3">
+                    <a href=#irregulars>
+                    <figure>
+                    <img class="img-responsive center-block" src="pix/irregulars.jpg" alt="">
+                    <figcaption>Irregular Satellites</figcaption>
+                    </figure>
+                    </a>
+                </div>
+                <div class="col-sm-3">
+                    <a href=#Dynamics>
+                    <figure>
+                    <img class="img-responsive center-block" src="pix/dynamics.png" alt="">
+                    <figcaption>Orbital Dynamics</figcaption>
+                    </figure>
+                    </a>
+                </div>
+                <div class="col-sm-3">
+                    <a href=#Integrators>
+                    <figure>
+                    <img class="img-responsive center-block" src="pix/integration.png" alt="">
+                    <figcaption>Algorithms & Code</figcaption>
+                    </figure>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>    
+
+    <a name="Exoplanets"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="main-section-heading">Exoplanets</div>
+            </div>
+        </div>
+    </div>
+    
+    <a name="hltau"></a>
+    <div class="content-section-b">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Are the gaps in this disk carved by planets?</h2>
+                    <p class="lead">
+                        <a href="https://arxiv.org/abs/1503.02649">Observations with the Atacama Large Millimeter/Submillimeter Array</a> revealed these spectacular set of concentric gaps in the circumstellar disk surrounding the young star HL Tau.
+                        This may be the first time we see giant planets in formation as they carve out the material along their orbits. 
+                        But there is a tension here.
+                        The gaps are very close to one another.
+                        The planets need to be massive enough to carve out the gaps, but they can't be too massive or they would gravitationally scatter off one another, destroying the observed concentric structure. 
+                        Through numerical integrations, we find that planets are indeed a viable explanation.
+                        You can find a longer writeup <a href=hltau.html>on this page.</a>
+                    </p>
+                </div>
+                <div class="col-lg-5 col-sm-pull-6  col-sm-6">
+                    <div class="row">
+                        <img class="img-responsive center-block" src="pix/hltaularge.png" alt="">
+                    </div>
+                    <div class="row top-buffer">
+                        <p class="leadcenter">
+                        <a href="https://arxiv.org/abs/1610.05359" target="_blank">Tamayo, Silburt^, Menou, and Rein, 2015 ApJ</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="content-section-a">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">The first directly imaged planet?</h2>
+                    <p class="lead">
+                        Fomalhaut b is almost as controversial as it is famous, as the first directly imaged planetary candidate.
+                        The fact that infrared surveys have not been able to detect it suggests that what's seen in these and previous images from the Hubble space telescope (at optical wavelengths) may be reflected light from a collisional swarm of irregular satellites. 
+                        Follow-up Hubble observations reveal that, surprisingly, the object moves on an extremely eccentric orbit.  
+                        We showed that this would have dramatic effects on the observed circumstellar debris disk (the big ellipse prominent in the picture).
+                        The fact that we instead observe the debris disk to be sharp and confined allowed us to set stringent limits on the putative planet's mass and on the time it can have been on its present orbit (<a href="http://arxiv.org/abs/1312.7020">paper</a>).
+                        An interesting implication is that if Fomalhaut b is indeed a giant planet (and is the only planet in the system), then we are catching the disk on its way to becoming extremely eccentric in the next few Myr.  
+                        This will bring all the material into the inner Fomalhaut system, roughly analogous to the hypothesized Late Heavy Bombardment in our Solar System.
+                    </p>
+                </div>
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                    <div class="row">
+                        <img class="img-responsive center-block" src="pix/fomb.jpg" alt="">
+                    </div>
+                    <div class="row top-buffer">
+                        <p class="leadcenter">
+                        <a href="http://arxiv.org/abs/1312.7020" target="_blank">Tamayo, 2014 MNRAS</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a name="irregulars"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="main-section-heading">Irregular Satellites</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="content-section-b">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">The most collisionally evolved population in the Solar System</h2>
+                    <p class="lead">
+                    The irregular satellites are leftovers from the era of planet formation that were captured around each of our solar system's giant planets.
+                    As a result of this chaotic capture process, they form a swarm of mutually crossing orbits, and have been crashing violently into each other for the past 4.5 billion years.  
+                    I am working with the Cassini spacecraft to detect and characterize the resultant disk of debris around Saturn (the Phoebe ring) in order to learn more about these ancient bodies, and to develop a better theoretical understanding of where the material ends up in order to help constrain the Saturnian system's history.
+                    </p>
+                </div>
+                <div class="col-lg-5 col-sm-pull-6  col-sm-6">
+                    <img class="img-responsive center-block" src="pix/irregulars.jpg" alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section-a">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">The mystery of two-faced Iapetus</h2>
+                    <p class="lead">
+                    The striking albedo difference between Iapetus' two hemispheres has been a mystery since Giovanni Cassini discovered the moon orbiting Saturn in 1671.
+                    It was suggested long ago (Soter 1974) that dark dust from the outer satellites evolving inward through radiation forces might explain Iapetus' odd surface pattern, but we performed the first full analysis  calculating the probability of impact with Iapetus and the expected surface distribution (<a href="https://arxiv.org/abs/1106.1893">Tamayo et al. 2011</a>).  
+                    We found that almost all particle sizes will strike Iapetus, and that the expected longitudinal distribution matches well the one observed, helping settle (at least theoretically!) a 300 year-old mystery. 
+                    </p>
+                </div>
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                    <div class="row">
+                        <img class="img-responsive center-block" src="pix/iapetus.jpg" alt="">
+                    </div>
+                    <div class="row top-buffer">
+                        <p class="leadcenter">
+                        <a href="http://arxiv.org/abs/1106.1893" target="_blank">Tamayo, Burns, Hamilton and Hedman, 2011 Icarus</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section-b">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Finding the largest rings in the solar system.</h2>
+                    <p class="lead">
+                    I was the science principal investigator on OT1 and OT2 observations with the infrared Herschel Space Observatory, trying to characterize the Phoebe ring around Saturn, and to try and discover similar debris disks sourced by irregular satellites around Uranus and Neptune.
+                    Unfortunately, we were only able to set upper limits on the amount of material present due to scattered light from the respective planets.
+                    </p>
+                </div>
+                <div class="col-lg-5 col-sm-pull-6  col-sm-6">
+                    <img class="img-responsive center-block" src="pix/herschel.jpg" alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section-a">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Casting shadows on the Phoebe ring</h2>
+                    <p class="lead">
+                    One would think that it would be easy to detect the Phoebe ring at Saturn using the Cassini spacecraft in orbit about the planet.  
+                    The problem is that the ring is so vast, and the spacecraft so close, that the ring covers the entire field of view and provides a constant background that's extremely difficult to separate out.  
+                    We therefore planned for orbital alignments that would allow us to take images capturing Saturn's shadow piercing the Phoebe ring.
+                    This made it possible to indirectly measure the amount of material along the shadow by quantifying the brightness difference between the shadowed and unshadowed regions.
+                    Comparing optical to infrared measurements allowed us to constrain the debris' physical properties, observationally linking it to the irregular satellites. 
+                    These are the faintest measurements of an extended solar system object by an order of magnitude--the disk has only about 10 dust particles per cubic kilometer!  
+                    </p>
+                </div>
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                    <div class="row">
+                        <img class="img-responsive center-block" src="pix/SatShadow.jpg" alt="">
+                    </div>
+                    <div class="row top-buffer">
+                        <p class="leadcenter">
+                        <a href="http://arxiv.org/abs/1604.03119" target="_blank">Tamayo, Markham*, Hedman, and Burns, 2016 Icarus</a><br />
+                        <a href="http://arxiv.org/abs/1401.6166" target="_blank">Tamayo, Hedman, and Burns, 2014 Icarus</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section-b">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Uranus' extreme tilt scatters debris across its moons</h2>
+                    <p class="lead">
+                    In trying to undertake a similar analysis to our work on the Saturnian system, we were surprised to find in our integrations that as dust-particle orbits decay inward in the Uranian system, they reach a chaotic zone in which their orbits evolve onto nearly radial paths that bring the debris deep into the inner system. 
+                    It turns out this instability is the result of Uranus' extreme axial tilt and the interaction of the planet's oblateness with gravitational perturbations from the Sun.  
+                    We showed this should spread debris across Uranus' four largest satellites, plausibly explaining hemispherical color dichotomies observed on their surfaces with the Voyager spacecraft.
+                    </p>
+                </div>
+                <div class="col-lg-5 col-sm-pull-6  col-sm-6">
+                    <div class="row">
+                        <img class="img-responsive center-block" src="pix/uranus_ir.jpg" alt="">
+                    </div>
+                    <div class="row top-buffer">
+                        <p class="leadcenter">
+                        <a href="http://arxiv.org/abs/1306.3973" target="_blank">Tamayo, Burns, and Hamilton, 2013 Icarus</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <a name="Dynamics"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="main-section-heading">Dynamics</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section-a">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">A machine learns to predict the stability of planetary systems</h2>
+                    <p class="lead">
+                    Determining whether a given planetary system will be dynamically stable over long times, and predicting the timescale on which unstable systems will unravel is an important and long-standing problem in orbital dynamics.
+                    We took the novel approach of numerically integrating a number of planetary systems and using them as examples to train machine learning algorithms that have enjoyed wide success across a range of similarly high-dimensional applications in industry.
+                    With these tools we were able to determine whether planetary systems would be stable over 10 million orbits significantly better than simple heuristic criteria previously used in the field.
+                    </p>
+                </div>
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                    <div class="row">
+                        <img class="img-responsive center-block" src="pix/computers.jpg" alt="">
+                    </div>
+                    <div class="row top-buffer">
+                        <p class="leadcenter">
+                        <a href="https://arxiv.org/abs/1610.05359" target="_blank">Tamayo, Silburt^, Valencia, Menou, Ali-Dib, Petrovich, Huang, Rein, van Laerhoven, Paradise^, Obertas*, and Murray, 2016 ApJ Letters</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <a name="Integrators"></a>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="main-section-heading">Algorithms & Code</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section-a">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Improved tools for fitting orbital trajectories</h2>
+                    <p class="lead">
+                    For a large class of orbital fitting problems, we are interested in how a body's position and/or trajectory would change if our initial parameters for the orbit were slightly wrong (e.g., will a newly discovered asteroid hit Earth!)
+                    People therefore derived first-order variational equations to integrate how these differences evolve with time. You can then calculate derivatives with respect to initial parameters that tell you <i>which direction</i> in phase space you needs to move to improve your fit.
+                    We have derived and implemented <i>second-order</i> variational equations, which yield the additional information needed to know <i>how far</i> you need to move to reach the nearest local minimum. 
+                    We hope to exploit these tools to build improved orbit-fitting algorithms.
+                    </p>
+                </div>
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                    <div class="row">
+                        <img class="img-responsive center-block" src="pix/orbitfitting.png" alt="">
+                    </div>
+                    <div class="row top-buffer">
+                        <p class="leadcenter">
+                        <a href="http://arxiv.org/abs/1603.03424" target="_blank">Rein and Tamayo, 2016 MNRAS</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section-b">
+        <div class="container">
+            <div class="row vertical-align">
+                <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">A faster and more accurate integrator over billions of orbits</h2>
+                    <p class="lead">
+                    The Wisdom-Holman algorithm revolutionized our ability to carry out planetary orbit integrations accurately and efficiently enough to reach timescales comparable to the age of the solar system.
+                    However, previously available implementations were biased, i.e., numerical errors grew coherently, leading to a steep error growth with time.
+                    We have developed WHFast, an unbiased integrator whose numerical error is suppressed to the fundamental limit, while still outperforming the speed of currently available implementations.
+                    This is helping us (and others!) push numerical integrations further than before.
+                    </p>
+                </div>
+                <div class="col-lg-5 col-sm-pull-6  col-sm-6">
+                    <div class="row">
+                        <img class="img-responsive center-block" src="pix/integration.png" alt="">
+                    </div>
+                    <div class="row top-buffer">
+                        <p class="leadcenter">
+                        <a href="http://arxiv.org/abs/1506.01084" target="_blank">Rein and Tamayo, 2015 MNRAS</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <p class="copyright text-muted small">Copyright &copy; Dan Tamayo 2017.</p> 
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+</body>
+</html>
