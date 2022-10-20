@@ -56,6 +56,9 @@
                     <li>
                         <a href="resources.html">Resources</a>
                     </li>
+                    <li>
+                        <a href="contact.html">Contact</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -64,53 +67,68 @@
     <!-- Header -->
     <div class="intro-header"></div>
 
-    <a name="Contact"></a>
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="main-section-heading">Contact</div>
+                <div class="main-section-heading">Working on workstations remotely (Mac)</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="row topbot-buffer">
+            <div class="col-lg-12">
+                <p class="lead">
+                    We can log into our workstations remotely using ssh (secure shell). If you wanted to log into our workstation named sphinx, you can open a terminal (you can find it under Applications-&gtUtilities) and type (the $ is the default symbol that shows up when you open a terminal, but you don't type it in yourself):
+                </p> 
+                <pre>
+                    <code>
+                        $ ssh sphinx.physics.hmc.edu
+                    </code>
+                </pre>
+                <p class="lead">
+                    This will prompt you for the same password you would use when logging into the workstation in person. Once logged in, it's just as if your terminal were a terminal that you opened at the workstation itself--you can run any linux commands you want.
+                </p> 
+                <p class="lead">
+                    For security reasons, sphinx is the only workstation connected to the outside world. It is an old computer only meant to process logins and pass network traffic along. To log in to one of the other workstations that we would actually want to use for calculations, we need to log into sphinx first. So we would log into sphinx as above, and once our terminal is running commands on sphinx, we would do, e.g.,
+                </p> 
+                <pre>
+                    <code>
+                        $ ssh gandalf.physics.hmc.edu
+                    </code>
+                </pre>
+                <p class="lead">
+                    If you tried the command above from your own laptop, it wouldn't work. You need to log into sphinx (our login node) first. Since we're going to have to do this over and over, let's make our life more convenient in two important ways.
+                </p> 
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="row vertical-align">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Skipping the passwords</h2>
+                <p class="lead">
+                TBD
+                </p>
             </div>
         </div>
     </div>
 
-    <div class="content-section-b">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-sm-6">
-                </div>
-                <div class="col-lg-3 col-sm-6">
-                    <img class="img-responsive" src="pix/hmc.png" alt="">
-                </div>
-                <div class="col-lg-4 col-sm-6">
-                    <div class="row">
-                        <p class="lead">
-                        Harvey Mudd College</br />
-                        Physics Department</br />
-                        </p>
-                        <p class="lead">
-                        Keck 1241</br />
-                        301 Platt Blvd.</br />
-                        Claremont, CA 91711</br />
-                        </p>
-                    </div>
-                    <div class="row">
-                        <p class="lead">
-                        <script language="JavaScript"><!--
-												var name = "dtamayo";
-												var domain = "hmc.edu";
-												document.write('<a href=\"mailto:' + name + '@' + domain + '\">');
-												document.write(name + '@' + domain + '</a>');
-                                            // --></script><br />
-                        (909)621-8024
-                        </p>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-sm-6">
-                </div>
+    <div class="container">
+        <div class="row vertical-align">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Skipping the login node</h2>
+                <p class="lead">
+                TBD
+                </p>
             </div>
         </div>
     </div>
-
 
     <!-- Footer -->
     <footer>
