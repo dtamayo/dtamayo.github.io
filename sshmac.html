@@ -42,7 +42,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand topnav" </a>
+                <a class="navbar-brand topnav"></a>
             </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -70,7 +70,7 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="main-section-heading">Working on workstations remotely (Mac)</div>
+                <div class="main-section-heading">Logging into a workstation remotely (Mac)</div>
             </div>
         </div>
     </div>
@@ -87,7 +87,7 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    This will prompt you for the same password you would use when logging into the workstation in person. Once logged in, it's just as if your terminal were a terminal that you opened at the workstation itself--you can run any linux commands you want.
+                    This will prompt you for the same password you would use when logging into the workstation in person. Once logged in, it's just as if your terminal were a terminal that you opened at the workstation itself--you can run any linux commands you want. 
                 </p> 
                 <p class="lead">
                     For security reasons, sphinx is the only workstation connected to the outside world. It is an old computer only meant to process logins and pass network traffic along. To log in to one of the other workstations that we would actually want to use for calculations, we need to log into sphinx first. So we would log into sphinx as above, and once our terminal is running commands on sphinx, we would do, e.g.,
@@ -98,7 +98,9 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    If you tried the command above from your own laptop, it wouldn't work. You need to log into sphinx (our login node) first. Since we're going to have to do this over and over, let's make our life more convenient in two important ways.
+                    If you tried the command above from your own laptop, it wouldn't work. You need to log into sphinx (our login node) first. Now you can do anything you would do in a terminal remotely, e.g., you could use any of the linux text editors to write a script.py file and run it. If you want to use a jupyter notebook, check out <a href="portforwardingmac.html">Running a Jupyter notebook remotely</a>.
+                </p><p class="lead">
+                    Since we're going to have to do these logins over and over, let's make our life more convenient in two big ways.
                 </p> 
             </div>
         </div>
@@ -111,7 +113,23 @@
                 <div class="clearfix"></div>
                 <h2 class="section-heading">Skipping the passwords</h2>
                 <p class="lead">
-                TBD
+                    We can automate the step of logging in with our username and password each time by creating a public / private key pair. You put your public key on as many workstations as you like, but you keep your private key on your own computer and never share it (would give others access to any workstations where you've put your public key). To create a key pair, open a terminal and:
+                </p>
+                <pre>
+                    <code>
+                        $ ssh-keygen -t rsa
+                    </code>
+                </pre>
+                <p class="lead">
+                    Press enter twice to not have a passphrase. This will create an id_rsa (private key) and id_rsa.pub (public key) file in your ~/.ssh directory. We now need to paste the contents of id_rsa.pub into ~/.ssh/authorized_keys on each of the workstations you wantto use. Copy pasting directly in terminal can cause problems with newlines--an easier way to do it by typing this command on your own computer (where you created your public/private key pair) to pass them through ssh. 
+                </p>
+                <pre>
+                    <code>
+                        $ cat ~/.ssh/id_rsa.pub | ssh sphinx.physics.hmc.edu 'cat &gt&gt ~/.ssh/authorized_keys'
+                    </code>
+                </pre>
+                <p class="lead">
+                    This will prompt you for your username and password like before, but once done, if you now exit out and try to ssh again, you should get logged in automatically! 
                 </p>
             </div>
         </div>
@@ -124,7 +142,34 @@
                 <div class="clearfix"></div>
                 <h2 class="section-heading">Skipping the login node</h2>
                 <p class="lead">
-                TBD
+                    We'll do this step as part of creating a more convenient config file for ssh. Navigate to your ~/.ssh folder. Now create a file named config (no extension) using whatever text editor you are comfortable with. Let's build this up in two steps. First write this into the top of your config file:
+                </p>
+                <pre>
+                    <code>
+                        Host sphinx
+                            HostName sphinx.physics.hmc.edu
+                    </code>
+                </pre>
+                <p class="lead">
+                    This just makes it so we can just type ssh sphinx instead of ssh sphinx.physics.hmc.edu (you can also choose your own fun names!). Below let's now write:
+                </p>
+                <pre>
+                    <code>
+                        Host trappist1 
+                            HostName trappist1.physics.hmc.edu
+                            ProxyJump sphinx.physics.hmc.edu
+                    </code>
+                </pre>
+                <p class="lead">
+                    For all of our other workstations, we need to first log in through sphinx, and that is what the ProxyJump command does. If you landed on this webpage for your own purposes, and this does not work for you, it might be because you have an older version of openssh installed. Google ProxyCommand as an alternative. When you ssh trappist1 now, you should be able to log in directly, but will still be prompted for your password on trappist1. If you now 
+                </p>
+                <pre>
+                    <code>
+                        $ cat ~/.ssh/id_rsa.pub | ssh trappist1 'cat &gt&gt ~/.ssh/authorized_keys'
+                    </code>
+                </pre>
+                <p class="lead">
+                    you should be all set. You will of course have to add an entry to your config and distribute your public key to each of the workstations you would like to use. 
                 </p>
             </div>
         </div>
