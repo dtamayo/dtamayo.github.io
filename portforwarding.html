@@ -67,57 +67,46 @@
     <!-- Header -->
     <div class="intro-header"></div>
 
-    <a name="Resources"></a>
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="main-section-heading">Resources</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="row topbot-buffer">
-            <div class="col-lg-12">
-                <p class="lead">
-                This page collects several resources to help get you started. It doesn't make sense to recreate any of the great linux tutorials available online. If you've never used linux before (or need a refresher), start by going through all of Section 2 of the linked Basic linux commands and practice them on one of our workstations. The rest of the links cover things that are harder to sort out for the first time, and provide solutions to some of the peculiarities with our particular workstation setup. Hopefully they give you the right terms to google if you want to dig deeper, and cover some of the most useful options for those commands (out of a laundry list that can be quite overwhelming when you're googling a command for the first time). The relevant guides for working on your laptop remotely are written for both Mac and Windows. Please do ask questions if you get stuck--that will help us improve these guides for others!
-                </p> 
+                <div class="main-section-heading">Running a Jupyter notebook remotely using port forwarding</div>
             </div>
         </div>
     </div>
     
     <div class="container">
-        <div class="row">
+        <div class="row topbot-buffer">
             <div class="col-lg-12">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">Working on Linux workstations</h2>
-                <p class="lead"> 
-                    <a href="https://www.tecmint.com/free-online-linux-learning-guide-for-beginners/">Basic Linux commands</a><br>
-                    <a href="ssh.html">Logging into a workstation remotely with ssh</a><br>
-                    <a href="autologin.html">Passwordless remote logins using public/private key pairs</a><br>
-                    <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a><br>
-                    <a href="screen.html">Keeping a terminal session running with the screen command</a><br>
-                    <a href="portforwarding.html">Running a Jupyter notebook remotely using port forwarding</a>
-                </p><p class="lead"> 
-            </div>
-        </div>
-    </div>
-
-    <!--
-    <div class="container">
-        <div class="row vertical-align">
-            <div class="col-lg-12">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">A second section</h2>
                 <p class="lead">
-                    Some text
+                    The ssh command to get this working is quite unwieldy and you will definitely want to simplify your life with an ssh config file. Start by following the <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a> tutorial. After doing that, let's now add an entry at the bottom of that ssh config file:
                 </p>
+                <pre>
+                    <code>
+                        Host hr8799fw
+                            User username
+                            HostName hr8799.physics.hmc.edu
+                            LocalForward 8888 localhost:8888
+                            ProxyJump sphinx
+                    </code>
+                </pre>
+                <p class="lead">
+                    where again we shoudl replace 'username' with our own username on the workstation (HMC login). I put fw at the end (for forwarding, but you can call it whatever you want), and we added the LocalForward line, where we chose to use the port (8888) that jupyter notebook tries by default when it launches. Note that if you are running other notebooks on your laptop or on the workstation, then launching a new notebook will choose a higher port. For this command to work you would have to close any other open notebook processes so you get the default port. 
+                </p>
+                <p class="lead">
+                    Now we need to run jupyter notebook on the workstation we want to use. A common problem though is that if we're trying to get this working remotely, we'll typically be getting that running through ssh, and the process running our notebook will terminate as soon as our ssh session ends. We can prevent that by using the screen command, and you will definitely want to read through that tutorial: <a href="screen.html">Keeping a terminal session running with the screen command</a>. Assuming you have jupyter notebook running on one of the workstations (say hr8799) following the screen tutorial or another method, all that's left to do is:
+                </p> 
+                <pre>
+                    <code>
+                        $ ssh -N -f hr8799fw
+                    </code>
+                </pre>
+                <p class="lead">
+                    If you now open any web browser on your own laptop, and type in the url localhost:8888, you should get the jupyter notebook running on the workstation. You may be prompted for a password by jupyter, which you can get from me directly.
+                </p> 
             </div>
         </div>
     </div>
-    -->
 
     <!-- Footer -->
     <footer>

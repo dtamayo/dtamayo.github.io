@@ -67,57 +67,47 @@
     <!-- Header -->
     <div class="intro-header"></div>
 
-    <a name="Resources"></a>
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="main-section-heading">Resources</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="row topbot-buffer">
-            <div class="col-lg-12">
-                <p class="lead">
-                This page collects several resources to help get you started. It doesn't make sense to recreate any of the great linux tutorials available online. If you've never used linux before (or need a refresher), start by going through all of Section 2 of the linked Basic linux commands and practice them on one of our workstations. The rest of the links cover things that are harder to sort out for the first time, and provide solutions to some of the peculiarities with our particular workstation setup. Hopefully they give you the right terms to google if you want to dig deeper, and cover some of the most useful options for those commands (out of a laundry list that can be quite overwhelming when you're googling a command for the first time). The relevant guides for working on your laptop remotely are written for both Mac and Windows. Please do ask questions if you get stuck--that will help us improve these guides for others!
-                </p> 
+                <div class="main-section-heading">Passwordless remote logins using public/private key pairs</div>
             </div>
         </div>
     </div>
     
     <div class="container">
-        <div class="row">
+        <div class="row topbot-buffer">
             <div class="col-lg-12">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">Working on Linux workstations</h2>
-                <p class="lead"> 
-                    <a href="https://www.tecmint.com/free-online-linux-learning-guide-for-beginners/">Basic Linux commands</a><br>
-                    <a href="ssh.html">Logging into a workstation remotely with ssh</a><br>
-                    <a href="autologin.html">Passwordless remote logins using public/private key pairs</a><br>
-                    <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a><br>
-                    <a href="screen.html">Keeping a terminal session running with the screen command</a><br>
-                    <a href="portforwarding.html">Running a Jupyter notebook remotely using port forwarding</a>
-                </p><p class="lead"> 
-            </div>
-        </div>
-    </div>
-
-    <!--
-    <div class="container">
-        <div class="row vertical-align">
-            <div class="col-lg-12">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">A second section</h2>
                 <p class="lead">
-                    Some text
+                    We can automate the step of logging in with our username and password each time by creating a public / private key pair. You put your public key on as many workstations as you like, but you keep your private key on your own computer and never share it (would give others access to any workstations where you've put your public key). To create a key pair, we first open a terminal window. On Mac you would find this under Applications-&gtUtilities. On Windows hit the windows key and search for Powershell (this will only work with post-2018 versions of Windows 10 or later). Then:
+                </p> 
+                <pre>
+                    <code>
+                        ssh-keygen -t rsa
+                    </code>
+                </pre>
+                <p class="lead">
+                    On Windows this will first prompt you for where you want to put the file. Press enter to accept the default. Then on both Mac and Windows, it will prompt you for a passphrase. Press enter twice to NOT have a passphrase. This will create an id_rsa (private key) and id_rsa.pub (public key) file in the .ssh directory in your home folder (more on where that is below). We now need to paste the contents of id_rsa.pub into ~/.ssh/authorized_keys (a file containing the public keys of all authorized users) on each of the workstations you want to use. Copy pasting directly in terminal can cause problems with newlines--an easier way to do it by typing this command on your own computer (where you created your public/private key pair) to pass them through ssh. One difference is that on Mac and linux, the tilde ~ refers to your home directory, on Windows it's $HOME. On Mac we would use
+                </p>
+                <pre>
+                    <code>
+                        cat ~/.ssh/id_rsa.pub | ssh username@sphinx.physics.hmc.edu 'cat &gt&gt ~/.ssh/authorized_keys'
+                    </code>
+                </pre>
+                <p class="lead">
+                    where again you should replace 'username' with your own username. On Windows you would use:
+                </p>
+                <pre>
+                    <code>
+                        cat $HOME/.ssh/id_rsa.pub | ssh username@sphinx.physics.hmc.edu 'cat &gt&gt ~/.ssh/authorized_keys'
+                    </code>
+                </pre>
+                <p class="lead">
+                    This will prompt you for your password like before, but once done, if you now exit out and try to ssh again, you should get logged in automatically! If you also want to automate logins into our other workstations (and you do!), that's a bit more complicated, and you should do it by setting up an ssh config file: <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a>.
                 </p>
             </div>
         </div>
     </div>
-    -->
 
     <!-- Footer -->
     <footer>

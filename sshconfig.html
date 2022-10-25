@@ -70,7 +70,7 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="main-section-heading">Running a Jupyter notebook remotely using port forwarding (Mac)</div>
+                <div class="main-section-heading">Simplifying advanced ssh commands with an ssh config file</div>
             </div>
         </div>
     </div>
@@ -79,30 +79,68 @@
         <div class="row topbot-buffer">
             <div class="col-lg-12">
                 <p class="lead">
-                    The ssh command to get this working is quite unwieldy and you will definitely want to simplify your life with an ssh config file. The bottom of <a href="sshmac.html">Logging into a workstation remotely with ssh</a> walks you through the basics and where to put this config file. For our current purposes, let's now add an entry at the bottom of that file:
+                    An ssh config file just saves shortcuts for complicated ssh commands you wouldn't want to type in every time. Let's build a new config file up gradually. On Mac, open up a terminal, and we will use nano, which is the simplest terminal text editor:
                 </p>
                 <pre>
                     <code>
-                        Host trappist1fw
-                            HostName trappist1.physics.hmc.edu
-                            LocalForward 8888 localhost:8888
-                            ProxyJump sphinx.physics.hmc.edu
+                        nano ~/.ssh/config
                     </code>
                 </pre>
                 <p class="lead">
-                    We put fw at the end (for forwarding, but you can call it whatever you want), and we added the LocalForward line, where we chose to use the port (8888) that jupyter notebook tries by default when it launches. Note that if you are running other notebooks on your laptop or on the workstation, then launching a new notebook will choose a higher port. For this command to work you would have to close any other open notebook processes so you get the default port. 
+                    On Windows, open a Powershell terminal window, and we can use notepad:
                 </p>
-                <p class="lead">
-                    Now we need to run jupyter notebook on the workstation we want to use. A common problem though is that if we're trying to get this working remotely, we'll typically be getting that running through ssh, and the process running our notebook will terminate as soon as our ssh session ends. We can prevent that by using the screen command, and you will definitely want to read through that tutorial: <a href="screen.html">Keeping a terminal session running with the screen command</a>. Assuming you have jupyter notebook running on one of the workstations (say trappist1) following the screen tutorial or another method, all that's left to do is:
-                </p> 
                 <pre>
                     <code>
-                        $ ssh -N -f trappist1fw
+                        notepad.exe $HOME/.ssh/config
                     </code>
                 </pre>
                 <p class="lead">
-                    If you now open any web browser on your own laptop, and type in the url localhost:8888, you should get the jupyter notebook running on the workstation. You may be prompted for a password by jupyter, which you can get from me directly.
-                </p> 
+                    Either way, let's start by adding these lines to the top of our config file:
+                </p>
+                <pre>
+                    <code>
+                        Host sphinx
+                            User username
+                            HostName sphinx.physics.hmc.edu
+                    </code>
+                </pre>
+                <p class="lead">
+                    This makes it so we can just type 'ssh sphinx' instead of 'ssh sphinx.physics.hmc.edu' (you can also choose your own fun names!) and sets our username (replace 'username' with your own!) so we don't have to write it in at login. Below let's now write:
+                </p>
+                <pre>
+                    <code>
+                        Host hr8799
+                            User username
+                            HostName hr8799.physics.hmc.edu
+                            ProxyJump sphinx
+                    </code>
+                </pre>
+                <p class="lead">
+                where again you should replace 'username' with your own. For all of our other workstations, we need to first log in through sphinx, and that is what the ProxyJump command does. If you landed on this webpage for your own purposes, and this does not work for you, it might be because you have an older version of openssh installed. Google ProxyCommand as an alternative. Now close the file (Ctrl+X in nano on Mac, which will prompt you to save). On Windows, notepad will automatically add a wrong .txt extension to this file so after we save and quite notepad, we need to remove the extension with the following Powershell command:
+                <pre>
+                    <code>
+                        mv $HOME/.ssh/config.txt $HOME/.ssh/config
+                    </code>
+                </pre>
+                <p class="lead">
+                    Now on both Mac and Windows, when you type 'ssh hr8799', you should be able to log in directly, but will still be prompted for your password on hr8799. If you want to log in automatically without a password (and you do!) first follow the <a href="autologin.html">Passwordless remote logins using public/private key pairs</a> tutorial, and then add your public key to the hr8799 workstation with (for Mac)
+                </p>
+                <pre>
+                    <code>
+                        cat ~/.ssh/id_rsa.pub | ssh username@hr8799 'cat &gt&gt ~/.ssh/authorized_keys'
+                    </code>
+                </pre>
+                <p class="lead">
+                    and you should be all set (remember to change 'username'). For Windows:
+                </p>
+                <pre>
+                    <code>
+                        cat $HOME/.ssh/id_rsa.pub | ssh username@hr8799 'cat &gt&gt ~/.ssh/authorized_keys'
+                    </code>
+                </pre>
+                <p class="lead">
+                    Now 'ssh hr8799' should directly and automatically log you in. You will of course have to add an entry to your config file and distribute your public key for each of the workstations you would like to use in an analogous way.
+                </p>
             </div>
         </div>
     </div>

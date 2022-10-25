@@ -67,57 +67,46 @@
     <!-- Header -->
     <div class="intro-header"></div>
 
-    <a name="Resources"></a>
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="main-section-heading">Resources</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="row topbot-buffer">
-            <div class="col-lg-12">
-                <p class="lead">
-                This page collects several resources to help get you started. It doesn't make sense to recreate any of the great linux tutorials available online. If you've never used linux before (or need a refresher), start by going through all of Section 2 of the linked Basic linux commands and practice them on one of our workstations. The rest of the links cover things that are harder to sort out for the first time, and provide solutions to some of the peculiarities with our particular workstation setup. Hopefully they give you the right terms to google if you want to dig deeper, and cover some of the most useful options for those commands (out of a laundry list that can be quite overwhelming when you're googling a command for the first time). The relevant guides for working on your laptop remotely are written for both Mac and Windows. Please do ask questions if you get stuck--that will help us improve these guides for others!
-                </p> 
+                <div class="main-section-heading">Logging into a workstation remotely</div>
             </div>
         </div>
     </div>
     
     <div class="container">
-        <div class="row">
+        <div class="row topbot-buffer">
             <div class="col-lg-12">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">Working on Linux workstations</h2>
-                <p class="lead"> 
-                    <a href="https://www.tecmint.com/free-online-linux-learning-guide-for-beginners/">Basic Linux commands</a><br>
-                    <a href="ssh.html">Logging into a workstation remotely with ssh</a><br>
-                    <a href="autologin.html">Passwordless remote logins using public/private key pairs</a><br>
-                    <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a><br>
-                    <a href="screen.html">Keeping a terminal session running with the screen command</a><br>
-                    <a href="portforwarding.html">Running a Jupyter notebook remotely using port forwarding</a>
-                </p><p class="lead"> 
-            </div>
-        </div>
-    </div>
-
-    <!--
-    <div class="container">
-        <div class="row vertical-align">
-            <div class="col-lg-12">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">A second section</h2>
                 <p class="lead">
-                    Some text
-                </p>
+                    We can log into our workstations remotely using ssh (secure shell). First we need to open a terminal window. On Mac you would find this under Applications-&gtUtilities. On Windows hit the windows key and search for Powershell (this will only work with post-2018 versions of Windows 10 or later). You might add a shortcut since we'll use the terminal a lot. Now if you wanted to log into our workstation sphinx.physics.hmc.edu, you would type into the terminal and press enter:                    
+                </p> 
+                <pre>
+                    <code>
+                        ssh username@sphinx.physics.hmc.edu
+                    </code>
+                </pre>
+                <p class="lead">
+                    where you should replace 'username' with the one you use on our workstations (i.e., your HMC username). This will prompt you for the same password you would use when logging into the workstation in person. Once logged in, it's just as if your terminal were a terminal that you opened at the workstation itself--you can run any linux commands you want. 
+                </p> 
+                <p class="lead">
+                    For security reasons, sphinx is the only workstation connected to the outside world. It is an old computer only meant to process logins and pass network traffic along. To log in to one of the other workstations (e.g., hr8799.physics.hmc.edu) that we would actually want to use for calculations, we need to log into sphinx first. So we would log into sphinx as above, and once our terminal is running commands on sphinx, we would do, e.g.,
+                </p> 
+                <pre>
+                    <code>
+                        ssh hr8799.physics.hmc.edu
+                    </code>
+                </pre>
+                <p class="lead">
+                    Here we can omit our username, since our username is the same on sphinx and hr8799. Note that if you tried the command above from your own laptop, it wouldn't work. You need to log into sphinx (our login node) first. 
+                </p><p class="lead">
+                Now you can do anything you would do in a terminal remotely, e.g., you could use any of the linux text editors to write a script.py file and run it. If you want to use a jupyter notebook, check out <a href="portforwardingmac.html">Running a Jupyter notebook remotely</a>.
+                </p><p class="lead">
+                    Since we're going to have to do these logins over and over, you should definitely make your life more convenient by following the <a href="autologin.html">Passwordless remote logins using public/private key pairs</a> and <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a> tutorials.
+                </p> 
             </div>
         </div>
     </div>
-    -->
 
     <!-- Footer -->
     <footer>
