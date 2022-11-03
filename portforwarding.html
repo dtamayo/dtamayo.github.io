@@ -79,30 +79,76 @@
         <div class="row topbot-buffer">
             <div class="col-lg-12">
                 <p class="lead">
-                    The ssh command to get this working is quite unwieldy and you will definitely want to simplify your life with an ssh config file. Start by following the <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a> tutorial. After doing that, let's now add an entry at the bottom of that ssh config file:
-                </p>
+                    This tutorial assumes you have already gone through the <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a> page. The first thing we need to do is to run jupyter notebook on the workstation we want to use. A common problem though is that if we're trying to get this working remotely, we'll typically be getting that running through ssh, and the process running our notebook will terminate as soon as our ssh session ends. We can prevent that by using the screen command. Follow <a href="screen.html">Keeping a terminal session running with the screen command</a> to start jupyter notebook running on one of the workstations (say hr8799).
+                </p> 
+                <p class="lead">
+                    To connect remotely, we need to know what port to connect to. By default jupyter notebook will try to use port 8888, but it might already be in use by someone else. In that case, it keeps going up until it finds an open port. When you run the jupyter notebook command on the workstation, it will tell you what port it ended up using, but if you don't catch it, you can always ssh into the workstation (e.g., ssh hr8799) and run
                 <pre>
                     <code>
-                        Host hr8799fw
-                            User username
-                            HostName hr8799.physics.hmc.edu
-                            LocalForward 8888 localhost:8888
-                            ProxyJump sphinx
+                        jupyter notebook list
                     </code>
                 </pre>
                 <p class="lead">
-                    where again we shoudl replace 'username' with our own username on the workstation (HMC login). I put fw at the end (for forwarding, but you can call it whatever you want), and we added the LocalForward line, where we chose to use the port (8888) that jupyter notebook tries by default when it launches. Note that if you are running other notebooks on your laptop or on the workstation, then launching a new notebook will choose a higher port. For this command to work you would have to close any other open notebook processes so you get the default port. 
+                    The output will look something like this:
                 </p>
+                <div class="row">
+                    <img class="img-responsive center-block" src="pix/jupnote.png" alt="">
+                </div>
                 <p class="lead">
-                    Now we need to run jupyter notebook on the workstation we want to use. A common problem though is that if we're trying to get this working remotely, we'll typically be getting that running through ssh, and the process running our notebook will terminate as soon as our ssh session ends. We can prevent that by using the screen command, and you will definitely want to read through that tutorial: <a href="screen.html">Keeping a terminal session running with the screen command</a>. Assuming you have jupyter notebook running on one of the workstations (say hr8799) following the screen tutorial or another method, all that's left to do is:
+                    In yellow we have the port being used (8890). The red box is explained below. To port forward we now have to run the command
+                </p>
+                <pre>
+                    <code>
+                        ssh -fNL 8890:localhost:8890 hr8799
+                    </code>
+                </pre>
+                <p class="lead">
+                    where we have put in the appropriate ports (here 8890, but will vary in your own case). If you now open any web browser on your own laptop, and type in the url 'localhost:8890', you should get the jupyter notebook running on the workstation. You may be prompted for a password or a token. If so, you can get the token using jupyter notebook list as above. The token is highlighted in red (everything to the right of the equals sign).
+                </p> 
+                <p class="lead">
+                    Finally, the ssh command above is a bit of a handful, and we can make our lives easier with a shortcut function. On Mac, we need to edit
                 </p> 
                 <pre>
                     <code>
-                        $ ssh -N -f hr8799fw
+                        nano ~/.bash_profile
                     </code>
                 </pre>
                 <p class="lead">
-                    If you now open any web browser on your own laptop, and type in the url localhost:8888, you should get the jupyter notebook running on the workstation. You may be prompted for a password by jupyter, which you can get from me directly.
+                    On Windows,  
+                </p> 
+                <pre>
+                    <code>
+                        notepad $PROFILE
+                    </code>
+                </pre>
+                <p class="lead">
+                    If this command doesn't work, it probably means you don't have a profile file. You can create one with
+                </p> 
+                <pre>
+                    <code>
+                        New-Item -ItemType File -Path $PROFILE -Force
+                    </code>
+                </pre>
+                <p class="lead">
+                    Then open it with notepad as above. On both Windows and Mac, then add this function to your profile:
+                </p> 
+                <pre>
+                    <code>
+                        sshfw () {
+                            ssh -fNL "$1":localhost:"$1" "$2"
+                        }
+                    </code>
+                </pre>
+                <p class="lead">
+                    This function (that I chose to call ssh with a fw for forward) is doing the ssh command we had above, but it's letting us pass a variable for the port we want to use ($1), and for the workstation ($2). For this to work you will have to close your terminal/powershell window completely. Now whenever you start a new terminal / powershell on your laptop, you can do, e.g.,
+                </p> 
+                <pre>
+                    <code>
+                        sshfw 8890 hr8799 
+                    </code>
+                </pre>
+                <p class="lead">
+                    where you would vary the appropriate port (here 8890) and the workstation we want to connect to (here we're using the hr8799 shortcut we set up in our config file).
                 </p> 
             </div>
         </div>

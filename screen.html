@@ -83,16 +83,16 @@
                 </p> 
                 <pre>
                     <code>
-                        $ screen -S jupyter
-                        $ jupyter notebook
+                        screen -S jupyter
+                        jupyter notebook
                     </code>
                 </pre>
                 <p class="lead">
-                    The first command starts a new screen session, and names that screen session 'jupyter' (you could use any other name). The second starts a jupyter notebook as usual, but within our new screen session. Once that is running, you hold Ctrl + a, and while holding those keys, press d. This detaches your screen session, and you get back your original ssh session with your screen session now running in the background. Now you can close your terminal and end your ssh session, or shut down your laptop, and the screen session will continue running on the workstation in the background. You can google screen commands, but useful ones include
+                    The first command starts a new screen session, and names that screen session 'jupyter' (you could use any other name). The second starts a jupyter notebook as usual. Once that is running, you hold Ctrl + a, and while holding those keys, press d. This detaches your screen session, and you get back your original ssh session with your screen session now running in the background. Now you can close your terminal window (which will end your ssh session), or even shut down your laptop, and the screen session will continue running on the workstation in the background. You can google screen commands, but useful ones include
                 </p> 
                 <pre>
                     <code>
-                        $ screen -r jupyter
+                        screen -r jupyter
                     </code>
                 </pre>
                 <p class="lead">
@@ -100,22 +100,22 @@
                 </p> 
                 <pre>
                     <code>
-                        $ exit
+                        exit
                     </code>
                 </pre>
                 <p class="lead">
-                    To check the names of all screen sessions currently running in the background you use 
+                    This will take you back to wherever you were / whatever machine you were on when you started the screen session. To check the names of all screen sessions currently running in the background you use 
                 </p> 
                 <pre>
                     <code>
-                        $ screen -ls
+                        screen -ls
                     </code>
                 </pre>
                 <p class="lead">
                     If you want to kill a screen session that's running, you need to know the name of that session, or use the above command to get the number that's in front (e.g., 20351 in 20351.jupyter). Then
                 <pre>
                     <code>
-                        $ screen -X -S jupyter kill
+                        screen -X -S jupyter kill
                     </code>
                 </pre>
                 </p><p class="lead">
