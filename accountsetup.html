@@ -70,7 +70,7 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="main-section-heading">Simplifying advanced ssh commands with an ssh config file</div>
+                <div class="main-section-heading">Setting up your workstation account</div>
             </div>
         </div>
     </div>
@@ -79,67 +79,63 @@
         <div class="row topbot-buffer">
             <div class="col-lg-12">
                 <p class="lead">
-                    An ssh config file just saves shortcuts for complicated ssh commands you wouldn't want to type in every time. Let's build a new config file up gradually. On Mac, open up a terminal, and we will use nano, which is the simplest terminal text editor:
+                    The initial setup needs to be done physically at the workstation. Other tutorials will later show you how to log in remotely after this setup. On the login screen, you should see your college username you use for email. If you don't see it, or I've mispelled it, send me an email. Click on it and log in with the password 'spock'. 
+                </p> 
+                <p class="lead">
+                    When you log in, you should be prompted to change your password. Choose something more secure. Click on the grid icon on the bottom left of the desktop, and on the search bar, search for 'terminal'. When the icon comes up, click and drag it to the bar along the left side of the desktop. You will use this a ton, so nice to not have to search for it like this every time. The terminal lets you do everything you will need to do. Totally fine if you've never used Linux before, it's a good skill to learn! Take the time to go through Section 2 of the Linux tutorial linked on the resouces page after going through this.
+                </p>
+                <p class="lead">
+                    When you open a terminal, you should be at your home directory. The path to your home directory will vary depending on the workstation, but should end with a directory named after your username. Try the command
                 </p>
                 <pre>
                     <code>
-                        nano ~/.ssh/config
+                    pwd
                     </code>
                 </pre>
                 <p class="lead">
-                    On Windows, open a Powershell terminal window, and we can use notepad:
+                    this should print, e.g., /mnt/ssd/yourusername. If it doesn't, let me know. Now run
                 </p>
                 <pre>
                     <code>
-                        notepad.exe $HOME/.ssh/config
+                    bash -i ./newcondaenv.sh 
                     </code>
                 </pre>
                 <p class="lead">
-                    Either way, let's start by adding these lines to the top of our config file:
+                    This will create an isolated python installation for you, which has all the packages (rebound spock etc.) installed for you. The installation is called anaconda, and these types of installations are called 'conda environments'. The script above is written to create an environment for you that is also named after your username, e.g., 'idudiak'. Once this finishes, close the terminal window, and open a new one. I've modified your startup scripts so that when you open a new terminal window, it will activate your environment (now that it's installed!). If this worked correctly, your command line should have your username in parentheses in front, e.g.
                 </p>
                 <pre>
                     <code>
-                        Host sphinx
-                            User username
-                            HostName sphinx.physics.hmc.edu
+                    (esundheim) $
                     </code>
                 </pre>
                 <p class="lead">
-                    This makes it so we can just type 'ssh sphinx' instead of 'ssh sphinx.physics.hmc.edu' (you can also choose your own fun names!) and sets our username (replace 'username' with your own!) so we don't have to write it in at login. Below let's now write:
+                    If you don't see your username in parentheses, or if the script run above gives errors, please let me know, as that definitely means there is an issue I have to fix. Try opening python by entering the command
                 </p>
                 <pre>
                     <code>
-                        Host hr8799
-                            User username
-                            HostName hr8799.physics.hmc.edu
-                            ProxyJump sphinx
+                    python
                     </code>
                 </pre>
                 <p class="lead">
-                where again you should replace 'username' with your own. For all of our other workstations, we need to first log in through sphinx, and that is what the ProxyJump command does. If you landed on this webpage for your own purposes, and this does not work for you, it might be because you have an older version of openssh installed. Google ProxyCommand as an alternative. Now close the file (Ctrl+X in nano on Mac, which will prompt you to save). On Windows, notepad will automatically add a wrong .txt extension to this file so after we save and quit notepad, we need to remove the extension with the following Powershell command (open a new terminal to make sure it's running on your own laptop and you're not ssh'ed into one of the workstations):
-                <pre>
-                    <code>
-                        mv $HOME/.ssh/config.txt $HOME/.ssh/config
-                    </code>
-                </pre>
-                <p class="lead">
-                    Now on both Mac and Windows, when you type 'ssh hr8799', you should be able to log in directly, but will still be prompted for your password on hr8799. To log in automatically without a password, add your public key to the hr8799 workstation with (for Mac)
+                    You should get a python command line starting with &gt&gt&gt&gt. Try
                 </p>
                 <pre>
                     <code>
-                        cat ~/.ssh/id_rsa.pub | ssh username@hr8799 'cat &gt&gt ~/.ssh/authorized_keys'
+                    &gt&gt&gt&gt import spock
                     </code>
                 </pre>
                 <p class="lead">
-                    and you should be all set (remember to change 'username'). For Windows:
+                    You might get a warning, but you shouldn't get any errors when that runs. If you get an error, let me know. Press Ctrl + D to quit python. Now run
                 </p>
                 <pre>
                     <code>
-                        cat $HOME/.ssh/id_rsa.pub | ssh username@hr8799 'cat &gt&gt ~/.ssh/authorized_keys'
+                    jupyter notebook
                     </code>
                 </pre>
                 <p class="lead">
-                    If it says that the file doesn't exist, you probably haven't followed the previous tutorial to generate your public key. Now 'ssh hr8799' should directly and automatically log you in. You will of course have to add an entry to your config file and distribute your public key for each of the workstations you would like to use in an analogous way.
+                    This should automatically launch a jupyter notebook in firefox. You should be able to create a new Python 3 notebook on the top right, and import rebound, reboundx, and spock without any problems.
+
+If you run into problems, please send me an email with what you did and the errors you got, and I'll help you debug them.
                 </p>
             </div>
         </div>

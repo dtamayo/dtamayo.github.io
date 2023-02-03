@@ -79,10 +79,8 @@
         <div class="row topbot-buffer">
             <div class="col-lg-12">
                 <p class="lead">
-                    This tutorial assumes you have already gone through the <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a> page. The first thing we need to do is to run jupyter notebook on the workstation we want to use. A common problem though is that if we're trying to get this working remotely, we'll typically be getting that running through ssh, and the process running our notebook will terminate as soon as our ssh session ends. We can prevent that by using the screen command. Follow <a href="screen.html">Keeping a terminal session running with the screen command</a> to start jupyter notebook running on one of the workstations (say hr8799).
+                    This tutorial assumes you have already gone through all the steps in the previous tutorials under 'Working on Linux workstations'. In particular, you have followed <a href="screen.html">Keeping a terminal session running with the screen command</a> to start a jupyter notebook running on one of the workstations (say hr8799). Make sure you are ssh'ed into that workstation, and on that terminal, run
                 </p> 
-                <p class="lead">
-                    To connect remotely, we need to know what port to connect to. By default jupyter notebook will try to use port 8888, but it might already be in use by someone else. In that case, it keeps going up until it finds an open port. When you run the jupyter notebook command on the workstation, it will tell you what port it ended up using, but if you don't catch it, you can always ssh into the workstation (e.g., ssh hr8799) and run
                 <pre>
                     <code>
                         jupyter notebook list
@@ -95,7 +93,10 @@
                     <img class="img-responsive center-block" src="pix/jupnote.png" alt="">
                 </div>
                 <p class="lead">
-                    In yellow we have the port being used (8890). The red box is explained below. To port forward we now have to run the command
+                    If you don't see your jupyter notebook running there, double check that your terminal is running on the workstation (you could open a new terminal and ssh into it again). If you still see no output from jupyter notebook list, then you probably didn't go through the steps in the previous 'screen' tutorial to start it (or you stopped it at some point). Follow that tutorial again.
+                </p>
+                <p class="lead">
+                To connect remotely, we need to know what port to connect to. By default jupyter notebook will try to use port 8888, but it might already be in use by someone else. In that case, it keeps going up until it finds an open port. We can see the port being used boxed in yellow (8890). The red box is explained below. To port forward we now have to run a final command on OUR laptop to access the notebook (i.e., we don't want to run it on the workstation!). So start by closing the terminal/powershell window and opening a new one (now on your laptop instead of the remote workstation). Then type 
                 </p>
                 <pre>
                     <code>

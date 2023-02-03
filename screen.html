@@ -79,7 +79,7 @@
         <div class="row topbot-buffer">
             <div class="col-lg-12">
                 <p class="lead">
-                    While there are other applications, the most common problem this solves for me is when I log into a workstation remotely to start a jupyter notebook, and want to leave it running (to finish a set of runs, or just to leave it up so I can pick up where I left off when I have to work on things throughout the week). The problem is that the process running our jupyter notebook will terminate as soon as our ssh session ends. We can prevent that by using the screen command. Once you've ssh'ed into the workstation you want to use, the trick is to start a new screen session before launching jupyter notebook:
+                    While there are other applications, the most common problem this solves for me is when I log into a workstation remotely to start a jupyter notebook, and want to leave it running (to finish a set of runs, or just to leave it up so I can pick up where I left off when I have to work on things throughout the week). The problem is that the process running our jupyter notebook will terminate as soon as our ssh session ends. We can prevent that by using the screen command. Once you've ssh'ed into the workstation you want to use (i.e., we want to run the jupyter notebook on the workstation, not on our own laptop!), the trick is to start a new screen session before launching jupyter notebook:
                 </p> 
                 <pre>
                     <code>
@@ -88,7 +88,7 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    The first command starts a new screen session, and names that screen session 'jupyter' (you could use any other name). The second starts a jupyter notebook as usual. Once that is running, you hold Ctrl + a, and while holding those keys, press d. This detaches your screen session, and you get back your original ssh session with your screen session now running in the background. Now you can close your terminal window (which will end your ssh session), or even shut down your laptop, and the screen session will continue running on the workstation in the background. You can google screen commands, but useful ones include
+                    The first command starts a new screen session, and names that screen session 'jupyter' (you may need to choose another name if someone has already used that). The second starts a jupyter notebook as usual. Once that is running, you hold Ctrl + a, and while holding those keys, press d. This detaches your screen session, and you get back your original ssh session with your screen session now running in the background. Now you can close your terminal window (which will end your ssh session), or even shut down your laptop, and the screen session will continue running on the workstation in the background. You can google screen commands, but useful ones include
                 </p> 
                 <pre>
                     <code>
