@@ -90,7 +90,10 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    where you should replace 'username' with the one you use on our workstations (i.e., your HMC username). This will prompt you for the same password you would use when logging into the workstation in person. Once logged in, it's just as if your terminal were a terminal that you opened at the workstation itself--you can run any linux commands you want. One of the common pitfalls getting started with this is to keep track of where you are running commands. Commands that you run in this terminal window are being run on our sphinx workstation, not on your laptop! To run terminal commands on your own laptop you could open a new terminal window.
+                    where you should replace 'username' with the one you use on our workstations (i.e., your HMC username). Since this is your first time logging into sphinx, you should use the same default password in the discord. It will then prompt you to change your password (like on hr8799) by first re-inputting your old password, and then entering a new one (strongly recommend using the same one for all the workstations so you don't have to keep track). 
+                </p>
+                <p class="lead">
+                Once logged in, it's just as if your terminal were a terminal that you opened at the workstation itself--you can run any linux commands you want. One of the common pitfalls getting started with this is to keep track of where you are running commands. Commands that you run in this terminal window are being run on our sphinx workstation, not on your laptop! To run terminal commands on your own laptop you could open a new terminal window.
                 </p> 
                 <p class="lead">
                     For security reasons, sphinx is the only workstation connected to the outside world. It is an old computer only meant to process logins and pass network traffic along. To log in to one of the other workstations (e.g., hr8799.physics.hmc.edu) that we would actually want to use for calculations, we need to log into sphinx first. So we would log into sphinx as above, and once our terminal is running commands on sphinx, we would do, e.g.,
@@ -103,9 +106,9 @@
                 <p class="lead">
                     Here we can omit our username, since our username is the same on sphinx and hr8799. Note that if you tried the command above from your own laptop, it wouldn't work. You need to log into sphinx (our login node) first. 
                 </p><p class="lead">
-                Now you can do anything you would do in a terminal remotely, e.g., you could use any of the linux text editors to write a script.py file and run it. If you want to use a jupyter notebook, check out <a href="portforwarding.html">Running a Jupyter notebook remotely</a>.
+                Now you can do anything you would do in a terminal remotely, e.g., you could use any of the linux text editors to write a script.py file and run it. 
                 </p><p class="lead">
-                Since we're going to have to do these logins over and over, you should definitely make your life more convenient by following these two tutorials:</br>
+                Since we're going to have to do these logins over and over, you should definitely make your life more convenient by following the next two tutorials:</br>
                 <a href="autologin.html">Passwordless remote logins using public/private key pairs</a></br>
                 <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a>.
                 </p> 
