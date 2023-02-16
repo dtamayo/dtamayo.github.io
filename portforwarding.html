@@ -161,8 +161,16 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    where you would vary the appropriate port (here 8890) and the workstation we want to connect to (here we're using the hr8799 shortcut we set up in our config file). 
+                    where you would vary the appropriate port (here 8890) and the workstation we want to connect to (here we're using the hr8799 shortcut we set up in our config file). If you get an error in Powershell in red saying that your profile can't be loaded because running scripts is disabled on the system, then you need to enable scripts by (I think!) running the following command:
                 </p> 
+                <pre>
+                    <code>
+                        Set-ExecutionPolicy -ExecutionPolicy Unrestricted
+                    </code>
+                </pre>
+                <p class="lead">
+                    I haven't gone through the details of what this change does, so please do go through the microsoft link the error message gives you to understand what the Unrestricted policy entails!
+                </p>
                 <p class="lead">
                     <b>SUMMARY:</b> You need to keep track of which computer you're running commands on.
                 </p>
