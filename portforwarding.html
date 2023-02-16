@@ -79,7 +79,7 @@
         <div class="row topbot-buffer">
             <div class="col-lg-12">
                 <p class="lead">
-                    This tutorial assumes you have already gone through all the steps in the previous tutorials under 'Working on Linux workstations'. In particular, you have followed <a href="screen.html">Keeping a terminal session running with the screen command</a> to start a jupyter notebook running on one of the workstations (say hr8799). Make sure you are ssh'ed into that workstation, and on that terminal, run
+                    This tutorial assumes you have already gone through all the steps in the previous tutorials under 'Working on Linux workstations'. In particular, you have followed <a href="screen.html">Keeping a terminal session running with the screen command</a> to start a jupyter notebook running on one of the workstations (say hr8799). Make sure you read the summary at the bottom--which will probably be the most useful part to refer back to once you complete the initial setup. To start, make sure you are ssh'ed into that workstation, and on that terminal, run
                 </p> 
                 <pre>
                     <code>
@@ -107,7 +107,7 @@
                     where we have put in the appropriate ports (here 8890, but will vary in your own case). If you now open any web browser on your own laptop, and type in the url 'localhost:8890', you should get the jupyter notebook running on the workstation. You may be prompted for a password or a token. If so, you can get the token using jupyter notebook list as above. The token is highlighted in red (everything to the right of the equals sign).
                 </p> 
                 <p class="lead">
-                    Finally, the ssh command above is a bit of a handful, and we can make our lives easier with a shortcut function. On Mac, we need to edit
+                    Finally, the ssh command above is a bit of a handful, and we can make our lives easier with a shortcut function. On Mac or Linux, we need to edit
                 </p> 
                 <pre>
                     <code>
@@ -115,23 +115,7 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    On Windows,  
-                </p> 
-                <pre>
-                    <code>
-                        notepad $PROFILE
-                    </code>
-                </pre>
-                <p class="lead">
-                    If this command doesn't work, it probably means you don't have a profile file. You can create one with
-                </p> 
-                <pre>
-                    <code>
-                        New-Item -ItemType File -Path $PROFILE -Force
-                    </code>
-                </pre>
-                <p class="lead">
-                    Then open it with notepad as above. On both Windows and Mac, then add this function to your profile:
+                    and add to the bottom, then save and quit.  
                 </p> 
                 <pre>
                     <code>
@@ -141,7 +125,35 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    This function (that I chose to call ssh with a fw for forward) is doing the ssh command we had above, but it's letting us pass a variable for the port we want to use ($1), and for the workstation ($2). For this to work you will have to close your terminal/powershell window completely. Now whenever you start a new terminal / powershell on your laptop, you can do, e.g.,
+                    On Windows, we can use the powershell to open our config file:
+                </p> 
+                <pre>
+                    <code>
+                        notepad $PROFILE
+                    </code>
+                </pre>
+                <p class="lead">
+                    Unless you've used this before, this should bring up a dialog saying that there's no file at that path, in which case you need to close notepad and create one with
+                </p> 
+                <pre>
+                    <code>
+                        New-Item -ItemType File -Path $PROFILE -Force
+                    </code>
+                </pre>
+                <p class="lead">
+                    Then open it with notepad as above. Then add this function in notepad and save:
+                </p> 
+                <pre>
+                    <code>
+                        function sshfw {
+                            param([String] $1, [String] $2)
+                            ssh -fNL ${1}:localhost:${1} ${2}
+                        }
+                    </code>
+                </pre>
+                    
+                <p class="lead">
+                    On all operating systems, this function (that I chose to call ssh with a fw for forward) is doing the ssh command we had above, but it's letting us pass a variable for the port we want to use ($1), and for the workstation ($2). For this to work you will have to close your terminal/powershell window completely. Now whenever you start a new terminal / powershell on your laptop, you can do, e.g.,
                 </p> 
                 <pre>
                     <code>
@@ -149,7 +161,18 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    where you would vary the appropriate port (here 8890) and the workstation we want to connect to (here we're using the hr8799 shortcut we set up in our config file).
+                    where you would vary the appropriate port (here 8890) and the workstation we want to connect to (here we're using the hr8799 shortcut we set up in our config file). 
+                </p> 
+                <p class="lead">
+                    <b>SUMMARY:</b> You need to keep track of which computer you're running commands on.
+                </p>
+                <p class="lead">
+                    ON HR8799: we need to ssh into hr8799, start a screen session, start a Jupyter notebook, and detach. If we did that correctly, then if we run jupyter notebook list on HR8799, we should see our session, along with its port and token. Once we've copied that token, we can quit out of that terminal since we don't need the workstation anymore. 
+                </p> 
+                <p class="lead">
+                    ON YOUR LAPTOP: we now need to start a terminal or Powershell on our laptop and open an ssh tunnel to pass information from the workstation to our laptop. Assuming our jupyter notebook was running on port 8890, we'd do that with sshfw 8890 hr8799. We'd then open a browser on our laptop to localhost:8890, and should be prompted for our token that we copied earlier.</p> 
+                <p class="lead">
+                    Ater you do this once it gets much easier. My typical workflow is that I'll start a jupyter notebook on the workstation, and leave it running there for a long time (months). Then each day I want to work on research, I open a terminal on my own laptop, run e.g., sshfw 8890 hr8799, and then open my browser to localhost:8890 and pick up where I left off (maybe I left something running overnight).
                 </p> 
             </div>
         </div>
