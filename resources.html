@@ -80,11 +80,33 @@
         <div class="row topbot-buffer">
             <div class="col-lg-12">
                 <p class="lead">
-                This page collects several resources to help get you started. It doesn't make sense to recreate any of the great linux tutorials available online. If you've never used linux before (or need a refresher), start by going through all of Section 2 of the linked Basic linux commands and practice them on one of our workstations. The rest of the links cover things that are harder to sort out for the first time, and provide solutions to some of the peculiarities with our particular workstation setup. Hopefully they give you the right terms to google if you want to dig deeper, and cover some of the most useful options for those commands (out of a laundry list that can be quite overwhelming when you're googling a command for the first time). The relevant guides for working on your laptop remotely are written for both Mac and Windows. Please do ask questions if you get stuck--that will help us improve these guides for others!
+
                 </p> 
             </div>
         </div>
     </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Computing</h2>
+                <p class="lead"> 
+                    Our typical workflow will be to leave Jupyter notebooks running on our workstations with many available cores, and to access them remotely through a browser on your laptop. The links below guide you through setting that up. Almost all high-performance computing clusters run Linux. This is what all our workstations use, and you will find it helpful down the line to get proficient with basic Linux commands and concepts. 
+                </p>
+                <p class="lead"> 
+                    Below is a link to a good Linux tutorial. I've taken care of Section 1 for you, go through the commands in Section 2, especially those up through 'cp', which you will use all the time.
+                    Since we will be constantly sharing and merging files with one another and across workstations, we'll also pick up some basic skills with git, a version control system for storing and sharing code. Please follow the tutorial below to upload your team pic to the website to get started.
+                </p><p class="lead"> 
+                We will be doing everything through a terminal window. We can load one on both Mac and Windows to practice, and this is what you'll also use to log onto our workstations remotely (see below). On Mac you would find the terminal under Applications-&gtUtilities. On Windows hit the windows key and search for Powershell (this will only work with post-2018 versions of Windows 10 or later). <b>Make a shortcut for it now</b>, since we'll use the terminal a lot.
+                </p><p class="lead"> 
+                    <a href="https://www.tecmint.com/free-online-linux-learning-guide-for-beginners/">Basic Linux commands</a><br>
+                    <a href="teampic.html">Updating your team picture/title: a basic Git tutorial</a><br>
+                </p>
+            </div>
+        </div>
+    </div>
+
     
     <div class="container">
         <div class="row">
@@ -93,7 +115,10 @@
                 <div class="clearfix"></div>
                 <h2 class="section-heading">Working on Linux workstations</h2>
                 <p class="lead"> 
-                    <a href="accountsetup.html">Setting up your new workstation account</a><br>
+                    In order to all use the workstations concurrently, everyone uses them by logging onto them remotely using ssh (secure shell).
+                    Connecting to the workstations through ssh will only work automatically <b>IF YOU ARE ON THE **WPA** wifi network</b> (or plugged into ethernet on campus). If not, you need to first set up and connect to the college VPN (<a href="https://www.hmc.edu/cis/services/">CIS Services</a>). 
+                    Make sure you run through all of these in order so you can run Jupyter notebooks remotely.
+                </p><p class="lead"> 
                     <a href="ssh.html">Logging into a workstation remotely with ssh</a><br>
                     <a href="autologin.html">Passwordless remote logins using public/private key pairs</a><br>
                     <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a><br>
@@ -103,20 +128,6 @@
             </div>
         </div>
     </div>
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
-                <h2 class="section-heading">Useful Tutorials</h2>
-                <p class="lead"> 
-                    <a href="teampic.html">Updating your team picture/title: a basic Git tutorial</a><br>
-                    <a href="https://www.tecmint.com/free-online-linux-learning-guide-for-beginners/">Basic Linux commands</a><br>
-                </p><p class="lead"> 
-            </div>
-        </div>
-    </div>
-
 
     <!--
     <div class="container">

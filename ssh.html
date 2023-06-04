@@ -79,10 +79,9 @@
         <div class="row topbot-buffer">
             <div class="col-lg-12">
                 <p class="lead">
-                We can log into our workstations remotely using ssh (secure shell). This will work automatically <b>if you are on campus and on the WPA wifi</b>. If not, you need to use the college VPN (<a href="https://www.hmc.edu/cis/services/">CIS Services</a>). 
                 </p>
                 <p class="lead">
-                First we need to open a terminal window. On Mac you would find this under Applications-&gtUtilities. On Windows hit the windows key and search for Powershell (this will only work with post-2018 versions of Windows 10 or later). Make a shortcut for it now, since we'll use the terminal a lot. Now if you wanted to log into our workstation sphinx.physics.hmc.edu, you would type into the terminal and press enter: 
+                    To log into our workstation sphinx.physics.hmc.edu, you would type the command below into the terminal and press enter: 
                 </p> 
                 <pre>
                     <code>
@@ -90,7 +89,7 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    where you should replace 'username' with the one you use on our workstations (i.e., your HMC username). Since this is your first time logging into sphinx, you should use the same default password in the discord. It will then prompt you to change your password (like on hr8799) by first re-inputting your old password, and then entering a new one (strongly recommend using the same one for all the workstations so you don't have to keep track). 
+                    where you should replace 'username' with the one you use on our workstations (i.e., your HMC username). The first time logging into any workstation (either remotely or in person), you will have to enter the default password pinned in our group's discord (click the pin at the top). It will then prompt you to re-enter your current password (the default one), and then to enter a new password (I strongly recommend using the same one for all the workstations so you don't have to keep track). 
                 </p>
                 <p class="lead">
                 Once logged in, it's just as if your terminal were a terminal that you opened at the workstation itself--you can run any linux commands you want. One of the common pitfalls getting started with this is to keep track of where you are running commands. Commands that you run in this terminal window are being run on our sphinx workstation, not on your laptop! To run terminal commands on your own laptop you could open a new terminal window.
@@ -108,9 +107,8 @@
                 </p><p class="lead">
                 Now you can do anything you would do in a terminal remotely, e.g., you could use any of the linux text editors to write a script.py file and run it. 
                 </p><p class="lead">
-                Since we're going to have to do these logins over and over, you should definitely make your life more convenient by following the next two tutorials:</br>
+                Since we're going to have to do these logins over and over, we will next help automate them. 
                 <a href="autologin.html">Passwordless remote logins using public/private key pairs</a></br>
-                <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a>.
                 </p> 
             </div>
         </div>
