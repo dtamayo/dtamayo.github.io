@@ -70,7 +70,7 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="main-section-heading">Passwordless remote logins using public/private key pairs</div>
+                <div class="main-section-heading">Simplifying ssh logins</div>
             </div>
         </div>
     </div>
@@ -79,7 +79,62 @@
         <div class="row topbot-buffer">
             <div class="col-lg-12">
                 <p class="lead">
-                    We can automate the step of logging in with our username and password each time by creating a public / private key pair. You put your public key on as many workstations as you like, but you keep your private key on your own computer and never share it (would give others access to any workstations where you've put your public key). To create a key pair, we first open a terminal window. On Mac you would find this under Applications-&gtUtilities. On Windows hit the windows key and search for Powershell (this will only work with post-2018 versions of Windows 10 or later). If you are coming from another tutorial, check whether your terminal window is running on your own machine, or whether you're logged into one of the workstations (e.g., sphinx). If the latter, enter exit to take you back to your own machine or just open a new terminal window. Then
+                    An ssh config file just saves shortcuts for complicated ssh commands you wouldn't want to type in every time. Let's build a new config file up gradually. On Mac, open up a terminal, and we will use nano, which is the simplest terminal text editor:
+                </p>
+                <pre>
+                    <code>
+                        nano ~/.ssh/config
+                    </code>
+                </pre>
+                <p class="lead">
+                    On Windows, open a Powershell terminal window, and we can use notepad:
+                </p>
+                <pre>
+                    <code>
+                        notepad.exe $HOME/.ssh/config
+                    </code>
+                </pre>
+                <p class="lead">
+                    Either way, let's start by adding these lines to the top of our config file:
+                </p>
+                <pre>
+                    <code>
+                        Host sphinx
+                            User username
+                            HostName sphinx.physics.hmc.edu
+                    </code>
+                </pre>
+                <p class="lead">
+                    This makes it so we can just type 'ssh sphinx' instead of 'ssh sphinx.physics.hmc.edu' (you can also choose your own fun names!) and sets our username (replace 'username' with your own!) so we don't have to write it in at login. More usefully, Below that let's now write:
+                </p>
+                <pre>
+                    <code>
+                        Host hr8799
+                            User username
+                            HostName hr8799.physics.hmc.edu
+                            ProxyJump sphinx
+                    </code>
+                </pre>
+                <p class="lead">
+                where again you should replace 'username' with your own. To log into hr8799 and all our other workstations, we need to first log in through sphinx, and that is what the ProxyJump command does. Below, write an analogous block for each of the other workstations, e.g., replacing both instances of hr8799 with trappist1. Your config file should now have a simpler entry for sphinx, and a more complicated entry like the above (including a ProxyJump) for each of the other workstations (hr8799, trappist1, kepler11). Now close the file (Ctrl+X in nano on Mac, which will prompt you to save). On Windows, notepad will automatically add a wrong .txt extension to this file so after we save and quit notepad, we need to remove the extension with the following Powershell command (open a new terminal to make sure it's running on your own laptop and you're not ssh'ed into one of the workstations):
+                <pre>
+                    <code>
+                        mv $HOME/.ssh/config.txt $HOME/.ssh/config
+                    </code>
+                </pre>
+                <p class="lead">
+                    Now on both Mac and Windows, when you type 'ssh hr8799', you should be able to log in directly (without having to log into sphinx first).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="container">
+        <div class="row topbot-buffer">
+            <div class="col-lg-12">
+                <p class="lead">
+                    Finally, we can automate the step of logging in with our username and password each time by creating a public / private key pair. The idea is that you keep your private key on your own computer and never share it (would give others access to any workstations where you've put your public key), but you copy your public key onto every workstation you'd like to access. When you try to login to the workstation, the public key for your laptop stored on the workstation is verified against the private key on your laptop, instead of entering a password. To create a key pair, we first open a terminal window. If you are coming from another tutorial, check whether your terminal window is running on your own machine, or whether you're logged into one of the workstations (e.g., sphinx). If the latter, enter exit to take you back to your own machine or just open a new terminal window. Then
                 </p> 
                 <pre>
                     <code>
@@ -87,24 +142,33 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    On Windows this will first prompt you for where you want to put the file. Press enter to accept the default. Then on both Mac and Windows, it will prompt you for a passphrase. Press enter twice to NOT have a passphrase. This will create an id_rsa (private key) and id_rsa.pub (public key) file in the .ssh directory in your home folder (more on where that is below). We now need to paste the contents of id_rsa.pub into ~/.ssh/authorized_keys (a file containing the public keys of all authorized users) on each of the workstations you want to use. Copy pasting directly in terminal can cause problems with newlines--an easier way to do it by typing this command on your own computer (in the terminal window where you just created your public/private key pair) to pass them through ssh. One difference is that on Mac and linux, the tilde ~ refers to your home directory, on Windows it's $HOME. On Mac we would use
+                    On Windows this will first prompt you for where you want to put the file. Press enter to accept the default. Then on both Mac and Windows, it will prompt you for a passphrase. Press enter twice to NOT have a passphrase. This will create an id_rsa (private key) and id_rsa.pub (public key) file in the .ssh directory in your home folder (on Mac and Linux, ~ in a filepath refers to your home directory, on Windows it's $HOME). We now need to paste the contents of id_rsa.pub into ~/.ssh/authorized_keys (a file containing the public keys of all authorized users) on each of the workstations you want to use. On Mac we can do this with (run the command one time for each of the workstations, afterward replacing sphinx with hr8799, trappist1, kepler11):
                 </p>
                 <pre>
                     <code>
-                        cat ~/.ssh/id_rsa.pub | ssh username@sphinx.physics.hmc.edu 'cat &gt&gt ~/.ssh/authorized_keys'
+                        cat ~/.ssh/id_rsa.pub | ssh sphinx 'cat &gt&gt ~/.ssh/authorized_keys'
                     </code>
                 </pre>
                 <p class="lead">
-                    where again you should replace 'username' with your own username. On Windows you would use:
+                    On Windows you would use:
                 </p>
                 <pre>
                     <code>
-                        cat $HOME/.ssh/id_rsa.pub | ssh username@sphinx.physics.hmc.edu 'cat &gt&gt ~/.ssh/authorized_keys'
+                        cat $HOME/.ssh/id_rsa.pub | ssh sphinx 'cat &gt&gt ~/.ssh/authorized_keys'
                     </code>
                 </pre>
                 <p class="lead">
-                    This will prompt you for your password like before, but once done, try to ssh into sphinx again as above, and you should get logged in automatically! Doing this to log in automatically into the other workstations (which have to go through sphinx first) is shown in the next tutorial: <a href="sshconfig.html">Simplifying advanced ssh commands with an ssh config file</a>.
+                    This will prompt you for your password like before, but once done, try to ssh into any of the workstations, and you should get logged in automatically! Finally, you'll be using Github a lot, so let's all put our laptop's public key on Github so we don't have to authenticate with our password each time. If you just do the first part of the command above (cat ~/.ssh/id_rsa.pub on Mac, cat $HOME/.ssh/id_rsa.pub on Windows), it will print out the contents of your public key on the terminal. Select it with your mouse and copy. Now log into your Github account in a browser (or make a new account on www.github.com), then after logging in click on the top right icon for your user, and click on Settings near the bottom. On the next page, in the left bar under Access, slick on SSH and GPG keys. Click the green button at the top right for New SSH key, write any name you'd like to use for your laptop, paste the key in the text box under Key, and click Add SSH Key. Now, as long as when you clone a repository (see the Git tutorial), you click on the ssh tab so the command looks something like
                 </p>
+                <pre>
+                    <code>
+                        git clone git@github.com:dtamayo/reboundx.git
+                    </code>
+                </pre>
+                <p class="lead">
+                    where the repo starts with 'git@github.com' instead of 'https', you will never have to enter your password when pushing or pulling changes, which is really convenient. If none of this makes sense at this point, don't worry. It will, and you will be happy you did this!
+                </p>
+
             </div>
         </div>
     </div>
