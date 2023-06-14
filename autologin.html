@@ -116,7 +116,7 @@
                     </code>
                 </pre>
                 <p class="lead">
-                where again you should replace 'username' with your own. To log into hr8799 and all our other workstations, we need to first log in through sphinx, and that is what the ProxyJump command does. Below, write an analogous block for each of the other workstations, e.g., replacing both instances of hr8799 with trappist1. Your config file should now have a simpler entry for sphinx, and a more complicated entry like the above (including a ProxyJump) for each of the other workstations (hr8799, trappist1, kepler11). Now close the file (Ctrl+X in nano on Mac, which will prompt you to save). On Windows, notepad will automatically add a wrong .txt extension to this file so after we save and quit notepad, we need to remove the extension with the following Powershell command (open a new terminal to make sure it's running on your own laptop and you're not ssh'ed into one of the workstations):
+                where again you should replace 'username' with your own. To log into hr8799 and all our other workstations, we need to first log in through sphinx from our laptop, which is a real pain. The ProxyJump command above automates that step. Below, write an analogous block for each of the other workstations, e.g., replacing both instances of hr8799 with trappist1. Your config file should now have a simpler entry for sphinx, and a more complicated entry like the above (including a ProxyJump) for each of the other workstations (hr8799, trappist1, kepler11). Now close the file (Ctrl+X in nano on Mac, which will prompt you to save). On Windows, notepad will automatically add a wrong .txt extension to this file so after we save and quit notepad, we need to remove the extension with the following Powershell command (open a new terminal to make sure it's running on your own laptop and you're not ssh'ed into one of the workstations):
                 <pre>
                     <code>
                         mv $HOME/.ssh/config.txt $HOME/.ssh/config
@@ -158,17 +158,52 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    This will prompt you for your password like before, but once done, try to ssh into any of the workstations, and you should get logged in automatically! Finally, you'll be using Github a lot, so let's all put our laptop's public key on Github so we don't have to authenticate with our password each time. If you just do the first part of the command above (cat ~/.ssh/id_rsa.pub on Mac, cat $HOME/.ssh/id_rsa.pub on Windows), it will print out the contents of your public key on the terminal. Select it with your mouse and copy. Now log into your Github account in a browser (or make a new account on www.github.com), then after logging in click on the top right icon for your user, and click on Settings near the bottom. On the next page, in the left bar under Access, slick on SSH and GPG keys. Click the green button at the top right for New SSH key, write any name you'd like to use for your laptop, paste the key in the text box under Key, and click Add SSH Key. Now, as long as when you clone a repository (see the Git tutorial), you click on the ssh tab so the command looks something like
+                    This will prompt you for your password like before, but once done, try to ssh into any of the workstations, and you should get logged in automatically! 
+                </p><p class="lead">
+                    Finally, you'll be using Github a lot, so let's set up your public keys there too. If you don't do this now, you'll run into a lot of confusion and issues down the line. Our goal is to put our laptop's public key on Github so we don't have to authenticate with our password each time. Open a new terminal / Powershell on your laptop, and on Mac run
                 </p>
                 <pre>
                     <code>
-                        git clone git@github.com:dtamayo/reboundx.git
+                        cat ~/.ssh/id_rsa.pub
                     </code>
                 </pre>
                 <p class="lead">
-                    where the repo starts with 'git@github.com' instead of 'https', you will never have to enter your password when pushing or pulling changes, which is really convenient. If none of this makes sense at this point, don't worry. It will, and you will be happy you did this!
+                    On Windows run
                 </p>
-
+                <pre>
+                    <code>
+                        cat $HOME/.ssh/id_rsa.pub
+                    </code>
+                </pre>
+                <p class="lead">
+                    This will print out the contents of your public key on the terminal. Select it with your mouse and copy. Now log into your Github account in a browser (or make a new account on www.github.com), then after logging in, click on the top right icon for your user, and click on Settings near the bottom. On the next page, in the left bar under Access, slick on SSH and GPG keys. Click the green button at the top right for New SSH key, write any name you'd like to use for your laptop, paste the key in the text box under Key, and click Add SSH Key. 
+                </p>
+                <p class="lead">
+                This put your laptop's public key on Github, which allows you to push and pull changes <b>from your laptop</b> to Github without entering a password. We also need to do this from whatever workstations you use. To put your hr8799 public key on your Github account, ssh into hr8799, and run
+                </p>
+                <pre>
+                    <code>
+                        ssh-keygen -t rsa
+                        cat ~/.ssh/id_rsa.pub
+                    </code>
+                </pre>
+                <p class="lead">
+                    and copy paste this hr8799 public key onto your Github account just like above. Then do the same for other workstations you use (we will never run code on sphinx so you can skip one). The end result is that your SSH and GPG keys page on your Github account should have an entry for your laptop, and one for hr8799 and each of the other workstations. Do this now so you don't have to sort it out later!
+                </p>
+                <p class="lead">
+                    If you've never used git before, none of this will make sense yet, and that's OK. It will save you an enormous amount of time and confusion. The important thing is that when you download code on Github (in git lingo, when you 'clone a repository'), you should always do it using SSH. 
+                </p>
+                <p class="lead">
+                To see how this is done, let's clone the REBOUND repository as an example. In your laptop's browser, let's open the <a href="https://github.com/hannorein/rebound">REBOUND Github webpage</a>. On the top right, there's a green button that says Code. Click on it, and under Code, you will see three tabs, HTTPS, SSH and Github CLI. By default, HTTPS is selected, but now we want to choose SSH. We then copy the string below, which is what we need below to get the code. If we wanted to dowload the REBOUND code to hr8799, we would first ssh into hr8799, and in that terminal window, would type git clone and then paste the string we copied earlier, i.e.,
+                </p>
+                <pre>
+                    <code>
+                        git clone git@github.com:hannorein/rebound.git
+                    </code>
+                </pre>
+                <p class="lead">
+                    This will download a directory named rebound into whatever directory you were in when you ran the above command (your home directory if you just ssh'ed into hr8799 and ran it). You could then go into that directory and look at any of the code in the REBOUND package. Remember that if you ever run git commands and it asks you for a password, you'll know the above steps copying that computer's public key to Github have gone wrong. Please ask me for help!
+                </p>
             </div>
         </div>
     </div>

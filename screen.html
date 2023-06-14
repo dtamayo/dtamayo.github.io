@@ -83,20 +83,20 @@
                 </p> 
                 <pre>
                     <code>
-                        screen -S jupyter
+                        screen -S danjupyter
                         jupyter notebook
                     </code>
                 </pre>
                 <p class="lead">
-                    The first command starts a new screen session, and names that screen session 'jupyter' (you may need to choose another name if someone has already used that). The second starts a jupyter notebook as usual. Once that is running, you hold Ctrl + a, and while holding those keys, press d. This detaches your screen session, and you get back your original ssh session with your screen session now running in the background. Now you can close your terminal window (which will end your ssh session), or even shut down your laptop, and the screen session will continue running on the workstation in the background. You can google screen commands, but useful ones include
+                    The first command starts a new screen session, and names that screen session 'danjupyter' (you may need to choose another name if someone has already used that). The second starts a jupyter notebook as usual. Once that is running, you hold Ctrl + a, and while holding those keys, press d. This detaches your screen session, and you get back your original ssh session with your screen session now running in the background. Now you can close your terminal window (which will end your ssh session), or even shut down your laptop, and the screen session will continue running on the workstation in the background. You can google screen commands, but useful ones include
                 </p> 
                 <pre>
                     <code>
-                        screen -r jupyter
+                        screen -r danjupyter
                     </code>
                 </pre>
                 <p class="lead">
-                    to reconnect to your running screen session called 'jupyter' (can replace with whatever you chose to call it). This is useful to close jupyter notebook after you're all done (Ctrl + c). If you're done with the screen session, you can end it by typing
+                    to reconnect to your running screen session called 'danjupyter' (can replace with whatever you chose to call it). This is useful to close jupyter notebook after you're all done (Ctrl + c). If you're done with the screen session, you can end it by typing
                 </p> 
                 <pre>
                     <code>
@@ -115,11 +115,11 @@
                     If you want to kill a screen session that's running, you need to know the name of that session, or use the above command to get the number that's in front (e.g., 20351 in 20351.jupyter). Then
                 <pre>
                     <code>
-                        screen -X -S jupyter kill
+                        screen -X -S danjupyter kill
                     </code>
                 </pre>
                 </p><p class="lead">
-                    where you would replace 'jupyter' with the name (or number) of the screen session you want to kill. This can be useful in cases where you get mixed up with the commands above, and it won't let you reconnect to a screen session because it says it's already attached (and you want to start over, killing anything that's running in it). 
+                    where you would replace 'danjupyter' with the name (or number) of the screen session you want to kill. This can be useful in cases where you get mixed up with the commands above, and it won't let you reconnect to a screen session because it says it's already attached (and you want to start over, killing anything that's running in it). 
                 </p> 
             </div>
         </div>

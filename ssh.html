@@ -81,7 +81,6 @@
                 <p class="lead">
                 </p>
                 <p class="lead">
-                    To do all of our commands we will be working with a terminal window. On Mac you would find this under Applications-&gtUtilities. On Windows hit the windows key and search for Powershell (this will only work with post-2018 versions of Windows 10 or later). 
                     To log into our workstation sphinx.physics.hmc.edu, you would type the command below into the terminal and press enter: 
                 </p> 
                 <pre>
@@ -90,10 +89,21 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    where you should replace 'username' with the one you use on our workstations (i.e., your HMC username). The first time logging into any workstation (either remotely or in person), you will have to enter the default password pinned in our group's discord (click the pin at the top). It will then prompt you to re-enter your current password (the default one), and then to enter a new password (I strongly recommend using the same one for all the workstations so you don't have to keep track). 
+                where you should replace 'username' with the one you use on our workstations (i.e., your HMC username). The first time logging into any workstation (either remotely or in person), you will have to enter the default password pinned in our group's discord (click the pin at the top). It will then prompt you to <b>re-enter your current password (the default one)</b>, and then to enter a new password (I strongly recommend using the same one for all the workstations so you don't have to keep track). 
                 </p>
                 <p class="lead">
                 Once logged in, it's just as if your terminal were a terminal that you opened at the workstation itself--you can run any linux commands you want. One of the common pitfalls getting started with this is to keep track of where you are running commands. Commands that you run in this terminal window are being run on our sphinx workstation, not on your laptop! To run terminal commands on your own laptop you could open a new terminal window.
+                </p> 
+                <p class="lead">
+                    Files in any sort of operating system are always organized into directories. This is sometimes hidden from you (e.g. in your phone), but is very explicit in Linux. When you log in, you will automatically start in your 'home' directory, which is your own section of the hard drive that nobody else can edit. If you 'print working directory' with 
+                </p>
+                <pre>
+                    <code>
+                        pwd
+                    </code>
+                </pre>
+                <p class="lead">
+                    you should see '/home/username' (with your particular username inserted), where everything between slashes is the name of a different directory. You would make directories here for different projects (see the Linux tutorial under resources). One thing that you will see a lot is that the shortcut name for your home directory in linux is '~' (tilde). For example, if you had a 'resonances' directory in your home directory, then if you were in some other random directory you could 'cd /home/username/resonances' or just 'cd ~/resonances'. If you were already in your home directory (e.g. you just logged into the workstation), you could simply 'cd resonances'.
                 </p> 
                 <p class="lead">
                     For security reasons, sphinx is the only workstation connected to the outside world. It is an old computer only meant to process logins and pass network traffic along. To log in to one of the other workstations (e.g., hr8799.physics.hmc.edu) that we would actually want to use for calculations, we need to log into sphinx first. So we would log into sphinx as above, and once our terminal is running commands on sphinx, we would do, e.g.,
@@ -104,13 +114,11 @@
                     </code>
                 </pre>
                 <p class="lead">
-                    Here we can omit our username, since our username is the same on sphinx and hr8799. Note that if you tried the command above from your own laptop, it wouldn't work. You need to log into sphinx (our login node) first. 
+                    Here we can omit our username, since our username is the same on sphinx and hr8799. Since this is the first time logging into hr8799 (same with any other workstation), you will have to use the default password and choose a new password (choose the same one you used on sphinx to make your life simpler!) like we did above. Note that if you tried to ssh into hr8799 from your own laptop, it wouldn't work. You need to log into sphinx (our login node) first.
                 </p><p class="lead">
                 Now you can do any of the simple things you can do in a terminal remotely, e.g., you could use any of the linux text editors to write a script.py file and run it on the workstation.
-                The next tutorials show you how run a jupyter notebook on the workstations remotely from your laptop.
-                </p><p class="lead">
-                But since we're going to have to do these ssh logins over and over, we will next help automate them. 
-                <a href="autologin.html">Passwordless remote logins using public/private key pairs</a></br>
+                Since we're going to have to do these ssh logins over and over, we will next help automate them. 
+                <a href="autologin.html">Simplifying ssh logins</a></br>
                 </p> 
             </div>
         </div>
