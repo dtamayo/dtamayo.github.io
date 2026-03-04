@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dan Tamayo</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/landing-page.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet"
+        type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
+        <div class="container topnav">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand topnav"></a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="index.html">Home</a>
+                    </li>
+                    <li>
+                        <a href="research.html">Research</a>
+                    </li>
+                    <li>
+                        <a href="group.html">Group</a>
+                    </li>
+                    <li>
+                        <a href="resources.html">Resources</a>
+                    </li>
+                    <li>
+                        <a href="sandbox.html">Sandbox</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="intro-header"></div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="main-section-heading">Setting up Hopper</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row topbot-buffer">
+            <div class="col-lg-12" style="font-weight: 400;">
+                <h3>Server Access and Setup</h3>
+                <p>After you are added to Hopper, you should get email from CMC with a temporary password</p>
+                <p>SSH into hopper at <code>hopper.mckenna.edu</code> and change your password.</p>
+                <p>There are two folders you will need to use in hopper. Your user home folder at
+                    <code>/hopper/home/username</code> and the lab group folder at
+                    <code>/hopper/groups/tamayolab/</code>
+                </p>
+                <p>Make a folder with the same name as your user name, eg <code>/hopper/groups/tamayolab/kdey</code>,
+                    this is where you should store the files for your large computations (you can still put things in
+                    your user home folder, but big projects should be in the lab one so other people can access it)</p>
+                <h3>Making a virtual environment</h3>
+                <p>As of right now, hopper does not support conda so you need to use virtualenv. Make a new virtual
+                    environment:</p>
+                <pre><code class="language-python">python -m venv /path/to/new/virtual/environment
+</code></pre>
+                <p>Activate the virtual environment with the following command:</p>
+                <pre><code class="language-python">source /path/to/new/virtual/environment/bin/activate
+</code></pre>
+                <p>(eg <code>python -m venv</code> and then <code>source venv/bin/activate</code>)</p>
+                <h3>Installing Rebound with AVX512 support</h3>
+                <p>Clone the newest version of the rebound GitHub repository, then cd into the folder</p>
+                <pre><code class="language-python">git clone https://github.com/hannorein/rebound.git
+</code></pre>
+                <p>Next, set the AVX512 environment variable equal to 1, this tells rebound to compile with AVX512
+                    instructions.</p>
+                <pre><code class="language-bash">export AVX512=1
+export OPT=-march=native
+</code></pre>
+                <p>Finally build and install rebound</p>
+                <pre><code class="language-python">make clean
+make
+pip install -e .
+</code></pre>
+                <p>in a new python file or terminal, run the following code</p>
+                <pre><code class="language-python">import rebound
+
+sim = rebound.Simulation()
+sim.add(m=1)
+sim.add(a=1)
+
+sim.integrator = &quot;whfast512&quot;
+sim.save_to_file(&quot;test.bin&quot;, step=1000)
+
+print(sim.particles[1].f, &quot;should be 0.0&quot;)
+
+sim.integrate(1000, exact_finish_time=False)
+
+print(sim.particles[1].f, &quot;should be 5.822...&quot;)
+
+sa = rebound.Simulationarchive(&quot;test.bin&quot;)
+print(sa[0].particles[1].x, &quot;should be 1.0&quot;)
+for i in range(len(sa)):
+	sim = sa[i]
+	sim.synchronize() # you must call this on each time step where you want positions!
+print(sim.particles[1].x, &quot;should be 0.562...&quot;)
+</code></pre>
+                <p>If you get an error about the whfast512 integrator not being installed, delete the build folder
+                    inside the rebound folder and try installing again. If that still doesn’t work, talk to Dan.</p>
+                <p>Additional settings you should change on the whfast512 integrator are:</p>
+                <pre><code class="language-python">sim.ri_whfast512.safe_mode = False          # combines symplectic correctors and drift steps at beginning and end of timesteps.
+sim.ri_whfast512.keep_unsynchronized = True # allows for bit-by-bit reproducibility
+sim.ri_whfast512.gr_potential = True        # enables corrective general relativity force
+sim.ri_whfast512.coordinates = &quot;jacobi&quot;     # use jacobic coordinates to avoid democratic heliocentric underestimating instability rate. (arXiv:2601.08019)
+</code></pre>
+                <p>These speed up the simulation, make sure it is reproducible on other computers, and enable a
+                    corrective force to account for general relativity.</p>
+                <p>Once you are ready to run long integrations, follow <a
+                        href="https://kavidey.com/projects/slurm-tutorial/">this tutorial on using SLURM</a>, the
+                    workload manager to queue big jobs!</p>
+                <h5>Issue with reboundx</h5>
+                <p> If you get an error when trying to use reboundx that it can’t find a <code>.so</code> file,
+                    then you need to copy the corresponding file from where you downloaded + built rebound into
+                    your virtual environment. Eg:</p>
+                <pre><code class="language-bash">cp rebound/librebound.cpython-39-x86_64-linux-gnu.so .venv/lib64/python3.9/site-packages/
+</code></pre>
+                <h3>Copying data off of hopper</h3>
+                <p><em>Note: an admin account is required to establish the VPN connection to hopper. Once it is setup
+                        anyone can use it for 30 hours until it is closed automatically.</em></p>
+                <p><strong>Establishing a connection</strong></p>
+                <p>First make sure you ssh with the<code>-Y</code> flag so that X11 apps can be forwarded to your
+                    computer (you will also need to install XQuartz on a Mac or an equivalent in windows).</p>
+                <p>Then in a tmux or screen session, run this command</p>
+                <pre><code class="language-python">LIBGL_ALWAYS_SOFTWARE=1 QT_QUICK_BACKEND=software openconnect-sso --server vpn.claremont.edu --authgroup &quot;HMC&quot;
+</code></pre>
+                <p>It will open in a new window on <em>your</em> computer where you can sign in with your HMC
+                    credentials:</p>
+                <img src="img/hopper-tutorial/duo.png"
+                    alt="CleanShot 2025-09-30 at 13.47.39@2x.png" class="img-responsive">
+                <p>When you are done logging in, the window will close and you will be asked to enter your password</p>
+                <img src="img/hopper-tutorial/successful-connection.png"
+                    alt="CleanShot 2025-09-30 at 13.53.05@2x.png" class="img-responsive">
+                <p>After entering your password you should see a bunch of logs, ending with
+                    <code>Established DTSL connection</code> and the date that the session authentication expires.
+                </p>
+                <p>The VPN will create a new network interface (see the list with <code>ip addr show</code> )</p>
+                <img src="img/hopper-tutorial/tun-ip-addr.png"
+                    alt="CleanShot 2025-09-30 at 13.55.24@2x.png" class="img-responsive">
+                <p>This is the only one that can communicate with hopper, so if you try to ping
+                    <code>hopper.mckenna.edu</code> it will not work since that uses the default <code>enxb03af…</code>
+                    address.
+                </p>
+                <p>Any programs that connect to hopper needs to explicitly specify that they want to use the
+                    <code>tun0</code> address.
+                </p>
+                <p><strong>Copying files to/from hopper</strong></p>
+                <p>Run <code>ip addr show</code> as described above to find the ip address of the tunnel network device.
+                    Then use <code>rsync</code> or your file copying command of choice to transfer the files. Using the
+                    info from the image above, it would look like:</p>
+                <pre><code class="language-python">rsync --info=progress2 -avzh --ignore-existing --address=134.173.244.80 hopper.mckenna.edu:/path/to/files/on/hopper /path/where/you/want/the/files
+</code></pre>
+                <p><strong>Installing <code>openconnect-sso</code> on a new computer</strong></p>
+                <p>This requires root permissions and should already be done on trappist1 and kepler11. If you have
+                    trouble with <code>openconnect-sso</code>, talk to Dan.</p>
+                <p>In order to use <code>openconnect-sso</code>, we need to install the X11 windowing system and enable
+                    X11 forwarding over ssh. Since our servers are headless and don’t have a desktop environment,
+                    setting up X11 is a bit more complicated.</p>
+                <p>Then install the requirements for X11 forwarding and reboot the server.</p>
+                <pre><code class="language-python">sudo apt install xorg openbox
+</code></pre>
+                <p>At this point, try running the following command. You should see a window on your computer pop up
+                    with a pair of eyes that follow your mouse. </p>
+                <pre><code class="language-python">xeyes
+</code></pre>
+                <p>If that doesn’t work, check that you ssh’d with the correct <code>-Y</code> flag, that you have
+                    XQuartz installed, and that the other installation commands work correctly. Errors can be caused by
+                    a problem on the server, OR your computer not having the correct X11 display configuration.</p>
+                <p>Once that is working, move onto the next step.</p>
+                <p>Next, install <code>openconnect</code> and <code>openconnect-sso</code>:</p>
+                <pre><code class="language-python">sudo apt install openconnect
+pip install &#39;openconnect-sso[full]&#39; # in your python virtualenv
+</code></pre>
+                <p>We know that X11 forwarding is already working, so now we need to install the
+                    <code>openconnect-sso</code> dependencies. The easiest way to figure out what is missing is by
+                    adding the following debug flag to the open connect command above
+                </p>
+                <pre><code class="language-python">***QT_DEBUG_PLUGINS=1*** LIBGL_ALWAYS_SOFTWARE=1 QT_QUICK_BACKEND=software openconnect-sso --server vpn.claremont.edu --authgroup &quot;HMC&quot;
+</code></pre>
+                <p>A bunch of stuff will print out, but what you care about is the part at the bottom referring to
+                    missing <code>.so</code> files. </p>
+                <img src="img/hopper-tutorial/debugging.png"
+                    alt="CleanShot 2025-09-30 at 21.04.10@2x.png" class="img-responsive">
+                <p>Continue installing dependencies until it stops throwing errors, and a HMC login window appears on
+                    your screen. <code>sudo apt-cache search</code> can be useful for finding the packages corresponding
+                    to missing libraries</p>
+                <p>I had to install the following packages, but it will probably vary by computer</p>
+                <pre><code class="language-python">sudo apt install libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-keysyms1
+</code></pre>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <p class="copyright text-muted small">Copyright &copy; Dan Tamayo 2026.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- jQuery -->
+        <script src="js/jquery.js"></script>
+
+        <!-- Bootstrap Core JavaScript -->
+        <script src="js/bootstrap.min.js"></script>
+</body>
+
+</html>
