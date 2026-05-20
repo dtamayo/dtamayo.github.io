@@ -190,11 +190,11 @@
     <!-- Size of the Universe Visualization -->
     <script>
     (function() {
-        // t tracks time but does not yet change the scene
         var t = 0;
         document.getElementById('t-slider').addEventListener('input', function() {
             t = parseFloat(this.value);
             document.getElementById('t-value').textContent = t.toFixed(1);
+            updateScene();
         });
 
         var container = document.getElementById('universe-container');
@@ -235,76 +235,51 @@
         gridGroup.add(new THREE.LineSegments(gg, new THREE.LineBasicMaterial({color: 0x2255bb})));
 
         // ── Galaxy sprites ───────────────────────────────────────────────────
-        // Deterministic per-cell "random" value
         function rng(i, j) { return Math.abs(Math.sin(i*127.1 + j*311.7 + i*j*0.37) * 43758.55) % 1; }
 
-        function makeGalaxy(cfg) {
-            var S = 256, cx = S/2, cy = S/2;
-            var cv = document.createElement('canvas');
-            cv.width = cv.height = S;
-            var ctx = cv.getContext('2d');
-            var c = cfg.color;
-            function rgba(r,g,b,a){ return 'rgba('+r+','+g+','+b+','+a+')'; }
-            function cc(a)        { return rgba(c[0],c[1],c[2],a); }
-            function glow(x,y,r,cin,cout){
-                var g = ctx.createRadialGradient(x,y,0,x,y,r);
-                g.addColorStop(0,cin); g.addColorStop(1,cout);
-                ctx.fillStyle=g; ctx.fillRect(0,0,S,S);
-            }
-
-            if (cfg.type === 'spiral') {
-                glow(cx,cy,S*0.46, cc(0.07), cc(0));
-                var arms=cfg.arms||2, tight=cfg.tight||3.5;
-                for (var arm=0; arm<arms; arm++) {
-                    var off=(arm/arms)*Math.PI*2;
-                    for (var step=5; step<=185; step++) {
-                        var f=step/185;
-                        var rad=Math.pow(f,0.6)*S*0.44;
-                        var th=off+tight*f;
-                        var x=cx+rad*Math.cos(th), y=cy+rad*Math.sin(th);
-                        var al=Math.pow(1-f,1.2)*0.52, dr=(1-f)*4.5+0.8;
-                        var g2=ctx.createRadialGradient(x,y,0,x,y,dr*2);
-                        g2.addColorStop(0,cc(al)); g2.addColorStop(1,cc(0));
-                        ctx.fillStyle=g2; ctx.beginPath();
-                        ctx.arc(x,y,dr*2,0,Math.PI*2); ctx.fill();
-                    }
-                }
-                glow(cx,cy,S*0.11, rgba(255,252,230,0.88), cc(0));
-                glow(cx,cy,S*0.04, rgba(255,255,255,1), rgba(255,255,255,0));
-
-            } else if (cfg.type === 'elliptical') {
-                ctx.save();
-                ctx.translate(cx,cy); ctx.scale(1,cfg.aspect||0.68); ctx.translate(-cx,-cy);
-                glow(cx,cy,S*0.43, rgba(255,255,255,0.88), cc(0));
-                glow(cx,cy,S*0.20, cc(0.55), cc(0));
-                ctx.restore();
-                glow(cx,cy,S*0.045, rgba(255,255,255,1), rgba(255,255,255,0));
-
-            } else if (cfg.type === 'lenticular') {
-                ctx.save();
-                ctx.translate(cx,cy); ctx.scale(1,0.1); ctx.translate(-cx,-cy);
-                glow(cx,cy,S*0.44, cc(0.85), cc(0));
-                ctx.restore();
-                glow(cx,cy,S*0.045, rgba(255,255,255,1), rgba(255,255,255,0));
-            }
+        function pixelTex() {
+            var cv = document.createElement('canvas'); cv.width = cv.height = 1;
+            cv.getContext('2d').fillRect(0,0,1,1);
             return new THREE.CanvasTexture(cv);
         }
+        var texSpiral = pixelTex(), texElliptical = pixelTex();
+        function loadImg(url, tex) {
+            var img = new Image(); img.crossOrigin = 'anonymous';
+            img.onload = function() { tex.image = img; tex.needsUpdate = true; doRender(); };
+            img.src = url;
+        }
+        loadImg('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/NGC_4414_%28NASA-med%29.jpg/250px-NGC_4414_%28NASA-med%29.jpg', texSpiral);
+        loadImg('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Messier_60_-_Hubble_%282013-9-24%29.jpg/250px-Messier_60_-_Hubble_%282013-9-24%29.jpg', texElliptical);
+        var textures = [texSpiral, texElliptical];
 
-        var CONFIGS = [
-            {type:'spiral',     color:[130,185,255], arms:2, tight:3.2},
-            {type:'elliptical', color:[255,215,155], aspect:0.65},
-            {type:'spiral',     color:[215,235,255], arms:2, tight:5.8},
-            {type:'elliptical', color:[255,175,125], aspect:0.85},
-            {type:'spiral',     color:[180,215,255], arms:4, tight:2.6},
-            {type:'lenticular', color:[210,228,255]}
+        // Sources: counterclockwise outward spiral, non-overlapping beams
+        var BEAM_SPEED = 5 * Math.sqrt(85) / 13.8; // last source (6,7) at dist=5√85 arrives at 13.8 Gyr
+        // Counterclockwise as seen from camera: screen-CCW angle = atan2(-gj, gi)
+        // Angles: 0°, 45°, 101°, 149°, 207°, 256°, 311° — strictly CCW, strictly farther
+        var SOURCES = [
+            {gi:  3, gj:  0},
+            {gi:  3, gj: -3},
+            {gi: -1, gj: -5},
+            {gi: -5, gj: -3},
+            {gi: -6, gj:  3},
+            {gi: -2, gj:  8},
+            {gi:  6, gj:  7}
         ];
-        var textures = CONFIGS.map(makeGalaxy);
+        SOURCES.forEach(function(s) {
+            s.px = s.gi * gridSep;
+            s.pz = s.gj * gridSep;
+            s.dist = Math.sqrt(s.px*s.px + s.pz*s.pz);
+            s.tArrive = s.dist / BEAM_SPEED;
+            s.sprite = null;
+        });
+        var sourceMap = {};
+        SOURCES.forEach(function(s) { sourceMap[s.gi + ',' + s.gj] = s; });
 
+        var allSprites = [];
         for (var gi=-nLines/2; gi<=nLines/2; gi++) {
             for (var gj=-nLines/2; gj<=nLines/2; gj++) {
-                if (Math.abs(gi)<=1 && Math.abs(gj)<=1) continue; // clear zone around Earth
-                var p   = rng(gi, gj);
-                var idx = Math.floor(p * textures.length);
+                if (Math.abs(gi)<=1 && Math.abs(gj)<=1) continue;
+                var idx = rng(gi, gj) < 0.5 ? 0 : 1;
                 var sc  = (1.1 + rng(gi+50, gj+50) * 0.9) * 2;
                 var rot = rng(gi+200, gj+200) * Math.PI * 2;
                 var yOff = (rng(gi+99, gj+77) - 0.5) * 0.6;
@@ -312,12 +287,88 @@
                     map: textures[idx],
                     rotation: rot,
                     blending: THREE.AdditiveBlending,
-                    depthWrite: false
+                    depthWrite: false,
+                    transparent: true,
+                    opacity: 1/3
                 }));
                 sp.scale.set(sc, sc, 1);
                 sp.position.set(gi*gridSep, yOff, gj*gridSep);
                 gridGroup.add(sp);
+                allSprites.push({sprite: sp, dist: gridSep * Math.sqrt(gi*gi + gj*gj)});
+                var key = gi + ',' + gj;
+                if (sourceMap[key]) sourceMap[key].sprite = sp;
             }
+        }
+
+        // ── Light beams ──────────────────────────────────────────────────────
+        var Y_AXIS = new THREE.Vector3(0, 1, 0);
+        function makeBeam(px, pz) {
+            var core = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.12, 0.12, 1, 8),
+                new THREE.MeshBasicMaterial({color: 0xffee44, transparent: true, opacity: 0.95})
+            );
+            var glow = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.55, 0.55, 1, 8),
+                new THREE.MeshBasicMaterial({color: 0xffcc00, transparent: true, opacity: 0.14,
+                                             side: THREE.FrontSide, depthWrite: false})
+            );
+            var dir = new THREE.Vector3(-px, 0, -pz).normalize();
+            var q = new THREE.Quaternion().setFromUnitVectors(Y_AXIS, dir);
+            core.quaternion.copy(q);
+            glow.quaternion.copy(q);
+            core.visible = false;
+            glow.visible = false;
+            gridGroup.add(core);
+            gridGroup.add(glow);
+            return {core: core, glow: glow};
+        }
+        SOURCES.forEach(function(s) { s.beam = makeBeam(s.px, s.pz); });
+
+        // ── Observable universe circle ────────────────────────────────────────
+        var obsCircle = (function() {
+            var N = 128, pts = [];
+            for (var i = 0; i <= N; i++) {
+                var a = (i / N) * Math.PI * 2;
+                pts.push(Math.cos(a), 0, Math.sin(a));
+            }
+            var cg = new THREE.BufferGeometry();
+            cg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+            var ln = new THREE.Line(cg,
+                new THREE.LineBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.9}));
+            ln.visible = false;
+            gridGroup.add(ln);
+            return ln;
+        })();
+
+        function updateScene() {
+            var R = BEAM_SPEED * t;
+            SOURCES.forEach(function(s) {
+                var len = Math.min(t, s.tArrive) * BEAM_SPEED;
+                if (len < 0.01) {
+                    s.beam.core.visible = false;
+                    s.beam.glow.visible = false;
+                } else {
+                    var frac = len / s.dist;
+                    var mx = s.px * (1 - frac/2);
+                    var mz = s.pz * (1 - frac/2);
+                    s.beam.core.visible = true;
+                    s.beam.core.position.set(mx, 0, mz);
+                    s.beam.core.scale.set(1, len, 1);
+                    s.beam.glow.visible = true;
+                    s.beam.glow.position.set(mx, 0, mz);
+                    s.beam.glow.scale.set(1, len, 1);
+                }
+            });
+            allSprites.forEach(function(e) {
+                e.sprite.material.opacity = (e.dist <= R) ? 1.0 : 1/3;
+            });
+            if (R < 0.1) {
+                obsCircle.visible = false;
+            } else {
+                obsCircle.visible = true;
+                obsCircle.scale.set(R, 1, R);
+            }
+            doRender();
         }
 
         // ── Earth ────────────────────────────────────────────────────────────
@@ -356,7 +407,7 @@
         scene.add(atm);
 
         function doRender() { renderer.render(scene, camera); }
-        doRender();
+        updateScene();
 
         window.addEventListener('resize', function() {
             var s = getSize();
