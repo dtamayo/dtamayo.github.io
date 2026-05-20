@@ -20,6 +20,9 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
 
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+
     <!-- Custom Fonts -->
     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
@@ -146,6 +149,27 @@
         </div>
     </div>
 
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Size of the Universe</h2>
+            </div>
+        </div>
+    </div>
+
+    <div id="universe-wrapper" style="position:relative; width:100%; height:100vh; background:#000814; overflow:hidden;">
+        <div style="position:absolute; top:20px; left:0; right:0; display:flex; flex-direction:column; align-items:center; z-index:1; pointer-events:none;">
+            <div style="color:#aabbff; font-size:20px; font-family:'Lato',sans-serif; letter-spacing:0.04em; margin-bottom:10px;">
+                <em>t</em>&nbsp;=&nbsp;<span id="t-value">0.0</span>&nbsp;Gyr
+            </div>
+            <input type="range" id="t-slider" min="0" max="13.8" step="0.1" value="0"
+                   style="width:500px; max-width:55vw; accent-color:#3366dd; cursor:pointer; pointer-events:auto;">
+        </div>
+        <div id="universe-container" style="width:100%; height:100%;"></div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -162,6 +186,187 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
+
+    <!-- Size of the Universe Visualization -->
+    <script>
+    (function() {
+        // t tracks time but does not yet change the scene
+        var t = 0;
+        document.getElementById('t-slider').addEventListener('input', function() {
+            t = parseFloat(this.value);
+            document.getElementById('t-value').textContent = t.toFixed(1);
+        });
+
+        var container = document.getElementById('universe-container');
+        function getSize() { return {W: window.innerWidth, H: window.innerHeight}; }
+        var sz = getSize();
+
+        var renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setSize(sz.W, sz.H);
+        renderer.setClearColor(0x000814);
+        container.appendChild(renderer.domElement);
+
+        var scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000814, 0.009);
+
+        var camera = new THREE.PerspectiveCamera(50, sz.W / sz.H, 0.1, 500);
+        camera.position.set(0, 38, 52);
+        camera.lookAt(0, 0, 0);
+
+        // Lights for Earth shading (no specular — use Lambert)
+        scene.add(new THREE.AmbientLight(0x223344, 2.5));
+        var sun = new THREE.DirectionalLight(0xffffff, 1.0);
+        sun.position.set(8, 14, 10);
+        scene.add(sun);
+
+        // ── Grid ────────────────────────────────────────────────────────────
+        var gridSep = 5, nLines = 24, half = (nLines / 2) * gridSep;
+        var gridGroup = new THREE.Group();
+        scene.add(gridGroup);
+
+        var gpts = [];
+        for (var i = -nLines/2; i <= nLines/2; i++) {
+            var co = i * gridSep;
+            gpts.push(-half, 0, co,  half, 0, co);
+            gpts.push(co, 0, -half,  co, 0,  half);
+        }
+        var gg = new THREE.BufferGeometry();
+        gg.setAttribute('position', new THREE.Float32BufferAttribute(gpts, 3));
+        gridGroup.add(new THREE.LineSegments(gg, new THREE.LineBasicMaterial({color: 0x2255bb})));
+
+        // ── Galaxy sprites ───────────────────────────────────────────────────
+        // Deterministic per-cell "random" value
+        function rng(i, j) { return Math.abs(Math.sin(i*127.1 + j*311.7 + i*j*0.37) * 43758.55) % 1; }
+
+        function makeGalaxy(cfg) {
+            var S = 256, cx = S/2, cy = S/2;
+            var cv = document.createElement('canvas');
+            cv.width = cv.height = S;
+            var ctx = cv.getContext('2d');
+            var c = cfg.color;
+            function rgba(r,g,b,a){ return 'rgba('+r+','+g+','+b+','+a+')'; }
+            function cc(a)        { return rgba(c[0],c[1],c[2],a); }
+            function glow(x,y,r,cin,cout){
+                var g = ctx.createRadialGradient(x,y,0,x,y,r);
+                g.addColorStop(0,cin); g.addColorStop(1,cout);
+                ctx.fillStyle=g; ctx.fillRect(0,0,S,S);
+            }
+
+            if (cfg.type === 'spiral') {
+                glow(cx,cy,S*0.46, cc(0.07), cc(0));
+                var arms=cfg.arms||2, tight=cfg.tight||3.5;
+                for (var arm=0; arm<arms; arm++) {
+                    var off=(arm/arms)*Math.PI*2;
+                    for (var step=5; step<=185; step++) {
+                        var f=step/185;
+                        var rad=Math.pow(f,0.6)*S*0.44;
+                        var th=off+tight*f;
+                        var x=cx+rad*Math.cos(th), y=cy+rad*Math.sin(th);
+                        var al=Math.pow(1-f,1.2)*0.52, dr=(1-f)*4.5+0.8;
+                        var g2=ctx.createRadialGradient(x,y,0,x,y,dr*2);
+                        g2.addColorStop(0,cc(al)); g2.addColorStop(1,cc(0));
+                        ctx.fillStyle=g2; ctx.beginPath();
+                        ctx.arc(x,y,dr*2,0,Math.PI*2); ctx.fill();
+                    }
+                }
+                glow(cx,cy,S*0.11, rgba(255,252,230,0.88), cc(0));
+                glow(cx,cy,S*0.04, rgba(255,255,255,1), rgba(255,255,255,0));
+
+            } else if (cfg.type === 'elliptical') {
+                ctx.save();
+                ctx.translate(cx,cy); ctx.scale(1,cfg.aspect||0.68); ctx.translate(-cx,-cy);
+                glow(cx,cy,S*0.43, rgba(255,255,255,0.88), cc(0));
+                glow(cx,cy,S*0.20, cc(0.55), cc(0));
+                ctx.restore();
+                glow(cx,cy,S*0.045, rgba(255,255,255,1), rgba(255,255,255,0));
+
+            } else if (cfg.type === 'lenticular') {
+                ctx.save();
+                ctx.translate(cx,cy); ctx.scale(1,0.1); ctx.translate(-cx,-cy);
+                glow(cx,cy,S*0.44, cc(0.85), cc(0));
+                ctx.restore();
+                glow(cx,cy,S*0.045, rgba(255,255,255,1), rgba(255,255,255,0));
+            }
+            return new THREE.CanvasTexture(cv);
+        }
+
+        var CONFIGS = [
+            {type:'spiral',     color:[130,185,255], arms:2, tight:3.2},
+            {type:'elliptical', color:[255,215,155], aspect:0.65},
+            {type:'spiral',     color:[215,235,255], arms:2, tight:5.8},
+            {type:'elliptical', color:[255,175,125], aspect:0.85},
+            {type:'spiral',     color:[180,215,255], arms:4, tight:2.6},
+            {type:'lenticular', color:[210,228,255]}
+        ];
+        var textures = CONFIGS.map(makeGalaxy);
+
+        for (var gi=-nLines/2; gi<=nLines/2; gi++) {
+            for (var gj=-nLines/2; gj<=nLines/2; gj++) {
+                if (Math.abs(gi)<=1 && Math.abs(gj)<=1) continue; // clear zone around Earth
+                var p   = rng(gi, gj);
+                var idx = Math.floor(p * textures.length);
+                var sc  = (1.1 + rng(gi+50, gj+50) * 0.9) * 2;
+                var rot = rng(gi+200, gj+200) * Math.PI * 2;
+                var yOff = (rng(gi+99, gj+77) - 0.5) * 0.6;
+                var sp = new THREE.Sprite(new THREE.SpriteMaterial({
+                    map: textures[idx],
+                    rotation: rot,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                }));
+                sp.scale.set(sc, sc, 1);
+                sp.position.set(gi*gridSep, yOff, gj*gridSep);
+                gridGroup.add(sp);
+            }
+        }
+
+        // ── Earth ────────────────────────────────────────────────────────────
+        var earthMat = new THREE.MeshLambertMaterial({color: 0xffffff});
+        scene.add(new THREE.Mesh(new THREE.SphereGeometry(3, 64, 64), earthMat));
+
+        var ldr = new THREE.TextureLoader();
+        ldr.load(
+            'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_atmos_2048.jpg',
+            function(tex) { earthMat.map = tex; earthMat.needsUpdate = true; doRender(); }
+        );
+        ldr.load(
+            'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_lights_2048.jpg',
+            function(tex) {
+                earthMat.emissiveMap = tex;
+                earthMat.emissive = new THREE.Color(0.7, 0.45, 0.15);
+                earthMat.needsUpdate = true; doRender();
+            }
+        );
+
+        // Atmosphere glow (additive sprite, no specular dot)
+        function makeAtm() {
+            var cv = document.createElement('canvas'); cv.width = cv.height = 256;
+            var ctx = cv.getContext('2d');
+            var g = ctx.createRadialGradient(128,128,68,128,128,128);
+            g.addColorStop(0,   'rgba(70,130,255,0)');
+            g.addColorStop(0.45,'rgba(70,130,255,0.30)');
+            g.addColorStop(1,   'rgba(70,130,255,0)');
+            ctx.fillStyle=g; ctx.fillRect(0,0,256,256);
+            return new THREE.CanvasTexture(cv);
+        }
+        var atm = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: makeAtm(), blending: THREE.AdditiveBlending, depthWrite: false
+        }));
+        atm.scale.set(9.5, 9.5, 1);
+        scene.add(atm);
+
+        function doRender() { renderer.render(scene, camera); }
+        doRender();
+
+        window.addEventListener('resize', function() {
+            var s = getSize();
+            renderer.setSize(s.W, s.H);
+            camera.aspect = s.W / s.H;
+            camera.updateProjectionMatrix();
+            doRender();
+        });
+    })();
+    </script>
 
     <!-- Stellar Atmospheres Visualization -->
     <script>
