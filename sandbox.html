@@ -154,15 +154,39 @@
             <div class="col-lg-12">
                 <hr class="section-heading-spacer">
                 <div class="clearfix"></div>
-                <h2 class="section-heading">Size of the Universe</h2>
+                <h2 class="section-heading">Size of the Universe (Flat Space)</h2>
+            </div>
+        </div>
+    </div>
+
+    <div id="flat-wrapper" style="position:relative; width:100%; height:100vh; background:#000814; overflow:hidden;">
+        <div style="position:absolute; top:20px; left:0; right:0; display:flex; flex-direction:column; align-items:center; z-index:1; pointer-events:none;">
+            <div style="color:#aabbff; font-size:20px; font-family:'Lato',sans-serif; letter-spacing:0.04em; margin-bottom:10px;">
+                <em>t</em>&nbsp;=&nbsp;<span id="flat-t-value">-13.8</span>&nbsp;Gyr
+            </div>
+            <input type="range" id="flat-t-slider" min="0" max="13.8" step="0.1" value="0"
+                   style="width:500px; max-width:55vw; accent-color:#3366dd; cursor:pointer; pointer-events:auto;">
+        </div>
+        <div id="flat-container" style="width:100%; height:100%;"></div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Size of the Universe (Expanding)</h2>
             </div>
         </div>
     </div>
 
     <div id="universe-wrapper" style="position:relative; width:100%; height:100vh; background:#000814; overflow:hidden;">
         <div style="position:absolute; top:20px; left:0; right:0; display:flex; flex-direction:column; align-items:center; z-index:1; pointer-events:none;">
-            <div style="color:#aabbff; font-size:20px; font-family:'Lato',sans-serif; letter-spacing:0.04em; margin-bottom:10px;">
-                <em>t</em>&nbsp;=&nbsp;<span id="t-value">0.0</span>&nbsp;Gyr
+            <div style="color:#aabbff; font-size:20px; font-family:'Lato',sans-serif; letter-spacing:0.04em; margin-bottom:4px;">
+                <em>t</em>&nbsp;=&nbsp;<span id="t-value">-13.8</span>&nbsp;Gyr
+            </div>
+            <div style="color:#aabbff; font-size:16px; font-family:'Lato',sans-serif; letter-spacing:0.04em; margin-bottom:8px;">
+                <em>a</em>&nbsp;=&nbsp;<span id="a-value">0.05</span>
             </div>
             <input type="range" id="t-slider" min="0" max="13.8" step="0.1" value="0"
                    style="width:500px; max-width:55vw; accent-color:#3366dd; cursor:pointer; pointer-events:auto;">
@@ -187,13 +211,242 @@
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
 
-    <!-- Size of the Universe Visualization -->
+    <!-- Size of the Universe: Flat Space -->
+    <script>
+    (function() {
+        var t = 0;
+        document.getElementById('flat-t-slider').addEventListener('input', function() {
+            t = parseFloat(this.value);
+            document.getElementById('flat-t-value').textContent = (t - 13.8).toFixed(1);
+            updateScene();
+        });
+
+        var container = document.getElementById('flat-container');
+        function getSize() { return {W: window.innerWidth, H: window.innerHeight}; }
+        var sz = getSize();
+
+        var renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setSize(sz.W, sz.H);
+        renderer.setClearColor(0x000814);
+        container.appendChild(renderer.domElement);
+
+        var scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000814, 0.009);
+
+        var camera = new THREE.PerspectiveCamera(50, sz.W / sz.H, 0.1, 500);
+        camera.position.set(0, 38, 52);
+        camera.lookAt(0, 0, 0);
+
+        // ── Static grid ──────────────────────────────────────────────────────
+        var gridSep = 5, nLines = 24, half = (nLines / 2) * gridSep;
+        var gridGroup = new THREE.Group();
+        scene.add(gridGroup);
+        var gpts = [];
+        for (var i = -nLines/2; i <= nLines/2; i++) {
+            var co = i * gridSep;
+            gpts.push(-half, 0, co,  half, 0, co);
+            gpts.push(co, 0, -half,  co, 0,  half);
+        }
+        var gg = new THREE.BufferGeometry();
+        gg.setAttribute('position', new THREE.Float32BufferAttribute(gpts, 3));
+        gridGroup.add(new THREE.LineSegments(gg, new THREE.LineBasicMaterial({color: 0x2255bb})));
+
+        // ── Galaxy sprites ───────────────────────────────────────────────────
+        function rng(i, j) { return Math.abs(Math.sin(i*127.1 + j*311.7 + i*j*0.37) * 43758.55) % 1; }
+        function pixelTex() {
+            var cv = document.createElement('canvas'); cv.width = cv.height = 1;
+            cv.getContext('2d').fillRect(0,0,1,1);
+            return new THREE.CanvasTexture(cv);
+        }
+        var texSpiral = pixelTex(), texElliptical = pixelTex();
+        function loadImg(url, tex) {
+            var img = new Image(); img.crossOrigin = 'anonymous';
+            img.onload = function() { tex.image = img; tex.needsUpdate = true; doRender(); };
+            img.src = url;
+        }
+        loadImg('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/NGC_4414_%28NASA-med%29.jpg/250px-NGC_4414_%28NASA-med%29.jpg', texSpiral);
+        loadImg('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Messier_60_-_Hubble_%282013-9-24%29.jpg/250px-Messier_60_-_Hubble_%282013-9-24%29.jpg', texElliptical);
+        var textures = [texSpiral, texElliptical];
+
+        // ── Sources & beams (flat-space physics) ────────────────────────────
+        var BEAM_SPEED = 5 * Math.sqrt(85) / 13.8;
+        var SOURCES = [
+            {gi:  3, gj:  0}, {gi:  3, gj: -3}, {gi: -1, gj: -5},
+            {gi: -5, gj: -3}, {gi: -6, gj:  3}, {gi: -2, gj:  8}, {gi:  6, gj:  7}
+        ];
+        SOURCES.forEach(function(s) {
+            s.px = s.gi * gridSep; s.pz = s.gj * gridSep;
+            s.dist = Math.sqrt(s.px*s.px + s.pz*s.pz);
+            s.tArrive = s.dist / BEAM_SPEED;
+            s.sprite = null;
+        });
+        var sourceMap = {};
+        SOURCES.forEach(function(s) { sourceMap[s.gi + ',' + s.gj] = s; });
+
+        var allSprites = [];
+        for (var gi = -nLines/2; gi <= nLines/2; gi++) {
+            for (var gj = -nLines/2; gj <= nLines/2; gj++) {
+                if (Math.abs(gi) <= 1 && Math.abs(gj) <= 1) continue;
+                var idx = rng(gi, gj) < 0.5 ? 0 : 1;
+                var sc  = (1.1 + rng(gi+50, gj+50) * 0.9) * 2;
+                var rot = rng(gi+200, gj+200) * Math.PI * 2;
+                var yOff = (rng(gi+99, gj+77) - 0.5) * 0.6;
+                var sp = new THREE.Sprite(new THREE.SpriteMaterial({
+                    map: textures[idx], rotation: rot,
+                    blending: THREE.AdditiveBlending, depthWrite: false,
+                    transparent: true, opacity: 1/3
+                }));
+                sp.scale.set(sc, sc, 1);
+                sp.position.set(gi*gridSep, yOff, gj*gridSep);
+                gridGroup.add(sp);
+                allSprites.push({sprite: sp, dist: gridSep * Math.sqrt(gi*gi + gj*gj)});
+                var key = gi + ',' + gj;
+                if (sourceMap[key]) sourceMap[key].sprite = sp;
+            }
+        }
+
+        var Y_AXIS = new THREE.Vector3(0, 1, 0);
+        function makeBeam(px, pz) {
+            var core = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.12, 0.12, 1, 8),
+                new THREE.MeshBasicMaterial({color: 0xffee44, transparent: true, opacity: 0.95})
+            );
+            var glow = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.55, 0.55, 1, 8),
+                new THREE.MeshBasicMaterial({color: 0xffcc00, transparent: true, opacity: 0.14,
+                                             side: THREE.FrontSide, depthWrite: false})
+            );
+            var dir = new THREE.Vector3(-px, 0, -pz).normalize();
+            var q = new THREE.Quaternion().setFromUnitVectors(Y_AXIS, dir);
+            core.quaternion.copy(q); glow.quaternion.copy(q);
+            core.visible = false; glow.visible = false;
+            gridGroup.add(core); gridGroup.add(glow);
+            return {core: core, glow: glow};
+        }
+        SOURCES.forEach(function(s) { s.beam = makeBeam(s.px, s.pz); });
+
+        var obsCircle = (function() {
+            var N = 128, pts = [];
+            for (var k = 0; k <= N; k++) {
+                var ang = (k / N) * Math.PI * 2;
+                pts.push(Math.cos(ang), 0, Math.sin(ang));
+            }
+            var cg = new THREE.BufferGeometry();
+            cg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+            var ln = new THREE.Line(cg,
+                new THREE.LineBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.9}));
+            ln.visible = false; gridGroup.add(ln); return ln;
+        })();
+
+        function updateScene() {
+            var R = BEAM_SPEED * t;
+            SOURCES.forEach(function(s) {
+                var len = Math.min(t, s.tArrive) * BEAM_SPEED;
+                if (len < 0.01) {
+                    s.beam.core.visible = false; s.beam.glow.visible = false;
+                } else {
+                    var frac = len / s.dist;
+                    var mx = s.px * (1 - frac/2), mz = s.pz * (1 - frac/2);
+                    s.beam.core.visible = true;
+                    s.beam.core.position.set(mx, 0, mz); s.beam.core.scale.set(1, len, 1);
+                    s.beam.glow.visible = true;
+                    s.beam.glow.position.set(mx, 0, mz); s.beam.glow.scale.set(1, len, 1);
+                }
+            });
+            allSprites.forEach(function(e) {
+                e.sprite.material.opacity = (e.dist <= R) ? 1.0 : 1/3;
+            });
+            if (R < 0.1) { obsCircle.visible = false; }
+            else { obsCircle.visible = true; obsCircle.scale.set(R, 1, R); }
+            doRender();
+        }
+
+        // ── Milky Way galaxy at origin ────────────────────────────────────────
+        function makeMWTex() {
+            var cv = document.createElement('canvas'); cv.width = cv.height = 512;
+            var ctx = cv.getContext('2d');
+            var cx = 256, cy = 256;
+            ctx.clearRect(0, 0, 512, 512);
+            var coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 80);
+            coreGrad.addColorStop(0,   'rgba(255,245,220,1)');
+            coreGrad.addColorStop(0.3, 'rgba(240,210,160,0.8)');
+            coreGrad.addColorStop(0.7, 'rgba(180,150,100,0.4)');
+            coreGrad.addColorStop(1,   'rgba(100,80,50,0)');
+            ctx.fillStyle = coreGrad; ctx.fillRect(0, 0, 512, 512);
+            var diskGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 230);
+            diskGrad.addColorStop(0,   'rgba(200,190,170,0.3)');
+            diskGrad.addColorStop(0.5, 'rgba(150,160,200,0.15)');
+            diskGrad.addColorStop(1,   'rgba(80,100,180,0)');
+            ctx.fillStyle = diskGrad; ctx.fillRect(0, 0, 512, 512);
+            for (var arm = 0; arm < 2; arm++) {
+                var armOff = arm * Math.PI;
+                for (var ii = 0; ii < 1500; ii++) {
+                    var frac = ii / 1500;
+                    var theta = frac * Math.PI * 3.5 + armOff;
+                    var rad = 15 + frac * 195, spread = 8 + frac * 18;
+                    var sx = cx + Math.cos(theta)*rad + (Math.random()-0.5)*spread;
+                    var sy = cy + Math.sin(theta)*rad + (Math.random()-0.5)*spread;
+                    var alpha = (0.4 + Math.random()*0.5) * (1 - frac*0.5);
+                    var starR = Math.floor(180 + Math.random()*70);
+                    var starB = Math.floor(200 + Math.random()*55);
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, 0.8 + Math.random()*1.8, 0, Math.PI*2);
+                    ctx.fillStyle = 'rgba('+starR+','+Math.floor((starR+starB)/2)+','+starB+','+alpha+')';
+                    ctx.fill();
+                }
+            }
+            for (var fi = 0; fi < 300; fi++) {
+                var fr = Math.random()*210, fa = Math.random()*Math.PI*2;
+                ctx.beginPath();
+                ctx.arc(cx+Math.cos(fa)*fr, cy+Math.sin(fa)*fr, 0.5+Math.random(), 0, Math.PI*2);
+                ctx.fillStyle = 'rgba(230,230,255,'+(0.2+Math.random()*0.5)+')';
+                ctx.fill();
+            }
+            return new THREE.CanvasTexture(cv);
+        }
+        var mwSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: makeMWTex(), blending: THREE.AdditiveBlending,
+            depthWrite: false, transparent: true, opacity: 1.0
+        }));
+        mwSprite.scale.set(11, 11, 1);
+        scene.add(mwSprite);
+
+        var mwLabel = document.createElement('div');
+        mwLabel.textContent = 'MW';
+        mwLabel.style.cssText = 'position:absolute;color:#ccddff;font-size:13px;font-family:Lato,sans-serif;font-weight:bold;letter-spacing:0.06em;pointer-events:none;z-index:2;';
+        document.getElementById('flat-wrapper').appendChild(mwLabel);
+
+        var mwOrigin = new THREE.Vector3(0, 0, 0);
+        function updateMWLabel() {
+            var v = mwOrigin.clone().project(camera);
+            var x = (v.x * 0.5 + 0.5) * window.innerWidth;
+            var y = (-v.y * 0.5 + 0.5) * window.innerHeight;
+            mwLabel.style.left = x + 'px';
+            mwLabel.style.top  = (y - 7) + 'px';
+            mwLabel.style.transform = 'translate(-50%,-100%)';
+        }
+
+        function doRender() { renderer.render(scene, camera); updateMWLabel(); }
+        updateScene();
+
+        window.addEventListener('resize', function() {
+            var s = getSize();
+            renderer.setSize(s.W, s.H);
+            camera.aspect = s.W / s.H;
+            camera.updateProjectionMatrix();
+            doRender();
+        });
+    })();
+    </script>
+
+    <!-- Size of the Universe: Expanding -->
     <script>
     (function() {
         var t = 0;
         document.getElementById('t-slider').addEventListener('input', function() {
             t = parseFloat(this.value);
-            document.getElementById('t-value').textContent = t.toFixed(1);
+            document.getElementById('t-value').textContent = (t - 13.8).toFixed(1);
+            document.getElementById('a-value').textContent = scaleAT(t).toFixed(2);
             updateScene();
         });
 
@@ -213,26 +466,45 @@
         camera.position.set(0, 38, 52);
         camera.lookAt(0, 0, 0);
 
-        // Lights for Earth shading (no specular — use Lambert)
-        scene.add(new THREE.AmbientLight(0x223344, 2.5));
-        var sun = new THREE.DirectionalLight(0xffffff, 1.0);
-        sun.position.set(8, 14, 10);
-        scene.add(sun);
 
-        // ── Grid ────────────────────────────────────────────────────────────
-        var gridSep = 5, nLines = 24, half = (nLines / 2) * gridSep;
-        var gridGroup = new THREE.Group();
-        scene.add(gridGroup);
-
-        var gpts = [];
-        for (var i = -nLines/2; i <= nLines/2; i++) {
-            var co = i * gridSep;
-            gpts.push(-half, 0, co,  half, 0, co);
-            gpts.push(co, 0, -half,  co, 0,  half);
-        }
-        var gg = new THREE.BufferGeometry();
-        gg.setAttribute('position', new THREE.Float32BufferAttribute(gpts, 3));
-        gridGroup.add(new THREE.LineSegments(gg, new THREE.LineBasicMaterial({color: 0x2255bb})));
+        // ── Grid (procedural shader — always fills screen, spacing scales with a(t)) ──
+        var gridSep = 5, nLines = 32;
+        var gridMat = new THREE.ShaderMaterial({
+            uniforms: {
+                uSpacing:    { value: gridSep },
+                uFadeRadius: { value: 70.0 }
+            },
+            vertexShader: [
+                'varying vec3 vWorldPos;',
+                'void main() {',
+                '  vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;',
+                '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                '}'
+            ].join('\n'),
+            fragmentShader: [
+                'uniform float uSpacing;',
+                'uniform float uFadeRadius;',
+                'varying vec3 vWorldPos;',
+                'void main() {',
+                '  vec2 pos = vWorldPos.xz;',
+                '  vec2 f = abs(fract(pos / uSpacing + 0.5) - 0.5);',
+                '  float lw = 0.05;',
+                '  vec2 lv = 1.0 - smoothstep(lw, lw + 0.02, f);',
+                '  float g = max(lv.x, lv.y);',
+                '  float dist = length(pos);',
+                '  float fade = 1.0 - smoothstep(uFadeRadius * 0.5, uFadeRadius, dist);',
+                '  float alpha = g * fade;',
+                '  if (alpha < 0.01) discard;',
+                '  gl_FragColor = vec4(0.133, 0.333, 0.733, alpha);',
+                '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            side: THREE.DoubleSide
+        });
+        var gridPlane = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), gridMat);
+        gridPlane.rotation.x = -Math.PI / 2;
+        scene.add(gridPlane);
 
         // ── Galaxy sprites ───────────────────────────────────────────────────
         function rng(i, j) { return Math.abs(Math.sin(i*127.1 + j*311.7 + i*j*0.37) * 43758.55) % 1; }
@@ -253,7 +525,16 @@
         var textures = [texSpiral, texElliptical];
 
         // Sources: counterclockwise outward spiral, non-overlapping beams
-        var BEAM_SPEED = 5 * Math.sqrt(85) / 13.8; // last source (6,7) at dist=5√85 arrives at 13.8 Gyr
+        var BEAM_SPEED = 5 * Math.sqrt(85) / 13.8; // flat-space reference: c in scene-units/Gyr
+        var A_MIN = 0.05, T0_GYR = 13.8;
+        // C_LIGHT calibrated so comiDist(T0) = BEAM_SPEED*T0 — same horizon extent as flat case at present
+        var C_LIGHT = BEAM_SPEED / (1 + Math.log(1 / A_MIN));
+        function scaleAT(tau) { return Math.max(A_MIN, tau / T0_GYR); }
+        function comiDist(tau) {
+            var ta = A_MIN * T0_GYR;
+            if (tau <= ta) return C_LIGHT * tau / A_MIN;
+            return C_LIGHT * ta / A_MIN + C_LIGHT * T0_GYR * Math.log(tau / ta);
+        }
         // Counterclockwise as seen from camera: screen-CCW angle = atan2(-gj, gi)
         // Angles: 0°, 45°, 101°, 149°, 207°, 256°, 311° — strictly CCW, strictly farther
         var SOURCES = [
@@ -269,144 +550,209 @@
             s.px = s.gi * gridSep;
             s.pz = s.gj * gridSep;
             s.dist = Math.sqrt(s.px*s.px + s.pz*s.pz);
-            s.tArrive = s.dist / BEAM_SPEED;
             s.sprite = null;
         });
-        var sourceMap = {};
-        SOURCES.forEach(function(s) { sourceMap[s.gi + ',' + s.gj] = s; });
-
-        var allSprites = [];
-        for (var gi=-nLines/2; gi<=nLines/2; gi++) {
-            for (var gj=-nLines/2; gj<=nLines/2; gj++) {
-                if (Math.abs(gi)<=1 && Math.abs(gj)<=1) continue;
-                var idx = rng(gi, gj) < 0.5 ? 0 : 1;
-                var sc  = (1.1 + rng(gi+50, gj+50) * 0.9) * 2;
-                var rot = rng(gi+200, gj+200) * Math.PI * 2;
+        // Inner region: real galaxy sprite at every grid vertex
+        var INNER_HALF = 14;
+        var innerSprites = [];
+        for (var gi = -INNER_HALF; gi <= INNER_HALF; gi++) {
+            for (var gj = -INNER_HALF; gj <= INNER_HALF; gj++) {
+                if (Math.abs(gi) <= 1 && Math.abs(gj) <= 1) continue;
+                var idx  = rng(gi, gj) < 0.5 ? 0 : 1;
+                var sc   = (1.1 + rng(gi+50, gj+50) * 0.9) * 2;
+                var rot  = rng(gi+200, gj+200) * Math.PI * 2;
                 var yOff = (rng(gi+99, gj+77) - 0.5) * 0.6;
                 var sp = new THREE.Sprite(new THREE.SpriteMaterial({
-                    map: textures[idx],
-                    rotation: rot,
-                    blending: THREE.AdditiveBlending,
-                    depthWrite: false,
-                    transparent: true,
-                    opacity: 1/3
+                    map: textures[idx], rotation: rot,
+                    blending: THREE.AdditiveBlending, depthWrite: false,
+                    transparent: true, opacity: 0.08
                 }));
                 sp.scale.set(sc, sc, 1);
-                sp.position.set(gi*gridSep, yOff, gj*gridSep);
-                gridGroup.add(sp);
-                allSprites.push({sprite: sp, dist: gridSep * Math.sqrt(gi*gi + gj*gj)});
-                var key = gi + ',' + gj;
-                if (sourceMap[key]) sourceMap[key].sprite = sp;
+                sp.position.set(gi*gridSep*A_MIN, yOff, gj*gridSep*A_MIN);
+                scene.add(sp);
+                innerSprites.push({
+                    sprite: sp,
+                    comX: gi * gridSep, comZ: gj * gridSep,
+                    comDist: gridSep * Math.sqrt(gi*gi + gj*gj),
+                    yOff: yOff
+                });
             }
         }
 
-        // ── Light beams ──────────────────────────────────────────────────────
-        var Y_AXIS = new THREE.Vector3(0, 1, 0);
-        function makeBeam(px, pz) {
-            var core = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.12, 0.12, 1, 8),
-                new THREE.MeshBasicMaterial({color: 0xffee44, transparent: true, opacity: 0.95})
-            );
-            var glow = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.55, 0.55, 1, 8),
-                new THREE.MeshBasicMaterial({color: 0xffcc00, transparent: true, opacity: 0.14,
-                                             side: THREE.FrontSide, depthWrite: false})
-            );
-            var dir = new THREE.Vector3(-px, 0, -pz).normalize();
-            var q = new THREE.Quaternion().setFromUnitVectors(Y_AXIS, dir);
-            core.quaternion.copy(q);
-            glow.quaternion.copy(q);
-            core.visible = false;
-            glow.visible = false;
-            gridGroup.add(core);
-            gridGroup.add(glow);
-            return {core: core, glow: glow};
+        // Dense background galaxy field — THREE.Points (one draw call) so we can push
+        // density high enough to look completely white/opaque at early times.
+        // Physical spacing at a=A_MIN = VIEW / BG_HALF ≈ 0.68 units; with additive
+        // blending the heavy overlap sums to white, then separates as a(t) grows.
+        function makeGalDotTex() {
+            var cv = document.createElement('canvas'); cv.width = cv.height = 32;
+            var ctx = cv.getContext('2d');
+            var g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            g.addColorStop(0,    'rgba(255,255,255,1)');
+            g.addColorStop(0.25, 'rgba(230,235,255,0.9)');
+            g.addColorStop(0.6,  'rgba(160,175,255,0.4)');
+            g.addColorStop(1,    'rgba(100,120,255,0)');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, 32, 32);
+            return new THREE.CanvasTexture(cv);
         }
-        SOURCES.forEach(function(s) { s.beam = makeBeam(s.px, s.pz); });
+
+        // Galaxies sit on comoving grid vertices (same spacing as grid lines).
+        // BG_HALF is chosen so the cluster fills VIEW at a=A_MIN; comoving positions
+        // are gridSep apart so at a=1 each point lands exactly on a grid intersection.
+        var VIEW    = 68;
+        var BG_HALF = Math.ceil(VIEW / (gridSep * A_MIN));   // = 272
+        var bgMax   = (2*BG_HALF + 1) * (2*BG_HALF + 1);
+        var bgPos      = new Float32Array(bgMax * 3);
+        var bgCol      = new Float32Array(bgMax * 3);
+        var bgComX     = new Float32Array(bgMax);
+        var bgComZ     = new Float32Array(bgMax);
+        var bgComDist  = new Float32Array(bgMax);
+        var bgCount    = 0;
+        for (var gi = -BG_HALF; gi <= BG_HALF; gi++) {
+            for (var gj = -BG_HALF; gj <= BG_HALF; gj++) {
+                if (Math.abs(gi) <= INNER_HALF && Math.abs(gj) <= INNER_HALF) continue;
+                bgComX[bgCount]    = gi * gridSep;
+                bgComZ[bgCount]    = gj * gridSep;
+                bgComDist[bgCount] = gridSep * Math.sqrt(gi*gi + gj*gj);
+                bgPos[bgCount*3]   = gi * gridSep * A_MIN;
+                bgPos[bgCount*3+1] = (rng(gi+99, gj+77) - 0.5) * 0.6;
+                bgPos[bgCount*3+2] = gj * gridSep * A_MIN;
+                bgCol[bgCount*3]   = 0.07;
+                bgCol[bgCount*3+1] = 0.07;
+                bgCol[bgCount*3+2] = 0.12;
+                bgCount++;
+            }
+        }
+        var bgGeo     = new THREE.BufferGeometry();
+        var bgAttr    = new THREE.BufferAttribute(bgPos, 3);
+        var bgColAttr = new THREE.BufferAttribute(bgCol, 3);
+        bgAttr.setUsage(THREE.DynamicDrawUsage);
+        bgColAttr.setUsage(THREE.DynamicDrawUsage);
+        bgGeo.setAttribute('position', bgAttr);
+        bgGeo.setAttribute('color',    bgColAttr);
+        bgGeo.setDrawRange(0, bgCount);
+        var bgPoints = new THREE.Points(bgGeo, new THREE.PointsMaterial({
+            map: makeGalDotTex(), size: 2.0, sizeAttenuation: true,
+            transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+            vertexColors: true
+        }));
+        scene.add(bgPoints);
 
         // ── Observable universe circle ────────────────────────────────────────
-        var obsCircle = (function() {
-            var N = 128, pts = [];
-            for (var i = 0; i <= N; i++) {
-                var a = (i / N) * Math.PI * 2;
-                pts.push(Math.cos(a), 0, Math.sin(a));
-            }
-            var cg = new THREE.BufferGeometry();
-            cg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-            var ln = new THREE.Line(cg,
-                new THREE.LineBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.9}));
-            ln.visible = false;
-            gridGroup.add(ln);
-            return ln;
-        })();
+        var obsCircle = new THREE.Mesh(
+            new THREE.TorusGeometry(1, 0.04, 12, 128),
+            new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.92})
+        );
+        obsCircle.rotation.x = -Math.PI / 2;
+        obsCircle.visible = false;
+        scene.add(obsCircle);
 
         function updateScene() {
-            var R = BEAM_SPEED * t;
-            SOURCES.forEach(function(s) {
-                var len = Math.min(t, s.tArrive) * BEAM_SPEED;
-                if (len < 0.01) {
-                    s.beam.core.visible = false;
-                    s.beam.glow.visible = false;
-                } else {
-                    var frac = len / s.dist;
-                    var mx = s.px * (1 - frac/2);
-                    var mz = s.pz * (1 - frac/2);
-                    s.beam.core.visible = true;
-                    s.beam.core.position.set(mx, 0, mz);
-                    s.beam.core.scale.set(1, len, 1);
-                    s.beam.glow.visible = true;
-                    s.beam.glow.position.set(mx, 0, mz);
-                    s.beam.glow.scale.set(1, len, 1);
-                }
-            });
-            allSprites.forEach(function(e) {
-                e.sprite.material.opacity = (e.dist <= R) ? 1.0 : 1/3;
-            });
-            if (R < 0.1) {
+            var at = scaleAT(t);
+            var D  = comiDist(t);
+
+            // Expand grid spacing to physical coordinates
+            gridMat.uniforms.uSpacing.value = gridSep * at;
+
+            // Inner sprites: expand with a(t), bright inside observable universe
+            for (var ii = 0; ii < innerSprites.length; ii++) {
+                var e = innerSprites[ii];
+                e.sprite.position.set(e.comX * at, e.yOff, e.comZ * at);
+                e.sprite.material.opacity = (e.comDist <= D) ? 1.0 : 0.08;
+            }
+
+            // Background galaxies: move with expansion; light up inside observable universe
+            for (var i = 0; i < bgCount; i++) {
+                bgPos[i*3]   = bgComX[i] * at;
+                bgPos[i*3+2] = bgComZ[i] * at;
+                var lit = bgComDist[i] <= D;
+                bgCol[i*3]   = lit ? 0.85 : 0.07;
+                bgCol[i*3+1] = lit ? 0.90 : 0.07;
+                bgCol[i*3+2] = lit ? 1.00 : 0.12;
+            }
+            bgAttr.needsUpdate    = true;
+            bgColAttr.needsUpdate = true;
+
+            // Observable universe circle: physical radius = a * D
+            var R_phys = at * D;
+            if (R_phys < 0.1) {
                 obsCircle.visible = false;
             } else {
                 obsCircle.visible = true;
-                obsCircle.scale.set(R, 1, R);
+                obsCircle.scale.set(R_phys, R_phys, R_phys);
             }
+
             doRender();
         }
 
-        // ── Earth ────────────────────────────────────────────────────────────
-        var earthMat = new THREE.MeshLambertMaterial({color: 0xffffff});
-        scene.add(new THREE.Mesh(new THREE.SphereGeometry(3, 64, 64), earthMat));
-
-        var ldr = new THREE.TextureLoader();
-        ldr.load(
-            'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_atmos_2048.jpg',
-            function(tex) { earthMat.map = tex; earthMat.needsUpdate = true; doRender(); }
-        );
-        ldr.load(
-            'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_lights_2048.jpg',
-            function(tex) {
-                earthMat.emissiveMap = tex;
-                earthMat.emissive = new THREE.Color(0.7, 0.45, 0.15);
-                earthMat.needsUpdate = true; doRender();
-            }
-        );
-
-        // Atmosphere glow (additive sprite, no specular dot)
-        function makeAtm() {
-            var cv = document.createElement('canvas'); cv.width = cv.height = 256;
+        // ── Milky Way galaxy at origin ────────────────────────────────────────
+        function makeMWTex() {
+            var cv = document.createElement('canvas'); cv.width = cv.height = 512;
             var ctx = cv.getContext('2d');
-            var g = ctx.createRadialGradient(128,128,68,128,128,128);
-            g.addColorStop(0,   'rgba(70,130,255,0)');
-            g.addColorStop(0.45,'rgba(70,130,255,0.30)');
-            g.addColorStop(1,   'rgba(70,130,255,0)');
-            ctx.fillStyle=g; ctx.fillRect(0,0,256,256);
+            var cx = 256, cy = 256;
+            ctx.clearRect(0, 0, 512, 512);
+            var coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 80);
+            coreGrad.addColorStop(0,   'rgba(255,245,220,1)');
+            coreGrad.addColorStop(0.3, 'rgba(240,210,160,0.8)');
+            coreGrad.addColorStop(0.7, 'rgba(180,150,100,0.4)');
+            coreGrad.addColorStop(1,   'rgba(100,80,50,0)');
+            ctx.fillStyle = coreGrad; ctx.fillRect(0, 0, 512, 512);
+            var diskGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 230);
+            diskGrad.addColorStop(0,   'rgba(200,190,170,0.3)');
+            diskGrad.addColorStop(0.5, 'rgba(150,160,200,0.15)');
+            diskGrad.addColorStop(1,   'rgba(80,100,180,0)');
+            ctx.fillStyle = diskGrad; ctx.fillRect(0, 0, 512, 512);
+            for (var arm = 0; arm < 2; arm++) {
+                var armOff = arm * Math.PI;
+                for (var i = 0; i < 1500; i++) {
+                    var frac = i / 1500;
+                    var theta = frac * Math.PI * 3.5 + armOff;
+                    var rad = 15 + frac * 195;
+                    var spread = 8 + frac * 18;
+                    var sx = cx + Math.cos(theta) * rad + (Math.random() - 0.5) * spread;
+                    var sy = cy + Math.sin(theta) * rad + (Math.random() - 0.5) * spread;
+                    var alpha = (0.4 + Math.random() * 0.5) * (1 - frac * 0.5);
+                    var starR = Math.floor(180 + Math.random() * 70);
+                    var starB = Math.floor(200 + Math.random() * 55);
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, 0.8 + Math.random() * 1.8, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(' + starR + ',' + Math.floor((starR+starB)/2) + ',' + starB + ',' + alpha + ')';
+                    ctx.fill();
+                }
+            }
+            for (var fi = 0; fi < 300; fi++) {
+                var fr = Math.random() * 210;
+                var fa = Math.random() * Math.PI * 2;
+                ctx.beginPath();
+                ctx.arc(cx + Math.cos(fa)*fr, cy + Math.sin(fa)*fr, 0.5 + Math.random(), 0, Math.PI*2);
+                ctx.fillStyle = 'rgba(230,230,255,' + (0.2 + Math.random()*0.5) + ')';
+                ctx.fill();
+            }
             return new THREE.CanvasTexture(cv);
         }
-        var atm = new THREE.Sprite(new THREE.SpriteMaterial({
-            map: makeAtm(), blending: THREE.AdditiveBlending, depthWrite: false
+        var mwSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: makeMWTex(), blending: THREE.AdditiveBlending,
+            depthWrite: false, transparent: true, opacity: 1.0
         }));
-        atm.scale.set(9.5, 9.5, 1);
-        scene.add(atm);
+        mwSprite.scale.set(11, 11, 1);
+        scene.add(mwSprite);
 
-        function doRender() { renderer.render(scene, camera); }
+        // HTML label for the Milky Way
+        var mwLabel = document.createElement('div');
+        mwLabel.textContent = 'MW';
+        mwLabel.style.cssText = 'position:absolute;color:#ccddff;font-size:13px;font-family:Lato,sans-serif;font-weight:bold;letter-spacing:0.06em;pointer-events:none;z-index:2;';
+        document.getElementById('universe-wrapper').appendChild(mwLabel);
+
+        var mwOrigin = new THREE.Vector3(0, 0, 0);
+        function updateMWLabel() {
+            var v = mwOrigin.clone().project(camera);
+            var x = (v.x * 0.5 + 0.5) * window.innerWidth;
+            var y = (-v.y * 0.5 + 0.5) * window.innerHeight;
+            mwLabel.style.left = x + 'px';
+            mwLabel.style.top = (y - 7) + 'px';
+            mwLabel.style.transform = 'translate(-50%,-100%)';
+        }
+
+        function doRender() { renderer.render(scene, camera); updateMWLabel(); }
         updateScene();
 
         window.addEventListener('resize', function() {
