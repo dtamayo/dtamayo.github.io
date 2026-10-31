@@ -23,6 +23,23 @@
     <!-- Three.js -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 
+    <!-- MathJax -->
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        .dp-controls { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px 28px; margin-bottom:10px; }
+        .dp-controls label { font-weight:normal; margin:0; white-space:nowrap; }
+        .dp-controls input[type=range] { display:inline-block; width:140px; vertical-align:middle; margin:0 6px; }
+        .dp-controls .dp-val { display:inline-block; min-width:2.6em; font-variant-numeric:tabular-nums; }
+        .dp-canvas { display:block; width:100%; }
+        #dp-phase { cursor:crosshair; }
+        .dp-dial-title { font-size:15px; text-align:center; margin:10px 0 0; line-height:1.5; }
+        #dp-status { text-align:center; color:#555; min-height:1.5em; margin-top:6px; }
+    </style>
+
     <!-- Custom Fonts -->
     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
@@ -91,6 +108,60 @@
                 </p>
             </div>
         </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">The Driven Pendulum as a Model for Chaos</h2>
+            </div>
+        </div>
+        <div class="row topbot-buffer">
+            <div class="col-lg-12">
+                <p class="lead">
+                A pendulum whose pivot is shaken up and down once per unit time.
+                Each term in $\dot v$ is a wave, and each dial shows that wave's phase as seen by the pendulum.
+                Click the phase plane to launch an orbit.
+                </p>
+                <p class="lead">
+                $$\dot\theta = v, \qquad \dot v = -\alpha\sin\theta - \epsilon\left[\sin(\theta-2\pi t)+\sin(\theta+2\pi t)\right]$$
+                </p>
+            </div>
+        </div>
+        <div class="dp-controls">
+            <button type="button" class="btn btn-default btn-sm" id="dp-play"><i class="fa fa-play"></i> Play</button>
+            <button type="button" class="btn btn-default btn-sm" id="dp-clear"><i class="fa fa-trash"></i> Clear</button>
+            <label>periods <input type="range" id="dp-periods" min="2" max="60" step="1" value="20"><span class="dp-val" id="dp-periods-val">20</span></label>
+            <label>$\alpha$ <input type="range" id="dp-alpha" min="0" max="4" step="0.05" value="1"><span class="dp-val" id="dp-alpha-val">1.00</span></label>
+            <label>$\epsilon$ <input type="range" id="dp-eps" min="0" max="2" step="0.05" value="0.5"><span class="dp-val" id="dp-eps-val">0.50</span></label>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <h4 class="text-center">Click to launch an orbit</h4>
+                <canvas id="dp-phase" class="dp-canvas"></canvas>
+            </div>
+            <div class="col-sm-6">
+                <h4 class="text-center">The pendulum</h4>
+                <canvas id="dp-pend" class="dp-canvas"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <p class="dp-dial-title">$v=0$ resonance<br>$\dot v \propto -\sin(\theta)$</p>
+                <canvas id="dp-dial-0" class="dp-canvas"></canvas>
+            </div>
+            <div class="col-sm-4">
+                <p class="dp-dial-title">$v=2\pi$ resonance<br>$\dot v \propto -\sin(\theta-2\pi t)$</p>
+                <canvas id="dp-dial-1" class="dp-canvas"></canvas>
+            </div>
+            <div class="col-sm-4">
+                <p class="dp-dial-title">$v=-2\pi$ resonance<br>$\dot v \propto -\sin(\theta+2\pi t)$</p>
+                <canvas id="dp-dial-2" class="dp-canvas"></canvas>
+            </div>
+        </div>
+        <div id="dp-status">Click on the phase plane to launch an orbit.</div>
     </div>
 
     <div class="container">
@@ -210,6 +281,386 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
+
+    <!-- The Driven Pendulum: wave clocks -->
+    <script>
+    (function() {
+        var TWO_PI = 2 * Math.PI;
+        var STEPS = 40;            // time steps per drive period
+        var V_MAX = 10;            // plot range in v; resonances sit at 0 and +/-2pi
+        var TAIL = 20;             // integration steps shown in each hand's tail (half a period)
+        var TRAIL = 2 * STEPS;     // bob trail: last two drive periods
+        var FRAME_MS = 12.5;       // one integration step per 12.5 ms of animation
+        var COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                      '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+        var WAVE_V = [0, TWO_PI, -TWO_PI];          // phase velocity v_n of each wave
+        var WAVE_ARG = ['θ', 'θ−2πt', 'θ+2πt'];
+        var FONT = '12px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+
+        var alpha = 1, eps = 0.5, nPeriods = 20;
+        var orbits = [];           // every launched orbit; the last one is animated
+        var k = 0, playing = false, lastTs = null, acc = 0;
+
+        // Yoshida 4th-order symplectic coefficients (drift-kick-drift composition)
+        var cb = Math.cbrt(2);
+        var w1 = 1 / (2 - cb), w0 = -cb / (2 - cb);
+        var C = [w1 / 2, (w0 + w1) / 2, (w0 + w1) / 2, w1 / 2];   // drift fractions
+        var D = [w1, w0, w1];                                     // kick fractions
+
+        function accel(th, t) {
+            return -alpha * Math.sin(th) - eps * (Math.sin(th - TWO_PI * t) + Math.sin(th + TWO_PI * t));
+        }
+
+        function integrate(th0, v0) {
+            var n = nPeriods * STEPS + 1, h = 1 / STEPS;
+            var T = new Float64Array(n), TH = new Float64Array(n), V = new Float64Array(n);
+            var th = th0, v = v0;
+            TH[0] = th; V[0] = v;
+            for (var i = 1; i < n; i++) {
+                var t = (i - 1) * h;
+                for (var j = 0; j < 3; j++) {
+                    th += C[j] * h * v;
+                    t += C[j] * h;
+                    v += D[j] * h * accel(th, t);
+                }
+                th += C[3] * h * v;
+                T[i] = i * h; TH[i] = th; V[i] = v;
+            }
+            return { t: T, th: TH, v: V };
+        }
+
+        function wrap(x) {
+            // map angle to [-pi, pi)
+            return ((x + Math.PI) % TWO_PI + TWO_PI) % TWO_PI - Math.PI;
+        }
+
+        function pivotY(t) {
+            var h = eps / (2 * Math.PI * Math.PI);    // l = 1
+            return -h * Math.cos(TWO_PI * t);
+        }
+
+        // ---------- canvases ----------
+        var cvPhase = document.getElementById('dp-phase');
+        var cvPend = document.getElementById('dp-pend');
+        var cvDials = [0, 1, 2].map(function(i) { return document.getElementById('dp-dial-' + i); });
+        var ASPECT = { phase: 0.85, pend: 0.85, dial: 2.7 / 2.5 };
+
+        function fit(cv, aspect) {
+            var dpr = window.devicePixelRatio || 1;
+            var w = cv.clientWidth, h = Math.round(w * aspect);
+            cv.style.height = h + 'px';
+            cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+            var ctx = cv.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            cv._w = w; cv._h = h;
+        }
+
+        function resize() {
+            fit(cvPhase, ASPECT.phase);
+            fit(cvPend, ASPECT.pend);
+            cvDials.forEach(function(cv) { fit(cv, ASPECT.dial); });
+            draw();
+        }
+
+        function dot(ctx, x, y, r, fill, stroke, lw) {
+            ctx.beginPath(); ctx.arc(x, y, r, 0, TWO_PI);
+            ctx.fillStyle = fill; ctx.fill();
+            if (stroke) { ctx.lineWidth = lw || 1; ctx.strokeStyle = stroke; ctx.stroke(); }
+        }
+
+        // ---------- phase plane ----------
+        var PM = { l: 52, r: 12, t: 8, b: 42 };
+
+        function phaseBox() {
+            return { x0: PM.l, y0: PM.t, w: cvPhase._w - PM.l - PM.r, h: cvPhase._h - PM.t - PM.b };
+        }
+
+        function drawOrbitPath(ctx, b, o, kEnd) {
+            var X = function(th) { return b.x0 + (th + Math.PI) / TWO_PI * b.w; };
+            var Y = function(v) { return b.y0 + (V_MAX - v) / (2 * V_MAX) * b.h; };
+            ctx.beginPath();
+            var prev = null;
+            for (var i = 0; i <= kEnd; i++) {
+                var th = wrap(o.th[i]);
+                // break the line where the wrapped angle jumps
+                if (prev === null || Math.abs(th - prev) > Math.PI) ctx.moveTo(X(th), Y(o.v[i]));
+                else ctx.lineTo(X(th), Y(o.v[i]));
+                prev = th;
+            }
+            ctx.stroke();
+        }
+
+        function drawPhase() {
+            var ctx = cvPhase.getContext('2d'), b = phaseBox();
+            var Y = function(v) { return b.y0 + (V_MAX - v) / (2 * V_MAX) * b.h; };
+            ctx.clearRect(0, 0, cvPhase._w, cvPhase._h);
+            ctx.save();
+            ctx.beginPath(); ctx.rect(b.x0, b.y0, b.w, b.h); ctx.clip();
+
+            // v = 0 resonance band: center dashed, shading shows the pendulum half-width.
+            // The v = +/-2pi bands are left off so students can find them.
+            [[0, 2 * Math.sqrt(alpha)]].forEach(function(r) {
+                ctx.fillStyle = 'rgba(217,217,217,0.35)';
+                ctx.fillRect(b.x0, Y(r[0] + r[1]), b.w, Y(r[0] - r[1]) - Y(r[0] + r[1]));
+                ctx.setLineDash([4, 3]); ctx.lineWidth = 1; ctx.strokeStyle = '#808080';
+                ctx.beginPath(); ctx.moveTo(b.x0, Y(r[0])); ctx.lineTo(b.x0 + b.w, Y(r[0])); ctx.stroke();
+                ctx.setLineDash([]);
+            });
+
+            // previous orbits, faded
+            ctx.lineJoin = 'round';
+            for (var i = 0; i < orbits.length - 1; i++) {
+                ctx.globalAlpha = 0.4; ctx.lineWidth = 0.8; ctx.strokeStyle = orbits[i].col;
+                drawOrbitPath(ctx, b, orbits[i], orbits[i].th.length - 1);
+            }
+            ctx.globalAlpha = 1;
+
+            var o = cur();
+            if (o) {
+                ctx.globalAlpha = 0.8; ctx.lineWidth = 1.1; ctx.strokeStyle = o.col;
+                drawOrbitPath(ctx, b, o, k);
+                ctx.globalAlpha = 1;
+                dot(ctx, b.x0 + (wrap(o.th[k]) + Math.PI) / TWO_PI * b.w, Y(o.v[k]), 5, o.col, '#000', 1);
+            }
+            ctx.restore();
+
+            // axes, ticks, labels
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+            ctx.strokeRect(b.x0, b.y0, b.w, b.h);
+            ctx.fillStyle = '#000'; ctx.font = FONT;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            ['−π', '−π/2', '0', 'π/2', 'π'].forEach(function(lab, i) {
+                var x = b.x0 + i / 4 * b.w;
+                ctx.beginPath(); ctx.moveTo(x, b.y0 + b.h); ctx.lineTo(x, b.y0 + b.h + 4); ctx.stroke();
+                ctx.fillText(lab, x, b.y0 + b.h + 6);
+            });
+            ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            [-10, -5, 0, 5, 10].forEach(function(v) {
+                var y = Y(v);
+                ctx.beginPath(); ctx.moveTo(b.x0 - 4, y); ctx.lineTo(b.x0, y); ctx.stroke();
+                ctx.fillText(v < 0 ? '−' + (-v) : String(v), b.x0 - 6, y);
+            });
+            ctx.font = 'italic 15px "Times New Roman", serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+            ctx.fillText('θ', b.x0 + b.w / 2, cvPhase._h - 2);
+            ctx.save();
+            ctx.translate(14, b.y0 + b.h / 2); ctx.rotate(-Math.PI / 2);
+            ctx.textBaseline = 'middle';
+            ctx.fillText('v = θ̇', 0, 0);
+            ctx.restore();
+        }
+
+        // ---------- physical pendulum ----------
+        function drawPend() {
+            var ctx = cvPend.getContext('2d'), W = cvPend._w, H = cvPend._h;
+            var s = Math.min(W, H) / 2.7, cx = W / 2, cy = H / 2;
+            var P = function(x, y) { return [cx + x * s, cy - y * s]; };
+            ctx.clearRect(0, 0, W, H);
+            ctx.lineCap = 'round';
+
+            var o = cur(), t, th;
+            if (o) { t = o.t[k]; th = o.th[k]; } else { t = 0; th = 0; }
+
+            // reference line and circle of the rod's reach
+            ctx.setLineDash([5, 4]); ctx.strokeStyle = '#bfbfbf'; ctx.lineWidth = 1;
+            var a = P(-1.3, 0), bb = P(1.3, 0);
+            ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(bb[0], bb[1]); ctx.stroke();
+            ctx.setLineDash([1.5, 3]); ctx.strokeStyle = '#cccccc';
+            ctx.beginPath(); ctx.arc(cx, cy, s, 0, TWO_PI); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // pivot track
+            var h = eps / (2 * Math.PI * Math.PI);
+            var p1 = P(0, -h), p2 = P(0, h);
+            ctx.strokeStyle = 'rgba(153,153,153,0.35)'; ctx.lineWidth = 8;
+            ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke();
+
+            // bob trail: last two drive periods
+            if (o) {
+                ctx.strokeStyle = o.col; ctx.globalAlpha = 0.35; ctx.lineWidth = 1.3;
+                ctx.beginPath();
+                for (var i = Math.max(0, k - TRAIL); i <= k; i++) {
+                    var q = P(Math.sin(o.th[i]), pivotY(o.t[i]) - Math.cos(o.th[i]));
+                    if (i === Math.max(0, k - TRAIL)) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+                }
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+
+            var yp = pivotY(t);
+            var piv = P(0, yp), bob = P(Math.sin(th), yp - Math.cos(th));
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(piv[0], piv[1]); ctx.lineTo(bob[0], bob[1]); ctx.stroke();
+            dot(ctx, bob[0], bob[1], 12, '#4d4d4d', '#000', 1.3);
+            dot(ctx, piv[0], piv[1], 5, '#fff', '#000', 2);
+
+            ctx.fillStyle = '#000'; ctx.font = '13px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+            ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+            var lab = P(-1.3, 1.25);
+            ctx.fillText('t = ' + t.toFixed(2) + ' drive periods', lab[0], lab[1]);
+        }
+
+        // ---------- wave clocks ----------
+        function drawDial(i) {
+            var cv = cvDials[i], ctx = cv.getContext('2d'), W = cv._w, H = cv._h;
+            var s = W / 2.5, cx = W / 2, cy = 1.25 * s;
+            var P = function(x, y) { return [cx + x * s, cy - y * s]; };
+            ctx.clearRect(0, 0, W, H);
+
+            // hand angle on screen = psi - pi/2, so psi = 0 points down (bottom of the well).
+            // right half: sin(psi) > 0, so vdot < 0 (blue); left half: sin(psi) < 0, so vdot > 0 (red)
+            ctx.fillStyle = 'rgba(31,119,180,0.18)';
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, s, -Math.PI / 2, Math.PI / 2); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = 'rgba(214,39,40,0.18)';
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, s, Math.PI / 2, 3 * Math.PI / 2); ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = '#666'; ctx.lineWidth = 1.3;
+            ctx.beginPath(); ctx.arc(cx, cy, s, 0, TWO_PI); ctx.stroke();
+
+            ctx.font = FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            var lh = 15, L = P(-0.52, 0), R = P(0.52, 0);
+            ctx.fillStyle = '#d62728';
+            ctx.fillText('sin(' + WAVE_ARG[i] + ') < 0', L[0], L[1] - lh / 2);
+            ctx.fillText('v̇ > 0', L[0], L[1] + lh / 2);
+            ctx.fillStyle = '#1f77b4';
+            ctx.fillText('sin(' + WAVE_ARG[i] + ') > 0', R[0], R[1] - lh / 2);
+            ctx.fillText('v̇ < 0', R[0], R[1] + lh / 2);
+
+            // marks psi = 0
+            var m = P(0, -1.07);
+            ctx.fillStyle = '#4d4d4d';
+            ctx.beginPath(); ctx.moveTo(m[0], m[1] - 5); ctx.lineTo(m[0] - 4.5, m[1] + 3.5); ctx.lineTo(m[0] + 4.5, m[1] + 3.5); ctx.closePath(); ctx.fill();
+
+            var o = cur(), vn = WAVE_V[i];
+            var psi = function(j) { return o.th[j] - vn * o.t[j]; };
+            var psiK = o ? psi(k) : 0;
+
+            if (o) {
+                // tail: where the hand has been over the last half period
+                ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.beginPath();
+                var k0 = Math.max(0, k - TAIL);
+                for (var j = k0; j <= k; j++) {
+                    var a = psi(j) - Math.PI / 2, q = P(0.8 * Math.cos(a), 0.8 * Math.sin(a));
+                    if (j === k0) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+                }
+                ctx.stroke();
+            }
+
+            var ang = psiK - Math.PI / 2, tip = P(0.92 * Math.cos(ang), 0.92 * Math.sin(ang));
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.lineCap = 'butt';
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(tip[0], tip[1]); ctx.stroke();
+            dot(ctx, tip[0], tip[1], 4, '#000');
+
+            if (o) {
+                var lo = Infinity, hi = -Infinity;
+                for (var j2 = 0; j2 <= k; j2++) { var p = psi(j2); if (p < lo) lo = p; if (p > hi) hi = p; }
+                var turns = (psiK - psi(0)) / TWO_PI;
+                var trapped = (hi - lo) / TWO_PI < 1;
+                var tp = P(0, -1.35);
+                ctx.font = '13px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+                ctx.fillStyle = trapped ? '#2ca02c' : '#4d4d4d';
+                ctx.fillText('net turns ' + (turns >= 0 ? '+' : '−') + Math.abs(turns).toFixed(1) + ': ' +
+                             (trapped ? 'swinging (trapped)' : 'circulating'), tp[0], tp[1]);
+            }
+        }
+
+        // ---------- state & controls ----------
+        var statusEl = document.getElementById('dp-status');
+        var playBtn = document.getElementById('dp-play');
+
+        function cur() { return orbits.length ? orbits[orbits.length - 1] : null; }
+
+        function draw() {
+            drawPhase();
+            drawPend();
+            for (var i = 0; i < 3; i++) drawDial(i);
+            var o = cur();
+            statusEl.innerHTML = o
+                ? '&theta;<sub>0</sub> = ' + o.th0.toFixed(2) + ', v<sub>0</sub> = ' + o.v0.toFixed(2) +
+                  '. &nbsp; t = ' + o.t[k].toFixed(2) + ', &nbsp;v = ' + o.v[k].toFixed(2)
+                : 'Click on the phase plane to launch an orbit.';
+        }
+
+        function setPlaying(p) {
+            playing = p;
+            playBtn.innerHTML = p ? '<i class="fa fa-pause"></i> Pause' : '<i class="fa fa-play"></i> Play';
+            if (p) { lastTs = null; acc = 0; requestAnimationFrame(tick); }
+        }
+
+        function tick(ts) {
+            if (!playing) return;
+            var o = cur();
+            if (lastTs !== null) acc += ts - lastTs;
+            lastTs = ts;
+            var n = Math.floor(acc / FRAME_MS);
+            if (n > 0) {
+                acc -= n * FRAME_MS;
+                k = Math.min(k + n, o.t.length - 1);
+                draw();
+                if (k === o.t.length - 1) { setPlaying(false); return; }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        function launch(th0, v0) {
+            var o = integrate(th0, v0);
+            o.th0 = th0; o.v0 = v0;
+            o.col = COLORS[orbits.length % COLORS.length];
+            orbits.push(o);
+            k = 0;
+            draw();
+            setPlaying(true);
+        }
+
+        function recomputeAll() {
+            // re-integrate every orbit with the current parameters, keeping the frame
+            orbits = orbits.map(function(o) {
+                var r = integrate(o.th0, o.v0);
+                r.th0 = o.th0; r.v0 = o.v0; r.col = o.col;
+                return r;
+            });
+            var o = cur();
+            if (o) k = Math.min(k, o.t.length - 1);
+            draw();
+        }
+
+        cvPhase.addEventListener('click', function(e) {
+            var rect = cvPhase.getBoundingClientRect(), b = phaseBox();
+            var x = e.clientX - rect.left - b.x0, y = e.clientY - rect.top - b.y0;
+            if (x < 0 || x > b.w || y < 0 || y > b.h) return;
+            launch(-Math.PI + x / b.w * TWO_PI, V_MAX - y / b.h * 2 * V_MAX);
+        });
+
+        playBtn.addEventListener('click', function() {
+            var o = cur();
+            if (!o) return;
+            if (!playing && k === o.t.length - 1) k = 0;
+            setPlaying(!playing);
+        });
+
+        document.getElementById('dp-clear').addEventListener('click', function() {
+            setPlaying(false);
+            orbits = []; k = 0;
+            draw();
+        });
+
+        function bindSlider(id, digits, set) {
+            var el = document.getElementById(id), out = document.getElementById(id + '-val');
+            el.addEventListener('input', function() {
+                var x = parseFloat(el.value);
+                out.textContent = x.toFixed(digits);
+                set(x);
+                recomputeAll();
+            });
+        }
+        bindSlider('dp-periods', 0, function(x) { nPeriods = x; });
+        bindSlider('dp-alpha', 2, function(x) { alpha = x; });
+        bindSlider('dp-eps', 2, function(x) { eps = x; });
+
+        window.addEventListener('resize', resize);
+        resize();
+    })();
+    </script>
 
     <!-- Size of the Universe: Flat Space -->
     <script>
