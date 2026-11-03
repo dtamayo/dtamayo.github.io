@@ -38,6 +38,51 @@
         #dp-phase { cursor:crosshair; }
         .dp-dial-title { font-size:15px; text-align:center; margin:10px 0 0; line-height:1.5; }
         #dp-status { text-align:center; color:#555; min-height:1.5em; margin-top:6px; }
+
+        .dr-stage { --dr-size:min(calc(100vh - 210px), 40vw); display:flex; justify-content:center; align-items:flex-start; gap:16px; padding:0 8px; margin-bottom:30px; color:#000; font-size:22px; line-height:1.25; }
+        .dr-stage-zoom { flex-wrap:wrap; }
+        .dr-dipole { width:110px; height:var(--dr-size); display:flex; flex-direction:column; text-align:center; }
+        .dr-dipole > label { font-weight:bold; margin:0 0 10px; }
+        .dr-dipole-body { flex:1; min-height:0; display:flex; justify-content:center; gap:6px; }
+        .dr-ticks { display:flex; flex-direction:column; justify-content:space-between; padding:6px 0; font-weight:bold; }
+        .dr-stage input[type=range] { -webkit-appearance:none; appearance:none; background:transparent; cursor:pointer; margin:0; touch-action:none; }
+        .dr-stage input[type=range]::-webkit-slider-runnable-track { background:#555; border-radius:4px; }
+        .dr-stage input[type=range]::-moz-range-track { background:#555; border-radius:4px; }
+        .dr-stage input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:32px; height:32px; border-radius:50%; background:#000; border:3px solid #fff; box-shadow:0 0 0 2px #000; }
+        .dr-stage input[type=range]::-moz-range-thumb { width:26px; height:26px; border-radius:50%; background:#000; border:3px solid #fff; box-shadow:0 0 0 2px #000; }
+        .dr-side input[type=range] { display:block; width:100%; height:44px; }
+        .dr-side input[type=range]::-webkit-slider-runnable-track { height:8px; margin-top:0; }
+        .dr-side input[type=range]::-moz-range-track { height:8px; }
+        .dr-side input[type=range]::-webkit-slider-thumb { margin-top:-12px; }
+        .dr-stage .dr-p { writing-mode:vertical-lr; direction:rtl; width:44px; height:100%; }
+        .dr-stage .dr-p::-webkit-slider-runnable-track { width:8px; }
+        .dr-stage .dr-p::-moz-range-track { width:8px; }
+        .dr-stage .dr-p::-webkit-slider-thumb { margin-left:-12px; }
+        .dr-stage .dr-p:disabled { cursor:default; }
+        .dr-main { flex:none; width:var(--dr-size); }
+        .dr-view { display:block; width:100%; aspect-ratio:1; touch-action:none; cursor:pointer; }
+        .dr-side { flex:none; width:26vw; }
+        .dr-inset { position:relative; }
+        .dr-zoom { display:block; width:100%; aspect-ratio:1; border:3px solid #000; box-sizing:border-box; cursor:pointer; }
+        .dr-inset-label { position:absolute; top:3px; left:3px; padding:2px 8px; background:rgba(255,255,255,0.85); font-size:18px; }
+        .dr-buttons { display:flex; gap:12px; margin:0 0 8px; }
+        .dr-buttons .btn { flex:1; font-size:22px; padding:8px 0; }
+        .dr-stage-zoom .dr-side { width:100%; display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:12px 24px; }
+        .dr-stage-zoom .dr-buttons { margin:0; flex:none; width:auto; }
+        .dr-stage-zoom .dr-buttons .btn { flex:none; padding:8px 14px; }
+        .dr-stage-zoom .dr-field { width:180px; margin:0; }
+        .dr-stage-zoom .dr-check { margin:0; white-space:nowrap; }
+        .dr-field { display:block; font-weight:normal; margin:6px 0 0; }
+        .dr-field span { float:right; font-variant-numeric:tabular-nums; }
+        .dr-check { display:block; font-weight:normal; margin:10px 0 0; cursor:pointer; }
+        .dr-check input { width:22px; height:22px; margin:0 8px 0 0; vertical-align:-3px; }
+        @media (max-width:767px) {
+            .dr-stage, .dr-stage-zoom { --dr-size:calc(100vw - 112px); flex-wrap:wrap; font-size:18px; }
+            .dr-dipole { width:80px; }
+            .dr-side { width:100%; }
+            .dr-stage-zoom .dr-side { display:block; }
+            .dr-stage-zoom .dr-buttons, .dr-stage-zoom .dr-field { width:100%; margin-bottom:8px; }
+        }
     </style>
 
     <!-- Custom Fonts -->
@@ -107,6 +152,89 @@
                 This semester I'm playing around with using Claude Code to create some interactive materials for my Intro to Astrophysics course. Would love to chat about it, see below!
                 </p>
             </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Dipole Radiation</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="dr-stage">
+        <div class="dr-dipole">
+            <label for="dr1-p">Dipole moment</label>
+            <div class="dr-dipole-body">
+                <input type="range" class="dr-p" id="dr1-p" min="-1" max="1" step="0.001" value="1">
+                <div class="dr-ticks"><span>+</span><span>0</span><span>&minus;</span></div>
+            </div>
+        </div>
+        <div class="dr-main">
+            <canvas class="dr-view dr-zoom" id="dr1-view"></canvas>
+        </div>
+        <div class="dr-side">
+            <div class="dr-buttons">
+                <button type="button" class="btn btn-default" id="dr1-play"><i class="fa fa-play"></i> Play</button>
+                <button type="button" class="btn btn-default" id="dr1-reset"><i class="fa fa-undo"></i> Reset</button>
+            </div>
+            <div class="dr-buttons">
+                <button type="button" class="btn btn-default" id="dr1-field"><i class="fa fa-eye-slash"></i> Hide colors &amp; contours</button>
+            </div>
+            <label class="dr-field">Period <span id="dr1-period-val">2.0 s</span>
+                <input type="range" id="dr1-period" min="1.67" max="10" step="0.01" value="2">
+            </label>
+            <label class="dr-field">Contrast
+                <input type="range" id="dr1-contrast" min="0" max="1" step="0.01" value="0.5">
+            </label>
+            <label class="dr-check"><input type="checkbox" id="dr1-arrows">Field arrows</label>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Dipole Radiation: The Plane-Wave Limit</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="dr-stage dr-stage-zoom">
+        <div class="dr-dipole">
+            <label for="dr2-p">Dipole moment</label>
+            <div class="dr-dipole-body">
+                <input type="range" class="dr-p" id="dr2-p" min="-1" max="1" step="0.001" value="1">
+                <div class="dr-ticks"><span>+</span><span>0</span><span>&minus;</span></div>
+            </div>
+        </div>
+        <div class="dr-main">
+            <canvas class="dr-view" id="dr2-view"></canvas>
+        </div>
+        <div class="dr-main dr-inset">
+            <canvas class="dr-zoom" id="dr2-zoom"></canvas>
+            <div class="dr-inset-label">Zoomed view</div>
+        </div>
+        <div class="dr-side">
+            <div class="dr-buttons">
+                <button type="button" class="btn btn-default" id="dr2-play"><i class="fa fa-pause"></i> Pause</button>
+                <button type="button" class="btn btn-default" id="dr2-freeze"><i class="fa fa-stop"></i> Freeze</button>
+                <button type="button" class="btn btn-default" id="dr2-reset"><i class="fa fa-undo"></i> Reset</button>
+            </div>
+            <div class="dr-buttons">
+                <button type="button" class="btn btn-default" id="dr2-field"><i class="fa fa-eye-slash"></i> Hide colors &amp; contours</button>
+            </div>
+            <label class="dr-field">Period <span id="dr2-period-val">2.0 s</span>
+                <input type="range" id="dr2-period" min="1.67" max="10" step="0.01" value="2">
+            </label>
+            <label class="dr-field">Contrast
+                <input type="range" id="dr2-contrast" min="0" max="1" step="0.01" value="0.5">
+            </label>
+            <label class="dr-check"><input type="checkbox" id="dr2-arrows">Field arrows</label>
         </div>
     </div>
 
@@ -281,6 +409,478 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
+
+    <!-- Dipole Radiation: retarded field of an arbitrarily driven point dipole -->
+    <script>
+    // o: id (element id prefix), view (half-width of the main view), res (its internal resolution),
+    //    zoomHalf and zoomRes (draggable zoom box, optional),
+    //    established (start with the oscillation already filling the whole view, since a wave
+    //    from the origin would take minutes to reach the far field)
+    function dipoleViz(o) {
+        var VIEW = o.view;         // half-width of the view. c = 1, so a front takes VIEW seconds to reach the edge
+        var R_CORE = 0.4;          // radius of the blanked disk at the origin
+        var DT = 1 / 240;          // simulation step, also the history spacing (s)
+        var DR = 2 * DT;           // radial table spacing: an integer number of history samples
+        var STENCIL = 4;           // half-width of the finite-difference stencil, in samples
+        var RATE = 15;             // rate of the smoothing filter between slider and p (1/s)
+        // Radial sample spacing for antialiasing, in table bins: five samples span 1.7 pixels.
+        function aaBins(half, res) { return Math.max(1, Math.round(1.7 * (2 * half / res) / (4 * DR))); }
+        var MAIN_AA = aaBins(VIEW, o.res);
+        var R_MIN = R_CORE / 2;    // radial table limits; R_MAX reaches the corner of the view
+        var R_MAX = VIEW * Math.SQRT2 + (2 * MAIN_AA + 2) * DR;
+        var I_MIN = Math.floor(R_MIN / DR), I_MAX = Math.ceil(R_MAX / DR);
+        var HIST = 2 * I_MAX + 2 * STENCIL + 8;
+        var E_REF = 30;            // |E| that saturates the color map
+        var ZOOM_LEVEL = 3;        // the zoom box's own peak is shown as if it were this |E|
+        var ZOOM_RELEASE = 3;      // decay time of the zoom box's peak-hold scale (s)
+        // Flux values of the drawn field lines. For a static dipole they cross the equator at r = p0/Psi.
+        var PSI_LEVELS = [-1.6, -0.8, -0.2, 0.2, 0.8, 1.6];
+        var N_ARROWS = 15;
+        var BLANK = '#222';
+
+        // p(t) ring buffer: sample n is at time n * DT. Filled with +p0 so the field starts out static.
+        var H = new Float64Array(HIST);
+        var n = HIST;              // index of the newest sample
+        var x1, v1, x2, v2;        // cascaded critically damped springs; p = x2
+        var target;                // slider value the filter is chasing
+        var playing = false, phase = 0, period = 2, dragging = false;
+        var acc = 0, lastTs = null, onScreen = true, zoomMax = 0;
+        var E0 = 1, asinhNorm = 1, showArrows = false, showField = true;
+
+        // Per-radius coefficients at the current time, from p, p', p'' at t_r = t - r/c:
+        //   E_theta = sin(theta) ET(r)       E_r = cos(theta) ER(r)       Psi = sin^2(theta) PSI(r)
+        var ET = new Float64Array(I_MAX + 2), ER = new Float64Array(I_MAX + 2), PSI = new Float64Array(I_MAX + 2);
+
+        function hist(k) { return H[k % HIST]; }
+
+        // Fill the history and filter as if p = p0 cos(omega t) had always been running, keeping the phase.
+        function establish() {
+            var w = 2 * Math.PI / period, q = w / RATE, lead = 2 * Math.atan(q), gain = 1 + q * q;
+            for (var s = 0; s < HIST; s++) H[(n - s) % HIST] = Math.cos(phase - w * s * DT);
+            x2 = Math.cos(phase); v2 = -w * Math.sin(phase);
+            x1 = gain * Math.cos(phase + lead); v1 = -w * gain * Math.sin(phase + lead);
+        }
+
+        function reset() {
+            H.fill(1);
+            x1 = x2 = target = 1;
+            v1 = v2 = 0;
+            zoomMax = 0;
+            setPlaying(!!o.established);
+            if (o.established) { phase = 0; establish(); }
+            slider.value = x2;
+        }
+
+        // Exact update of a critically damped spring over one step with constant drive u.
+        function spring(x, v, u) {
+            var wh = RATE * DT, e = Math.exp(-wh), d = x - u;
+            return [u + e * (d * (1 + wh) + v * DT), e * (v * (1 - wh) - RATE * wh * d)];
+        }
+
+        // Two springs in series keep p'' continuous even though slider input arrives in steps.
+        // While playing, the drive is advanced and amplified by the filter's response at omega,
+        // so p settles on exactly p0 cos(omega t), and starts and stops stay smooth.
+        function step() {
+            var u = target;
+            if (playing) {
+                var w = 2 * Math.PI / period, q = w / RATE;
+                phase += w * DT;
+                u = (1 + q * q) * (1 + q * q) * Math.cos(phase + 4 * Math.atan(q));
+            }
+            var s = spring(x1, v1, u);
+            x1 = s[0]; v1 = s[1];
+            s = spring(x2, v2, x1);
+            x2 = s[0]; v2 = s[1];
+            n++;
+            H[n % HIST] = x2;
+        }
+
+        // Radial coefficients of the retarded field. For p along z, with s = p/r^3 + p'/(c r^2):
+        //   E_r = 2 cos(theta) s,    E_theta = sin(theta) [s + p''/(c^2 r)]
+        // The radiation term is r x (r x p'') / (c^2 r), the form that satisfies div E = 0.
+        // E also derives from a flux function, E_r = Psi_theta / (r^2 sin) and E_theta = -Psi_r / (r sin),
+        // with Psi = sin^2(theta) (p/r + p'/c), so the contours of Psi are exactly the E field lines.
+        function fillTables() {
+            var h = STENCIL * DT;
+            for (var i = I_MIN; i <= I_MAX + 1; i++) {
+                var r = i * DR, k = n - 2 * i;     // DR = 2 DT, so t_r lands exactly on a sample
+                var p = hist(k), hi = hist(k + STENCIL), lo = hist(k - STENCIL);
+                var pd = (hi - lo) / (2 * h), pdd = (hi - 2 * p + lo) / (h * h);
+                var s = (p / r + pd) / (r * r);
+                ET[i] = s + pdd / r;
+                ER[i] = 2 * s;
+                PSI[i] = p / r + pd;
+            }
+        }
+
+        // ---------- rendering ----------
+        function colormap() {
+            var stops = [[-1, 8, 48, 107], [-0.6, 31, 111, 196], [-0.25, 127, 184, 234], [0, 255, 255, 255],
+                         [0.25, 245, 163, 138], [0.6, 214, 48, 31], [1, 103, 0, 13]];
+            var N = 1024, lut = new Uint32Array(N + 1);
+            for (var i = 0; i <= N; i++) {
+                var v = 2 * i / N - 1, j = 0;
+                while (j < stops.length - 2 && v > stops[j + 1][0]) j++;
+                var a = stops[j], b = stops[j + 1], f = (v - a[0]) / (b[0] - a[0]);
+                var c = [1, 2, 3].map(function(m) { return Math.round(a[m] + f * (b[m] - a[m])); });
+                lut[i] = 0xff000000 | (c[2] << 16) | (c[1] << 8) | c[0];   // little-endian ABGR
+            }
+            return lut;
+        }
+        var LUT = colormap(), LUT_N = LUT.length - 1, BLANK_PX = 0xff222222;
+
+        function makeGrid(res) {
+            var size = res * res, cv = document.createElement('canvas');
+            cv.width = cv.height = res;
+            var ctx = cv.getContext('2d'), img = ctx.createImageData(res, res);
+            return { res: res, cv: cv, ctx: ctx, img: img, px: new Uint32Array(img.data.buffer),
+                     idx: new Int32Array(size), frac: new Float32Array(size),
+                     sin: new Float32Array(size), val: new Float32Array(size) };
+        }
+
+        // Cache each pixel's geometry for a square of half-width half centered at (cx, cz).
+        // Row 0 is the top of the image, +z. Pixels inside rBlank get idx = -1.
+        function layout(g, cx, cz, half, rBlank) {
+            var res = g.res, m = 0;
+            for (var i = 0; i < res; i++) {
+                var z = cz + half * (1 - 2 * (i + 0.5) / res);
+                for (var j = 0; j < res; j++, m++) {
+                    var x = cx + half * (2 * (j + 0.5) / res - 1), r = Math.sqrt(x * x + z * z);
+                    if (r < rBlank) { g.idx[m] = -1; continue; }
+                    var u = r / DR, b = Math.floor(u);
+                    g.idx[m] = b; g.frac[m] = u - b;
+                    g.sin[m] = Math.abs(x) / r;
+                }
+            }
+        }
+
+        function color(v) {
+            var u = Math.round((v + 1) * 0.5 * LUT_N);
+            return LUT[u < 0 ? 0 : u > LUT_N ? LUT_N : u];
+        }
+
+        // E_theta through an asinh map. The map is so steep at E = 0 that point sampling beads the
+        // thin white line along each front, so each pixel averages the mapped value over five
+        // radial samples, which keeps that line wider than a pixel.
+        function paint(g, gain) {
+            var size = g.res * g.res, idx = g.idx, frac = g.frac, sin = g.sin, px = g.px, aa = g.aa;
+            var scale = 5 * asinhNorm, k = gain / E0;
+            for (var m = 0; m < size; m++) {
+                var b = idx[m];
+                if (b < 0) { px[m] = BLANK_PX; continue; }
+                var f = frac[m], s = sin[m] * k, sum = 0;
+                for (var j = -2; j <= 2; j++) {
+                    var d = b + j * aa;
+                    sum += Math.asinh(s * (ET[d] + f * (ET[d + 1] - ET[d])));
+                }
+                px[m] = color(sum / scale);
+            }
+            g.ctx.putImageData(g.img, 0, 0);
+        }
+
+        // Gain that normalizes the zoom box to its own peak. Close to the dipole, where the peak is
+        // already large, the gain is 1 and the box shows exactly what the fixed color scale shows.
+        function zoomGain(g) {
+            var size = g.res * g.res, idx = g.idx, frac = g.frac, sin = g.sin, peak = 0;
+            for (var m = 0; m < size; m++) {
+                var b = idx[m];
+                if (b < 0) continue;
+                var e = Math.abs(sin[m] * (ET[b] + frac[m] * (ET[b + 1] - ET[b])));
+                if (e > peak) peak = e;
+            }
+            // Hold the peak briefly so the scale doesn't pump within one oscillation.
+            zoomMax = Math.max(peak, zoomMax * Math.exp(-frameDt / ZOOM_RELEASE));
+            return zoomMax > ZOOM_LEVEL ? 1 : Math.min(ZOOM_LEVEL / zoomMax, 1000);
+        }
+
+        // Marching squares over Psi on the pixel grid. Level 0 is skipped because it runs along
+        // the z axis, where Psi vanishes identically.
+        function drawContours(ctx, g, W) {
+            var res = g.res, size = res * res, idx = g.idx, frac = g.frac, sin = g.sin, psi = g.val;
+            var m, b, s, d = W / res;
+            for (m = 0; m < size; m++) {
+                b = idx[m];
+                if (b < 0) { psi[m] = NaN; continue; }
+                s = sin[m];
+                psi[m] = s * s * (PSI[b] + frac[m] * (PSI[b + 1] - PSI[b]));
+            }
+            ctx.beginPath();
+            var xs = [0, 0, 0, 0], ys = [0, 0, 0, 0];
+            for (var i = 0; i < res - 1; i++) {
+                for (var j = 0; j < res - 1; j++) {
+                    m = i * res + j;
+                    var a0 = psi[m], a1 = psi[m + 1], a2 = psi[m + res + 1], a3 = psi[m + res];
+                    var lo = Math.min(a0, a1, a2, a3), hi = Math.max(a0, a1, a2, a3);
+                    if (lo !== lo) continue;
+                    for (var L = 0; L < PSI_LEVELS.length; L++) {
+                        var v = PSI_LEVELS[L], c = 0;
+                        if (v < lo || v > hi) continue;
+                        if ((a0 < v) !== (a1 < v)) { xs[c] = j + (v - a0) / (a1 - a0); ys[c] = i; c++; }
+                        if ((a1 < v) !== (a2 < v)) { xs[c] = j + 1; ys[c] = i + (v - a1) / (a2 - a1); c++; }
+                        if ((a2 < v) !== (a3 < v)) { xs[c] = j + 1 - (v - a2) / (a3 - a2); ys[c] = i + 1; c++; }
+                        if ((a3 < v) !== (a0 < v)) { xs[c] = j; ys[c] = i + 1 - (v - a3) / (a0 - a3); c++; }
+                        for (var e = 0; e + 1 < c; e += 2) {
+                            ctx.moveTo((xs[e] + 0.5) * d, (ys[e] + 0.5) * d);
+                            ctx.lineTo((xs[e + 1] + 0.5) * d, (ys[e + 1] + 0.5) * d);
+                        }
+                    }
+                }
+            }
+            var dpr = window.devicePixelRatio || 1;
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = Math.max(1.2 * dpr, W / 500);
+            ctx.lineCap = 'butt';
+            ctx.stroke();
+        }
+
+        // Both components at any point in the x-z plane, from the current radial tables.
+        function fieldAt(x, z) {
+            var r = Math.sqrt(x * x + z * z), u = r / DR, b = Math.floor(u), f = u - b;
+            var et = ET[b] + f * (ET[b + 1] - ET[b]), er = ER[b] + f * (ER[b + 1] - ER[b]);
+            var s = x / r, c = z / r, sc = Math.abs(s);
+            // r-hat = (s, c), theta-hat = (sign(x) c, -|s|)
+            er *= c; et *= sc;
+            return { x: er * s + et * (x < 0 ? -c : c), z: er * c - et * sc };
+        }
+
+        function el(name) { return document.getElementById(o.id + '-' + name); }
+
+        var RB = R_CORE - 0.08;    // pixels hidden under the center disk
+        var cvView = el('view'), cvZoom = o.zoomHalf ? el('zoom') : null;
+        var main = { cv: cvView, g: makeGrid(o.res), cx: 0, cz: 0, half: VIEW };
+        main.g.aa = MAIN_AA;
+        layout(main.g, 0, 0, VIEW, Math.max(RB, R_MIN + (2 * MAIN_AA + 1) * DR));   // keeps samples in the table
+        // The panel with the field lines and arrows: the zoom box if there is one, else the main view.
+        var detail = main, box = null;
+        if (o.zoomHalf) {
+            detail = { cv: cvZoom, g: makeGrid(o.zoomRes), cx: 0, cz: 0, half: o.zoomHalf };
+            detail.g.aa = aaBins(o.zoomHalf, o.zoomRes);
+            box = detail;
+        }
+
+        function layoutBox() {
+            var lim = VIEW - box.half;
+            box.cx = Math.max(-lim, Math.min(lim, box.cx));
+            box.cz = Math.max(-lim, Math.min(lim, box.cz));
+            layout(box.g, box.cx, box.cz, box.half, RB);
+            zoomMax = 0;
+        }
+
+        function fit(panel) {
+            var dpr = window.devicePixelRatio || 1;
+            panel.cv.width = panel.cv.height = Math.round(panel.cv.clientWidth * dpr);
+            panel.k = panel.cv.width / (2 * panel.half);   // device pixels per unit length
+        }
+
+        function resize() {
+            fit(main);
+            if (box) fit(box);
+        }
+
+        function drawArrow(ctx, x0, y0, x1, y1, head) {
+            var a = Math.atan2(y1 - y0, x1 - x0);
+            ctx.beginPath();
+            ctx.moveTo(x0, y0); ctx.lineTo(x1, y1);
+            ctx.moveTo(x1 - head * Math.cos(a - 0.5), y1 - head * Math.sin(a - 0.5));
+            ctx.lineTo(x1, y1);
+            ctx.lineTo(x1 - head * Math.cos(a + 0.5), y1 - head * Math.sin(a + 0.5));
+            ctx.stroke();
+        }
+
+        function drawFieldArrows(ctx, panel) {
+            var W = panel.cv.width, k = panel.k, cell = W / N_ARROWS, len = 0.32 * cell, pass, i, j;
+            var unit = W / 800;
+            ctx.lineCap = 'round';
+            var segs = [];
+            for (i = 0; i < N_ARROWS; i++) {
+                for (j = 0; j < N_ARROWS; j++) {
+                    var px = (j + 0.5) * cell, py = (i + 0.5) * cell;
+                    var x = panel.cx - panel.half + px / k, z = panel.cz + panel.half - py / k;
+                    if (x * x + z * z < 2 * R_CORE * R_CORE) continue;
+                    var e = fieldAt(x, z), mag = Math.sqrt(e.x * e.x + e.z * e.z);
+                    if (mag === 0) continue;
+                    segs.push([px - len * e.x / mag, py + len * e.z / mag, px + len * e.x / mag, py - len * e.z / mag]);
+                }
+            }
+            for (pass = 0; pass < 2; pass++) {
+                ctx.strokeStyle = pass ? '#000' : 'rgba(255,255,255,0.8)';
+                ctx.lineWidth = (pass ? 3 : 5) * unit;
+                segs.forEach(function(s) { drawArrow(ctx, s[0], s[1], s[2], s[3], 0.45 * len); });
+            }
+        }
+
+        // Center disk and dipole arrow, kept big enough to see in the wide view.
+        function drawCore(ctx, panel) {
+            var k = panel.k, dpr = window.devicePixelRatio || 1;
+            var R = Math.max(R_CORE * k, 12 * dpr);
+            var cx = (panel.half - panel.cx) * k, cy = (panel.half + panel.cz) * k;
+            if (cx < -R || cx > panel.cv.width + R || cy < -R || cy > panel.cv.width + R) return;
+            ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI);
+            ctx.fillStyle = BLANK; ctx.fill();
+            var L = 0.8 * R * x2;
+            ctx.strokeStyle = '#fff'; ctx.fillStyle = '#fff'; ctx.lineWidth = 0.12 * R; ctx.lineCap = 'round';
+            if (Math.abs(x2) < 0.05) {
+                ctx.beginPath(); ctx.arc(cx, cy, 0.1 * R, 0, 2 * Math.PI); ctx.fill();
+            } else {
+                drawArrow(ctx, cx, cy + L, cx, cy - L, 0.45 * R * Math.min(1, 1.5 * Math.abs(x2)));
+            }
+        }
+
+        function drawPanel(panel, gain) {
+            var ctx = panel.cv.getContext('2d'), W = panel.cv.width;
+            if (showField) {
+                paint(panel.g, gain);
+                ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(panel.g.cv, 0, 0, W, W);
+                if (panel === detail) drawContours(ctx, panel.g, W);
+            } else {
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, W, W);
+            }
+            if (panel === detail && showArrows) drawFieldArrows(ctx, panel);
+            drawCore(ctx, panel);
+            return ctx;
+        }
+
+        function render() {
+            fillTables();
+            var ctx = drawPanel(main, 1);
+            if (!box) return;
+            drawPanel(box, zoomGain(box.g));
+
+            var k = main.k, unit = main.cv.width / 800;
+            var bx = (box.cx - box.half + VIEW) * k, by = (VIEW - box.cz - box.half) * k, bs = 2 * box.half * k;
+            ctx.lineWidth = 6 * unit; ctx.strokeStyle = '#fff'; ctx.strokeRect(bx, by, bs, bs);
+            ctx.lineWidth = 3 * unit; ctx.strokeStyle = '#000'; ctx.strokeRect(bx, by, bs, bs);
+        }
+
+        // ---------- animation ----------
+        var frameDt = 0, timeStopped = false;
+        function frame(ts) {
+            requestAnimationFrame(frame);
+            if (!onScreen) { lastTs = null; return; }
+            // Freezing stops time but not drawing, so the box and display controls keep working.
+            frameDt = lastTs === null || timeStopped ? 0 : Math.min((ts - lastTs) / 1000, 0.1);
+            lastTs = ts;
+            acc += frameDt;
+            while (acc >= DT) { step(); acc -= DT; }
+            if (!dragging) slider.value = x2;
+            render();
+        }
+
+        // ---------- controls ----------
+        var slider = el('p');
+        var playBtn = el('play');
+
+        function setPlaying(on) {
+            playing = on;
+            slider.disabled = on;
+            playBtn.innerHTML = on ? '<i class="fa fa-pause"></i> Pause' : '<i class="fa fa-play"></i> Play';
+            var p = Math.max(-1, Math.min(1, x2));
+            if (on) phase = (v2 > 0 ? -1 : 1) * Math.acos(p);
+            // Pausing mid-swing: hold the first spring where it is, so p brakes with p'' continuous.
+            else { target = x1 = Math.max(-1, Math.min(1, x1)); v1 = 0; }
+        }
+
+        slider.addEventListener('pointerdown', function() { if (!playing) dragging = true; });
+        window.addEventListener('pointerup', function() { dragging = false; });
+        window.addEventListener('pointercancel', function() { dragging = false; });
+        slider.addEventListener('input', function() { target = parseFloat(slider.value); });
+
+        playBtn.addEventListener('click', function() { setPlaying(!playing); });
+
+        // Clicking a plot also toggles play. A press that moves is a drag of the zoom box, not a click.
+        [cvView, cvZoom].forEach(function(cv) {
+            if (!cv) return;
+            var press = null;
+            cv.addEventListener('pointerdown', function(e) { press = { x: e.clientX, y: e.clientY }; });
+            cv.addEventListener('pointerup', function(e) {
+                if (press && !timeStopped && Math.hypot(e.clientX - press.x, e.clientY - press.y) < 5) setPlaying(!playing);
+                press = null;
+            });
+        });
+
+        var freezeBtn = el('freeze');
+        if (freezeBtn) {
+            freezeBtn.addEventListener('click', function() {
+                timeStopped = !timeStopped;
+                playBtn.disabled = timeStopped;
+                freezeBtn.innerHTML = timeStopped ? '<i class="fa fa-step-forward"></i> Resume'
+                                                  : '<i class="fa fa-stop"></i> Freeze';
+            });
+        }
+        el('reset').addEventListener('click', reset);
+
+        var periodEl = el('period'), periodVal = el('period-val');
+        periodEl.addEventListener('input', function() {
+            period = parseFloat(periodEl.value);
+            periodVal.textContent = period.toFixed(1) + ' s';
+            if (o.established && playing) establish();
+        });
+
+        var contrastEl = el('contrast');
+        function setContrast() {
+            E0 = Math.pow(10, -1 - 3 * parseFloat(contrastEl.value));
+            asinhNorm = Math.asinh(E_REF / E0);
+        }
+        contrastEl.addEventListener('input', setContrast);
+
+        el('arrows').addEventListener('change', function(e) { showArrows = e.target.checked; });
+
+        el('field').addEventListener('click', function() {
+            showField = !showField;
+            el('field').innerHTML = showField ? '<i class="fa fa-eye-slash"></i> Hide colors &amp; contours'
+                                              : '<i class="fa fa-eye"></i> Show colors &amp; contours';
+        });
+
+        // drag the zoom box
+        if (box) {
+            var boxDrag = null;
+            var viewCoords = function(e) {
+                var rect = cvView.getBoundingClientRect();
+                return { x: ((e.clientX - rect.left) / rect.width - 0.5) * 2 * VIEW,
+                         z: (0.5 - (e.clientY - rect.top) / rect.height) * 2 * VIEW };
+            };
+            var inBox = function(q) {
+                var grab = Math.max(box.half, 15 * 2 * VIEW / cvView.clientWidth);    // at least 15 px, for a tiny box
+                return Math.abs(q.x - box.cx) <= grab && Math.abs(q.z - box.cz) <= grab;
+            };
+            var endBoxDrag = function() { boxDrag = null; cvView.style.cursor = ''; };
+            cvView.addEventListener('pointerdown', function(e) {
+                var q = viewCoords(e);
+                if (!inBox(q)) return;
+                boxDrag = { dx: box.cx - q.x, dz: box.cz - q.z };
+                cvView.setPointerCapture(e.pointerId);
+                cvView.style.cursor = 'grabbing';
+            });
+            cvView.addEventListener('pointermove', function(e) {
+                var q = viewCoords(e);
+                if (boxDrag) {
+                    box.cx = q.x + boxDrag.dx; box.cz = q.z + boxDrag.dz;
+                    layoutBox();
+                } else {
+                    cvView.style.cursor = inBox(q) ? 'grab' : '';
+                }
+            });
+            cvView.addEventListener('pointerup', endBoxDrag);
+            cvView.addEventListener('pointercancel', endBoxDrag);
+            layoutBox();
+        }
+
+        new IntersectionObserver(function(entries) {
+            onScreen = entries[0].isIntersecting;
+        }).observe(cvView);
+
+        window.addEventListener('resize', resize);
+        setContrast();
+        reset();
+        resize();
+        requestAnimationFrame(frame);
+    }
+
+    dipoleViz({ id: 'dr1', view: 5, res: 250 });
+    dipoleViz({ id: 'dr2', view: 300, res: 576, zoomHalf: 5, zoomRes: 250, established: true });
+    </script>
 
     <!-- The Driven Pendulum: wave clocks -->
     <script>
