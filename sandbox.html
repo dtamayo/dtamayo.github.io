@@ -76,7 +76,31 @@
         .dr-field span { float:right; font-variant-numeric:tabular-nums; }
         .dr-check { display:block; font-weight:normal; margin:10px 0 0; cursor:pointer; }
         .dr-check input { width:22px; height:22px; margin:0 8px 0 0; vertical-align:-3px; }
+        .rot-stage { display:flex; flex-direction:column; align-items:center; padding:0 16px; margin-bottom:30px; color:#000; font-size:20px; line-height:1.35; }
+        .rot-view { display:block; width:min(960px, 100%, calc((100vh - 230px) * 4 / 3)); aspect-ratio:4/3; touch-action:none; }
+        .rot-controls { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px 16px; margin:8px 0; }
+        .rot-controls .btn { font-size:22px; padding:8px 18px; }
+        .rot-checks { display:flex; flex-wrap:wrap; justify-content:center; gap:6px 28px; margin:0 0 8px; }
+        .rot-checks label { font-weight:normal; margin:0; cursor:pointer; white-space:nowrap; }
+        .rot-checks input { width:20px; height:20px; margin:0 8px 0 0; vertical-align:-3px; }
+        .rot-row { display:flex; justify-content:center; align-items:center; gap:24px; width:100%; }
+        .rot-view-side { width:min(820px, calc(100vw - 360px), calc((100vh - 230px) * 4 / 3)); }
+        .rot-side { flex:none; width:290px; display:flex; flex-direction:column; gap:22px; }
+        .rot-side .rot-checks { flex-direction:column; align-items:flex-start; gap:8px; margin:0; }
+        .rot-side .rot-controls { justify-content:flex-start; margin:0; }
+        .rot-side .rot-readout { width:100%; text-align:left; font-variant-numeric:tabular-nums; }
+        .rot-mats { display:flex; flex-direction:column; gap:16px; }
+        .rot-mat-eq { display:flex; align-items:center; gap:10px; }
+        .rot-mat table { border-left:2px solid #000; border-right:2px solid #000; border-radius:8px; border-collapse:separate; font-variant-numeric:tabular-nums; }
+        .rot-mat td { padding:1px 8px; text-align:right; }
+        .rot-mat-note { color:#555; font-size:0.85em; margin-bottom:2px; }
+        .rot-help { max-width:960px; text-align:center; color:#444; font-size:18px; margin:0; }
         @media (max-width:767px) {
+            .rot-stage { font-size:17px; }
+            .rot-help { font-size:15px; }
+            .rot-row { flex-direction:column; gap:12px; }
+            .rot-view-side { width:100%; }
+            .rot-side { width:auto; align-items:center; }
             .dr-stage, .dr-stage-zoom { --dr-size:calc(100vw - 112px); flex-wrap:wrap; font-size:18px; }
             .dr-dipole { width:80px; }
             .dr-side { width:100%; }
@@ -153,6 +177,81 @@
                 </p>
             </div>
         </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Rotations</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="rot-stage">
+        <div class="rot-row">
+            <canvas class="rot-view rot-view-side" id="rot-view"></canvas>
+            <div class="rot-side">
+                <div class="rot-controls">
+                    <button type="button" class="btn btn-default" id="rot-play"><i class="fa fa-play"></i> Play</button>
+                    <button type="button" class="btn btn-default" id="rot-reset"><i class="fa fa-undo"></i> Reset</button>
+                    <span id="rot-readout" class="rot-readout"></span>
+                </div>
+                <div class="rot-checks">
+                    <label><input type="checkbox" id="rot-axes">Body axes <i>x&prime;y&prime;z&prime;</i></label>
+                    <label><input type="checkbox" id="rot-L">Angular momentum <i>L</i></label>
+                </div>
+            </div>
+        </div>
+        <p class="rot-help">Drag the tip of <i>z&prime;</i> (the axis of maximum moment of inertia) to orient the box.
+            Drag the tip of <i>&omega;</i> to change its direction, and its shaft to change its length (the spin rate).
+            Drag the black <i>z</i> axis to rotate the view.
+            Press Play to rotate the box about <i>&omega;</i>.</p>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Free Rigid Body Rotation</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="rot-stage">
+        <div class="rot-row">
+            <canvas class="rot-view rot-view-side" id="frb-view"></canvas>
+            <div class="rot-side">
+                <div class="rot-controls">
+                    <button type="button" class="btn btn-default" id="frb-play"><i class="fa fa-play"></i> Play</button>
+                    <button type="button" class="btn btn-default" id="frb-reset"><i class="fa fa-undo"></i> Reset</button>
+                    <span id="frb-readout" class="rot-readout"></span>
+                </div>
+                <div class="rot-checks">
+                    <label><input type="checkbox" id="frb-sym">Symmetric top (<i>I</i><sub>1</sub> = <i>I</i><sub>2</sub>)</label>
+                    <label><input type="checkbox" id="frb-axes">Principal axes <i>x&prime;y&prime;z&prime;</i></label>
+                    <label><input type="checkbox" id="frb-L">Angular momentum <i>L</i></label>
+                    <label><input type="checkbox" id="frb-traces">Traces of <i>z&prime;</i> and <i>&omega;</i></label>
+                    <label><input type="checkbox" id="frb-I">Moment of inertia matrices</label>
+                </div>
+                <div class="rot-mats" id="frb-mats">
+                    <div class="rot-mat">
+                        <div class="rot-mat-note">In the <i>xyz</i> frame</div>
+                        <div class="rot-mat-eq"><span><i>I</i> =</span><table id="frb-Imat"></table></div>
+                    </div>
+                    <div class="rot-mat">
+                        <div class="rot-mat-note">In the <i>x&prime;y&prime;z&prime;</i> frame</div>
+                        <div class="rot-mat-eq"><span><i>I</i>&prime; =</span><table id="frb-Ipmat"></table></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p class="rot-help">Set the initial orientation and <i>&omega;</i> by dragging, as above, and drag the black
+            <i>z</i> axis to rotate the view. Press Play to evolve
+            the box as a torque-free rigid body: <i>L</i> stays fixed in space while <i>&omega;</i> moves through the body.
+            The box has mass 1 and half-widths <span id="frb-dims">1.3, 0.8, 0.35</span>; <i>L</i> is drawn scaled by 1.25/<i>I</i><sub>3</sub>.</p>
     </div>
 
     <div class="container">
@@ -409,6 +508,455 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
+
+    <!-- Rotations: a box spun about a user-chosen angular velocity vector, either kinematically
+         (fixed omega) or, with o.free, as a torque-free rigid body (fixed L, omega evolves) -->
+    <script>
+    function rotationViz(o) {
+        var free = !!o.free;
+        var A = 1.3, B = 0.8, C = 0.35;   // box half-widths along x', y', z' (C smallest -> z' has max I)
+        var LZ = 1.5;                     // drawn length of z'
+        var AXIS_LEN = 2.5;               // drawn length of the inertial axes
+        var W_MIN = 0.4, W_MAX = 3.2;     // limits on |omega| (rad/s; arrow length in scene units = |omega|)
+        var HEAD = 0.22;                  // arrowhead length for z' and omega
+        var TIP_PX = 22, SHAFT_PX = 12;   // pick tolerances in CSS pixels
+        var Y = new THREE.Vector3(0, 1, 0), ZHAT = new THREE.Vector3(0, 0, 1);
+
+        var canvas = document.getElementById(o.id + '-view');
+        var playBtn = document.getElementById(o.id + '-play');
+        var resetBtn = document.getElementById(o.id + '-reset');
+        var readout = document.getElementById(o.id + '-readout');
+
+        var renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
+        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setClearColor(0xffffff);
+        var scene = new THREE.Scene();
+
+        // Turntable camera orbiting the origin, z always up. The default (az = el = 0) looks down the
+        // x axis: x out of the screen, y to the right. Dragging the black z axis changes az and el.
+        var CAM_DIST = 12.5, EL_MAX = 1.45, VIEW_RATE = 0.008;   // rad per pixel of drag
+        var camAz = 0, camEl = 0;
+        var camera = new THREE.PerspectiveCamera(30, 4 / 3, 0.1, 100);
+        camera.up.set(0, 0, 1);
+        function setView() {
+            camera.position.set(Math.cos(camEl) * Math.cos(camAz), Math.cos(camEl) * Math.sin(camAz), Math.sin(camEl))
+                .multiplyScalar(CAM_DIST);
+            camera.lookAt(0, 0, 0);
+            camera.updateMatrixWorld();
+        }
+        setView();
+        function updateProjection() { camera.updateProjectionMatrix(); }
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+        var sun = new THREE.DirectionalLight(0xffffff, 0.55);
+        sun.position.set(4, 2, 8);
+        scene.add(sun);
+
+        function makeArrow(color, r, headLen, headR) {
+            var mat = new THREE.MeshPhongMaterial({color: color, shininess: 40});
+            var g = new THREE.Group();
+            var shaft = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 1, 16), mat);
+            var head = new THREE.Mesh(new THREE.ConeGeometry(headR, headLen, 24), mat);
+            g.add(shaft); g.add(head);
+            scene.add(g);
+            return {
+                mat: mat,
+                group: g,
+                set: function(v) {
+                    var L = v.length(), s = Math.max(L - headLen, 1e-3);
+                    shaft.scale.y = s; shaft.position.y = s / 2;
+                    head.position.y = s + headLen / 2;
+                    g.quaternion.setFromUnitVectors(Y, v.clone().divideScalar(L));
+                }
+            };
+        }
+
+        function makeLabel(text, color) {
+            var cv = document.createElement('canvas');
+            cv.width = 256; cv.height = 128;
+            var ctx = cv.getContext('2d');
+            ctx.font = 'italic 100px "Times New Roman", Times, serif';
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, 128, 64);
+            var sp = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: new THREE.CanvasTexture(cv), depthTest: false, transparent: true
+            }));
+            sp.scale.set(0.8, 0.4, 1);
+            sp.renderOrder = 10;
+            scene.add(sp);
+            return sp;
+        }
+
+        // Fixed inertial axes (the z axis doubles as the handle for rotating the view)
+        var zAxisArrow = null;
+        [['x', new THREE.Vector3(1, 0, 0)], ['y', new THREE.Vector3(0, 1, 0)], ['z', ZHAT]].forEach(function(e) {
+            var arr = makeArrow(0x444444, 0.025, 0.18, 0.07);
+            arr.set(e[1].clone().multiplyScalar(AXIS_LEN));
+            makeLabel(e[0], '#333').position.copy(e[1]).multiplyScalar(AXIS_LEN + 0.25);
+            if (e[0] === 'z') zAxisArrow = arr;
+        });
+
+        // The box: translucent, front faces only (a convex mesh then needs no depth sorting),
+        // faces tinted in pairs so the rotation is easy to follow
+        var faceCols = [0xf2b880, 0xf2b880, 0x9fd49a, 0x9fd49a, 0x9fc3ee, 0x9fc3ee];
+        var body = new THREE.Group();
+        // Unit cube stretched by body.scale, so the free-body viz can reshape it (symmetric-top toggle)
+        body.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), faceCols.map(function(c) {
+            return new THREE.MeshLambertMaterial({color: c, transparent: true, opacity: 0.72, depthWrite: false});
+        })));
+        body.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)),
+            new THREE.LineBasicMaterial({color: 0x333333})));
+        body.scale.set(2 * A, 2 * B, 2 * C);
+        scene.add(body);
+
+        var zArrow = makeArrow(0x1f5fbf, 0.045, HEAD, 0.1), zLabel = makeLabel('z′', '#1f5fbf');
+        var wArrow = makeArrow(0xd62728, 0.045, HEAD, 0.1), wLabel = makeLabel('ω', '#d62728');
+
+        // Principal moments (uniform box, M = 1), the x' and y' principal axes (z' is the draggable arrow)
+        // colored to match their faces, and the angular momentum L; both shown via checkboxes
+        var I1 = (B * B + C * C) / 3, I2 = (A * A + C * C) / 3, I3 = (A * A + B * B) / 3;
+        var L_SCALE = 1.25 / I3;          // for a spin purely about z', L pokes out 25% beyond omega rather than hiding it
+        var Lvec = new THREE.Vector3(), principal = [], showI = false, showTraces = false;
+        [['x′', new THREE.Vector3(1, 0, 0), A + 0.6, 0xd9822b, '#d9822b'],
+         ['y′', new THREE.Vector3(0, 1, 0), B + 0.6, 0x3c9a3c, '#3c9a3c']].forEach(function(e) {
+            principal.push({arrow: makeArrow(e[3], 0.03, 0.18, 0.075), label: makeLabel(e[0], e[4]), dir: e[1], len: e[2]});
+        });
+        var lArrow = makeArrow(0x8e44ad, 0.045, HEAD, 0.1), lLabel = makeLabel('L', '#8e44ad');
+
+        // Tip traces. A full buffer keeps its newer half, so long free-body runs show a rolling window.
+        function makeTrace(color) {
+            var MAXP = 6000, n = 0, pos = new Float32Array(MAXP * 3);
+            var geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geo.setDrawRange(0, 0);
+            var line = new THREE.Line(geo, new THREE.LineBasicMaterial({color: color, transparent: true, opacity: 0.6}));
+            scene.add(line);
+            return {
+                line: line,
+                clear: function() { n = 0; geo.setDrawRange(0, 0); },
+                add: function(p) {
+                    if (n >= MAXP) { pos.copyWithin(0, 3 * MAXP / 2); n = MAXP / 2; }
+                    pos[3 * n] = p.x; pos[3 * n + 1] = p.y; pos[3 * n + 2] = p.z;
+                    n++;
+                    geo.setDrawRange(0, n);
+                    geo.attributes.position.needsUpdate = true;
+                }
+            };
+        }
+        // Kinematic mode traces z' for one revolution (after that it only retraces itself);
+        // free mode traces z' and omega for as long as it runs
+        var zTrace = makeTrace(0x1f5fbf), wTrace = free ? makeTrace(0xd62728) : null, traceAngle = 0;
+        function clearTrace() { zTrace.clear(); if (wTrace) wTrace.clear(); traceAngle = 0; }
+
+        // State: body orientation and angular velocity (both in inertial coordinates)
+        var bodyQ = new THREE.Quaternion(), omega = new THREE.Vector3();
+        var playing = false, dirty = true;
+        function setDefaults() {
+            // Body axes along the inertial ones (so y' = y is the intermediate axis), spinning about z' = z
+            bodyQ.identity();
+            omega.set(0, 0, 2.2);
+            clearTrace();
+            recomputeL();
+        }
+        function zDir() { return ZHAT.clone().applyQuaternion(bodyQ); }
+
+        // ── Torque-free dynamics ────────────────────────────────────────
+        // Inertia tensor in xyz: I = R diag(I1, I2, I3) R^T
+        function inertiaWorld() {
+            var e = new THREE.Matrix4().makeRotationFromQuaternion(bodyQ).elements;   // column-major: R_ij = e[4j + i]
+            var d = [I1, I2, I3], M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+            for (var i = 0; i < 3; i++)
+                for (var j = 0; j < 3; j++)
+                    for (var k = 0; k < 3; k++) M[i][j] += e[4 * k + i] * d[k] * e[4 * k + j];
+            return M;
+        }
+        // L = I omega. In free mode it is set from the initial conditions and then conserved; in
+        // kinematic mode omega is fixed instead, so L is recomputed every frame and moves with the body.
+        function recomputeL() {
+            var M = inertiaWorld();
+            Lvec.set(M[0][0] * omega.x + M[0][1] * omega.y + M[0][2] * omega.z,
+                     M[1][0] * omega.x + M[1][1] * omega.y + M[1][2] * omega.z,
+                     M[2][0] * omega.x + M[2][1] * omega.y + M[2][2] * omega.z);
+        }
+        // omega = R I'^-1 R^T L for orientation qa = [x, y, z, w], with L held fixed in space
+        var tq = new THREE.Quaternion(), tw = new THREE.Vector3();
+        function omegaAt(qa, out) {
+            tq.set(qa[0], qa[1], qa[2], qa[3]);
+            out.copy(Lvec).applyQuaternion(tq.clone().conjugate());
+            return out.set(out.x / I1, out.y / I2, out.z / I3).applyQuaternion(tq);
+        }
+        // dq/dt = (1/2) (omega, 0) * q
+        function qdot(qa) {
+            var w = omegaAt(qa, tw), x = qa[0], y = qa[1], z = qa[2], s = qa[3];
+            return [0.5 * (s * w.x + w.y * z - w.z * y), 0.5 * (s * w.y + w.z * x - w.x * z),
+                    0.5 * (s * w.z + w.x * y - w.y * x), -0.5 * (w.x * x + w.y * y + w.z * z)];
+        }
+        function stepFree(h) {      // one RK4 step of the orientation
+            var q0 = [bodyQ.x, bodyQ.y, bodyQ.z, bodyQ.w];
+            function add(k, f) { return [q0[0] + f * k[0], q0[1] + f * k[1], q0[2] + f * k[2], q0[3] + f * k[3]]; }
+            var k1 = qdot(q0), k2 = qdot(add(k1, h / 2)), k3 = qdot(add(k2, h / 2)), k4 = qdot(add(k3, h));
+            function c(i) { return q0[i] + h / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]); }
+            bodyQ.set(c(0), c(1), c(2), c(3)).normalize();
+        }
+
+        // Matrix readouts: 3x3 grids of cells, I' filled once since it never changes
+        function fmt(v) { var s = v.toFixed(3); return s === '-0.000' ? '0.000' : s.replace('-', '−'); }
+        function buildMatrix(table) {
+            var cells = [];
+            for (var i = 0; i < 3; i++) {
+                var tr = table.insertRow(), row = [];
+                for (var j = 0; j < 3; j++) row.push(tr.insertCell());
+                cells.push(row);
+            }
+            return cells;
+        }
+        function fillMatrix(cells, M) {
+            for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) cells[i][j].textContent = fmt(M[i][j]);
+        }
+        var iCells = null, ipCells = null;
+        if (free) {
+            iCells = buildMatrix(document.getElementById(o.id + '-Imat'));
+            ipCells = buildMatrix(document.getElementById(o.id + '-Ipmat'));
+            fillMatrix(ipCells, [[I1, 0, 0], [0, I2, 0], [0, 0, I3]]);
+        }
+
+        // Reshape the box (free mode): new half-widths A, B and the principal moments that follow.
+        // Orientation and omega are kept, and L = I omega is recomputed, as for any new initial condition.
+        function setShape(a, b) {
+            A = a; B = b;
+            I1 = (B * B + C * C) / 3; I2 = (A * A + C * C) / 3; I3 = (A * A + B * B) / 3;
+            L_SCALE = 1.25 / I3;
+            body.scale.set(2 * A, 2 * B, 2 * C);
+            principal[0].len = A + 0.6; principal[1].len = B + 0.6;
+            fillMatrix(ipCells, [[I1, 0, 0], [0, I2, 0], [0, 0, I3]]);
+            document.getElementById(o.id + '-dims').textContent = A + ', ' + B + ', ' + C;
+            recomputeL();
+            clearTrace();
+            dirty = true;
+        }
+
+        function update() {
+            body.quaternion.copy(bodyQ);
+            var z = zDir();
+            zArrow.set(z.clone().multiplyScalar(LZ));
+            zLabel.position.copy(z).multiplyScalar(LZ + 0.3);
+            var L = omega.length();
+            wArrow.set(omega);
+            wLabel.position.copy(omega).multiplyScalar((L + 0.3) / L);
+            principal.forEach(function(p) {
+                var d = p.dir.clone().applyQuaternion(bodyQ);
+                p.arrow.set(d.clone().multiplyScalar(p.len));
+                p.label.position.copy(d).multiplyScalar(p.len + 0.25);
+            });
+            var lv = Lvec.clone().multiplyScalar(L_SCALE), ll = lv.length();
+            if (ll > 1e-6) { lArrow.set(lv); lLabel.position.copy(lv).multiplyScalar((ll + 0.3) / ll); }
+            if (free) {
+                if (showI) fillMatrix(iCells, inertiaWorld());
+                readout.innerHTML = '|<i>&omega;</i>| = ' + L.toFixed(2) + ' rad/s &nbsp;&middot;&nbsp; |<i>L</i>| = ' +
+                    Lvec.length().toFixed(2);
+            } else {
+                readout.innerHTML = '|<i>&omega;</i>| = ' + L.toFixed(2) + ' rad/s &nbsp;&middot;&nbsp; period ' +
+                    (2 * Math.PI / L).toFixed(1) + ' s';
+            }
+        }
+
+        // ── Picking and dragging ────────────────────────────────────────
+        var W = 1, H = 1;
+        function toScreen(v) { var p = v.clone().project(camera); return {x: (p.x + 1) / 2 * W, y: (1 - p.y) / 2 * H}; }
+        // World-space ray under the mouse, from unprojecting the near and far points under the cursor
+        function mouseRay(ev) {
+            var r = canvas.getBoundingClientRect();
+            var nx = ((ev.clientX - r.left) / r.width) * 2 - 1, ny = -((ev.clientY - r.top) / r.height) * 2 + 1;
+            var p0 = new THREE.Vector3(nx, ny, -1).unproject(camera), p1 = new THREE.Vector3(nx, ny, 1).unproject(camera);
+            return {origin: p0, direction: p1.sub(p0).normalize()};
+        }
+        function segDist(p, a, b) {
+            var dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+            var t = l2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2)) : 0;
+            return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy);
+        }
+        function pick(ev) {
+            var r = canvas.getBoundingClientRect(), m = {x: ev.clientX - r.left, y: ev.clientY - r.top};
+            var L = omega.length(), wHat = omega.clone().divideScalar(L);
+            function px(v) { var s = toScreen(v); return Math.hypot(s.x - m.x, s.y - m.y); }
+            // Tips (and the z label) compete by distance; shafts are lower priority, the z axis's lowest,
+            // since by default z', omega and L all lie along it
+            var tips = [['ztip', px(zDir().multiplyScalar(LZ - HEAD / 2))],
+                        ['wtip', px(wHat.clone().multiplyScalar(L - HEAD / 2))],
+                        ['zaxis', px(ZHAT.clone().multiplyScalar(AXIS_LEN - 0.09))],
+                        ['zaxis', px(ZHAT.clone().multiplyScalar(AXIS_LEN + 0.25))]];
+            var best = tips.reduce(function(a, b) { return b[1] < a[1] ? b : a; });
+            if (best[1] < TIP_PX) return best[0];
+            if (segDist(m, toScreen(wHat.clone().multiplyScalar(0.15 * L)), toScreen(wHat.clone().multiplyScalar(L - HEAD))) < SHAFT_PX) return 'wshaft';
+            if (segDist(m, toScreen(ZHAT.clone().multiplyScalar(0.15)), toScreen(ZHAT.clone().multiplyScalar(AXIS_LEN))) < SHAFT_PX) return 'zaxis';
+            return null;
+        }
+
+        // Point on the sphere |p| = R under the mouse. Of the two intersections, take the one nearer
+        // the previous direction, so the tip rolls continuously over the silhouette onto the far side;
+        // if the ray misses, use the silhouette point closest to it.
+        function onSphere(ray, R, prevDir) {
+            var o = ray.origin, d = ray.direction, b = o.dot(d), disc = b * b - (o.lengthSq() - R * R);
+            if (disc < 0) return o.clone().addScaledVector(d, -b).normalize();
+            var sq = Math.sqrt(disc);
+            var p1 = o.clone().addScaledVector(d, -b - sq), p2 = o.clone().addScaledVector(d, -b + sq);
+            var prev = prevDir.clone().multiplyScalar(R);
+            return (p1.distanceToSquared(prev) <= p2.distanceToSquared(prev) ? p1 : p2).normalize();
+        }
+        // Coordinate s of the point on the line s*u (through the origin) closest to the ray
+        function alongLine(ray, u) {
+            var o = ray.origin, d = ray.direction, b = u.dot(d), den = 1 - b * b;
+            return den < 1e-6 ? null : (o.dot(u) - b * o.dot(d)) / den;
+        }
+
+        var drag = null, hover = null;
+        function setHover(h) {
+            if (h === hover) return;
+            hover = h;
+            zArrow.mat.emissive.setHex(h === 'ztip' ? 0x333333 : 0);
+            wArrow.mat.emissive.setHex(h === 'wtip' || h === 'wshaft' ? 0x333333 : 0);
+            zAxisArrow.mat.emissive.setHex(h === 'zaxis' ? 0x777777 : 0);
+            canvas.style.cursor = h ? 'grab' : 'default';
+            dirty = true;
+        }
+        canvas.addEventListener('pointerdown', function(ev) {
+            var h = pick(ev);
+            if (!h) return;
+            ev.preventDefault();
+            canvas.setPointerCapture(ev.pointerId);
+            drag = {what: h, x: ev.clientX, y: ev.clientY};
+            if (h === 'wshaft') {
+                drag.u = omega.clone().normalize();
+                drag.L0 = omega.length();
+                drag.s0 = alongLine(mouseRay(ev), drag.u);
+            }
+            setHover(h);
+            canvas.style.cursor = 'grabbing';
+        });
+        canvas.addEventListener('pointermove', function(ev) {
+            if (!drag) { setHover(pick(ev)); return; }
+            if (drag.what === 'zaxis') {
+                // Turntable: horizontal drag spins the view about z, vertical drag tilts it
+                camAz -= (ev.clientX - drag.x) * VIEW_RATE;
+                camEl = Math.max(-EL_MAX, Math.min(EL_MAX, camEl + (ev.clientY - drag.y) * VIEW_RATE));
+                drag.x = ev.clientX; drag.y = ev.clientY;
+                setView();
+                dirty = true;
+                return;
+            }
+            var ray = mouseRay(ev);
+            if (drag.what === 'ztip') {
+                var z0 = zDir(), z1 = onSphere(ray, LZ, z0);
+                bodyQ.premultiply(new THREE.Quaternion().setFromUnitVectors(z0, z1)).normalize();
+                clearTrace();
+            } else if (drag.what === 'wtip') {
+                var L = omega.length();
+                omega.copy(onSphere(ray, L, omega.clone().divideScalar(L))).multiplyScalar(L);
+                clearTrace();
+            } else {
+                var s = alongLine(ray, drag.u);
+                if (s !== null && drag.s0 > 1e-3)
+                    omega.copy(drag.u).multiplyScalar(Math.max(W_MIN, Math.min(W_MAX, drag.L0 * s / drag.s0)));
+                if (free) clearTrace();   // |omega| changes the free motion, not just its speed
+            }
+            recomputeL();
+            dirty = true;
+        });
+        function endDrag() {
+            if (!drag) return;
+            drag = null;
+            canvas.style.cursor = hover ? 'grab' : 'default';
+        }
+        canvas.addEventListener('pointerup', endDrag);
+        canvas.addEventListener('pointercancel', endDrag);
+        canvas.addEventListener('pointerleave', function() { if (!drag) setHover(null); });
+
+        // ── Controls and animation ──────────────────────────────────────
+        function setPlaying(p) {
+            playing = p;
+            playBtn.innerHTML = p ? '<i class="fa fa-pause"></i> Pause' : '<i class="fa fa-play"></i> Play';
+        }
+        playBtn.addEventListener('click', function() { setPlaying(!playing); });
+        resetBtn.addEventListener('click', function() {
+            setPlaying(false); setDefaults();
+            camAz = 0; camEl = 0; setView();
+            dirty = true;
+        });
+
+        function resize() {
+            W = canvas.clientWidth; H = canvas.clientHeight;
+            if (!W || !H) return;
+            renderer.setSize(W, H, false);
+            camera.aspect = W / H;
+            updateProjection();
+            dirty = true;
+        }
+        window.addEventListener('resize', resize);
+
+        var last = null;
+        function frame(t) {
+            var dt = last === null ? 0 : Math.min((t - last) / 1000, 0.05);
+            last = t;
+            if (playing && dt > 0 && free) {
+                // Torque-free motion: advance the orientation with L fixed, then read off omega
+                var nSub = Math.max(1, Math.ceil(dt / 0.002));
+                for (var i = 0; i < nSub; i++) stepFree(dt / nSub);
+                omegaAt([bodyQ.x, bodyQ.y, bodyQ.z, bodyQ.w], omega);
+                if (showTraces) { zTrace.add(zDir().multiplyScalar(LZ)); wTrace.add(omega); }
+                dirty = true;
+            } else if (playing && dt > 0) {
+                // Pure kinematics: rotate the body by |omega| dt about the fixed omega direction
+                var L = omega.length();
+                bodyQ.premultiply(new THREE.Quaternion().setFromAxisAngle(omega.clone().divideScalar(L), L * dt)).normalize();
+                recomputeL();
+                if (traceAngle === 0) zTrace.add(zDir().multiplyScalar(LZ));
+                if (traceAngle < 2 * Math.PI + 0.05) {
+                    traceAngle += L * dt;
+                    zTrace.add(zDir().multiplyScalar(LZ));
+                }
+                dirty = true;
+            }
+            if (dirty) { update(); renderer.render(scene, camera); dirty = false; }
+            requestAnimationFrame(frame);
+        }
+        // Checkboxes shared by both modes: principal axes and L
+        var axesBox = document.getElementById(o.id + '-axes'), lBox = document.getElementById(o.id + '-L');
+        function applyAxesL() {
+            principal.forEach(function(p) { p.arrow.group.visible = p.label.visible = axesBox.checked; });
+            lArrow.group.visible = lLabel.visible = lBox.checked;
+            dirty = true;
+        }
+        [axesBox, lBox].forEach(function(cb) { cb.addEventListener('change', applyAxesL); });
+        applyAxesL();
+
+        if (free) {
+            var iBox = document.getElementById(o.id + '-I'), mats = document.getElementById(o.id + '-mats');
+            var traceBox = document.getElementById(o.id + '-traces');
+            var applyVis = function() {
+                showTraces = zTrace.line.visible = wTrace.line.visible = traceBox.checked;
+                showI = iBox.checked;
+                mats.style.display = showI ? '' : 'none';
+                dirty = true;
+            };
+            [iBox, traceBox].forEach(function(cb) { cb.addEventListener('change', applyVis); });
+            // Traces record only while shown, and start fresh each time the box is ticked
+            traceBox.addEventListener('change', function() { if (traceBox.checked) clearTrace(); });
+            applyVis();
+            // Symmetric top: square cross-section, so I1 = I2 and z' and omega sweep fixed cones about L
+            var symBox = document.getElementById(o.id + '-sym');
+            var applyShape = function() { if (symBox.checked) setShape(1.05, 1.05); else setShape(1.3, 0.8); };
+            symBox.addEventListener('change', applyShape);
+            applyShape();
+        }
+
+        setDefaults();
+        resize();
+        requestAnimationFrame(frame);
+    }
+    rotationViz({id: 'rot'});
+    rotationViz({id: 'frb', free: true});
+    </script>
 
     <!-- Dipole Radiation: retarded field of an arbitrarily driven point dipole -->
     <script>
