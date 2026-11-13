@@ -38,6 +38,26 @@
         #dp-phase { cursor:crosshair; }
         .dp-dial-title { font-size:15px; text-align:center; margin:10px 0 0; line-height:1.5; }
         #dp-status { text-align:center; color:#555; min-height:1.5em; margin-top:6px; }
+        .dp2-status { text-align:center; color:#555; min-height:1.5em; margin-top:6px; font-variant-numeric:tabular-nums; }
+        #ss-plot, #sd-phase { cursor:crosshair; }
+        #sd-frame { width:260px; }
+        .dp-controls .sd-wide { min-width:5.5em; }
+        .dp-controls input[type=checkbox] { margin:0 4px 0 0; vertical-align:-1px; }
+
+        .tb-stage { display:flex; justify-content:center; gap:20px; max-width:1500px; margin:0 auto; padding:0 16px; }
+        .tb-panel { flex:1 1 0; min-width:0; }
+        .tb-panel h4 { text-align:center; margin:0 0 6px; line-height:1.3; }
+        .tb-panel h4 small { display:block; margin-top:2px; }
+        .tb-canvas { display:block; width:100%; }
+        #tb-sec { cursor:crosshair; }
+        #tb-mid { cursor:crosshair; touch-action:none; }
+        #tb-zoomview { cursor:grab; touch-action:none; }
+        #tb-zoomview.tb-dragging { cursor:grabbing; }
+        .tb-val { display:inline-block; min-width:9em; font-variant-numeric:tabular-nums; }
+        #tb-status { text-align:center; color:#555; min-height:3em; margin:8px 16px 0; white-space:pre-line; font-variant-numeric:tabular-nums; }
+        @media (max-width:767px) {
+            .tb-stage { flex-direction:column; }
+        }
 
         .dr-stage { --dr-size:min(calc(100vh - 210px), 40vw); display:flex; justify-content:center; align-items:flex-start; gap:16px; padding:0 8px; margin-bottom:30px; color:#000; font-size:22px; line-height:1.25; }
         .dr-stage-zoom { flex-wrap:wrap; }
@@ -390,6 +410,157 @@
         </div>
         <div id="dp-status">Click on the phase plane to launch an orbit.</div>
     </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">The Driven Pendulum: Surface of Section</h2>
+            </div>
+        </div>
+        <div class="row topbot-buffer">
+            <div class="col-lg-12">
+                <p class="lead">
+                Keep only the state $(\theta, v)$ at $t = 0, 1, 2, \dots$, once per drive period.
+                Because the equations repeat every period, the state at $t = n$ completely determines the state at $t = n+1$,
+                so this is a well-defined, area-preserving map of the plane to itself.
+                Click anywhere to launch an orbit and plot its crossings. Then read the plot:
+                </p>
+                <ul class="lead">
+                    <li><b>Smooth curve:</b> a regular orbit, a slice through an invariant torus. Some approximate conserved quantity survived, even though energy didn't.</li>
+                    <li><b>Closed loops around a point:</b> a resonance island. Compare its size with the shaded band (the pendulum estimate $2\sqrt{\alpha}$ or $2\sqrt{\epsilon}$).</li>
+                    <li><b>Chains of small islands</b> (e.g. near $v \approx \pm 3$): secondary resonances, created by the interaction of the primary waves.</li>
+                    <li><b>Scattered cloud filling an area:</b> a chaotic orbit. Chaos appears first near separatrices.</li>
+                </ul>
+                <p class="lead">
+                <b>Populate</b> launches a grid of orbits for a quick overview. Changing $\alpha$ or $\epsilon$ clears the plot.
+                </p>
+            </div>
+        </div>
+        <div class="dp-controls">
+            <label>$\alpha$ <input type="range" id="ss-alpha" min="0" max="5" step="0.05" value="1.5"><span class="dp-val" id="ss-alpha-val">1.50</span></label>
+            <label>$\epsilon$ <input type="range" id="ss-eps" min="0" max="3" step="0.05" value="0.75"><span class="dp-val" id="ss-eps-val">0.75</span></label>
+            <label>crossings <input type="range" id="ss-ncross" min="50" max="3000" step="50" value="500"><span class="dp-val" id="ss-ncross-val">500</span></label>
+            <label><input type="checkbox" id="ss-guides" checked> resonance widths</label>
+            <button type="button" class="btn btn-default btn-sm" id="ss-populate"><i class="fa fa-th"></i> Populate</button>
+            <button type="button" class="btn btn-default btn-sm" id="ss-clear"><i class="fa fa-trash"></i> Clear</button>
+        </div>
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h4 class="text-center" id="ss-title"></h4>
+                <canvas id="ss-plot" class="dp-canvas"></canvas>
+            </div>
+        </div>
+        <div id="ss-status" class="dp2-status">Click on the plot to launch an orbit.</div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">The Driven Pendulum: Sensitive Dependence on Initial Conditions</h2>
+            </div>
+        </div>
+        <div class="row topbot-buffer">
+            <div class="col-lg-12">
+                <p class="lead">
+                The surface of section tells regular and chaotic orbits apart by their shape: curves versus scattered clouds.
+                The other defining property of chaos is sensitive dependence on initial conditions.
+                Click the left panel to launch two orbits that start a tiny distance $d_0$ apart (they differ only in $\theta_0$).
+                On the left, orbit A is solid with a filled dot and orbit B is dashed with an open dot.
+                On the right, the distance between them in phase space,
+                $d(t) = \sqrt{\Delta\theta^2 + \Delta v^2}$ (with $\Delta\theta$ taken modulo $2\pi$), is traced out in sync.
+                </p>
+                <ul class="lead">
+                    <li><b>Regular orbit</b> (on a curve or inside an island): the two orbits drift apart only slowly, roughly linearly in time, so on a linear scale $d(t)$ stays glued to zero.</li>
+                    <li><b>Chaotic orbit:</b> $d(t)$ looks flat for a while, then explodes, growing like $e^{\lambda t}$ until the orbits are as far apart as the chaotic region allows.</li>
+                </ul>
+                <p class="lead">
+                Try $\theta_0 = \pi$, $v_0 \approx 0.5$ (in the chaotic layer near the unstable fixed point) against $\theta_0 = 0.8$, $v_0 = 0$ (deep in the central island).
+                Each new click keeps earlier distance curves, faded, for comparison.
+                Tick <b>log scale</b> to see that chaotic growth is a straight line, whose slope is the Lyapunov exponent $\lambda$.
+                </p>
+            </div>
+        </div>
+        <div class="dp-controls">
+            <label>periods <input type="range" id="sd-periods" min="10" max="300" step="10" value="60"><span class="dp-val" id="sd-periods-val">60</span></label>
+            <label>$d_0$ <input type="range" id="sd-d0" min="-8" max="-1" step="0.5" value="-3"><span class="dp-val" id="sd-d0-val">1e-3</span></label>
+            <label>trail <input type="range" id="sd-trail" min="0" max="20" step="1" value="3"><span class="dp-val sd-wide" id="sd-trail-val">3 periods</span></label>
+        </div>
+        <div class="dp-controls">
+            <button type="button" class="btn btn-default btn-sm" id="sd-play" disabled><i class="fa fa-play"></i> Play</button>
+            <label>frame <input type="range" id="sd-frame" min="0" max="1" step="1" value="0" disabled></label>
+            <label>speed <input type="range" id="sd-speed" min="1" max="20" step="1" value="6"><span class="dp-val" id="sd-speed-val">6</span></label>
+            <button type="button" class="btn btn-default btn-sm" id="sd-end" disabled><i class="fa fa-forward"></i> Jump to end</button>
+        </div>
+        <div class="dp-controls">
+            <label><input type="checkbox" id="sd-animate" checked> animate</label>
+            <label><input type="checkbox" id="sd-log"> log scale</label>
+            <button type="button" class="btn btn-default btn-sm" id="sd-clear"><i class="fa fa-trash"></i> Clear</button>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <h4 class="text-center">Two nearby orbits</h4>
+                <canvas id="sd-phase" class="dp-canvas"></canvas>
+            </div>
+            <div class="col-sm-3">
+                <h4 class="text-center">The two pendulums</h4>
+                <canvas id="sd-pend" class="dp-canvas"></canvas>
+            </div>
+            <div class="col-sm-5">
+                <h4 class="text-center">Separation of the two orbits</h4>
+                <canvas id="sd-dist" class="dp-canvas"></canvas>
+            </div>
+        </div>
+        <div id="sd-status" class="dp2-status">Click on the left panel to launch a pair of nearby orbits.</div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">The Three-Body Problem: Namouni Map and N-body</h2>
+                <p class="text-muted" style="font-size:18px;">Visualization by Aron Zhou.</p>
+            </div>
+        </div>
+        <div class="row topbot-buffer">
+            <div class="col-lg-12">
+                <p class="lead">
+                A planet (white) on a circular orbit at 1 AU, with $3\times10^{-6}$ of its star's mass (about the Earth's),
+                and a massless test body on a slightly larger orbit near the 10:9 resonance.
+                The left panel is a surface of section from the Namouni map, which treats each conjunction with the planet as a kick to the test body's orbit.
+                Click it to start an orbit there.
+                The same click starts an N-body integration from the same initial condition, shown in the middle panel in a frame that rotates with the test body's pericentre, so the pericentre always points up.
+                A line from the star marks the direction of each conjunction.
+                The right panel magnifies the dashed box, with faint traces of the test body's earlier passes, so the change in its orbit at each conjunction shows up as a shift between groups of passes.
+                </p>
+            </div>
+        </div>
+        <div class="dp-controls">
+            <button type="button" class="btn btn-default btn-sm" id="tb-pause" disabled><i class="fa fa-pause"></i> Pause</button>
+            <button type="button" class="btn btn-default btn-sm" id="tb-clear"><i class="fa fa-trash"></i> Clear</button>
+            <label>Speed <input type="range" id="tb-speed" min="-1.5" max="2" step="0.01" value="-0.30"><span class="tb-val" id="tb-speed-val"></span></label>
+            <label>Zoom half-width <input type="range" id="tb-zoom" min="-1" max="2" step="0.01" value="1.48"><span class="tb-val" id="tb-zoom-val"></span></label>
+        </div>
+    </div>
+    <div class="tb-stage" id="tb-stage">
+        <div class="tb-panel">
+            <h4>Phase space<small>click to start an orbit</small></h4>
+            <canvas class="tb-canvas" id="tb-sec"></canvas>
+        </div>
+        <div class="tb-panel">
+            <h4>Two Earths<small>click or drag to move the box</small></h4>
+            <canvas class="tb-canvas" id="tb-mid"></canvas>
+        </div>
+        <div class="tb-panel">
+            <h4>Zoom-in<small>drag to pan, scroll to zoom</small></h4>
+            <canvas class="tb-canvas" id="tb-zoomview"></canvas>
+        </div>
+    </div>
+    <div id="tb-status">Click the Namouni map to start an orbit.</div>
 
     <div class="container">
         <div class="row">
@@ -1805,6 +1976,1463 @@
         bindSlider('dp-alpha', 2, function(x) { alpha = x; });
         bindSlider('dp-eps', 2, function(x) { eps = x; });
 
+        window.addEventListener('resize', resize);
+        resize();
+    })();
+    </script>
+
+    <!-- The Driven Pendulum: surface of section, and the separation of two nearby orbits.
+         Ported from driven_pendulum_chaos.ipynb (SectionApp and SeparationApp). -->
+    <script>
+    (function() {
+        // <dp2-core> integrator, kept free of the page so it can be checked against the notebook
+        var TWO_PI = 2 * Math.PI;
+        var STEPS = 40;            // time steps per drive period
+        var V_MAX = 10;            // plot range in v; resonances sit at 0 and +/-2pi
+
+        // Yoshida 4th-order symplectic coefficients (drift-kick-drift composition)
+        var cb = Math.cbrt(2);
+        var w1 = 1 / (2 - cb), w0 = -cb / (2 - cb);
+        var C = [w1 / 2, (w0 + w1) / 2, (w0 + w1) / 2, w1 / 2];   // drift fractions
+        var D = [w1, w0, w1];                                     // kick fractions
+
+        // Integrate orbits from (th0[j], v0[j]) at t = 0 for nPeriods drive periods.
+        // dense: every step; otherwise only at t = 0, 1, 2, ... (the strobe)
+        function integrate(th0, v0, nPeriods, alpha, eps, dense) {
+            var m = th0.length, h = 1 / STEPS;
+            var nOut = dense ? nPeriods * STEPS + 1 : nPeriods + 1;
+            var T = new Float64Array(nOut), TH = [], V = [];
+            for (var q = 1; q < nOut; q++) {
+                if (dense) { var nq = Math.floor((q - 1) / STEPS); T[q] = nq + (q - nq * STEPS) * h; }
+                else T[q] = q;
+            }
+            for (var j = 0; j < m; j++) {
+                var TJ = new Float64Array(nOut), VJ = new Float64Array(nOut);
+                var th = th0[j], v = v0[j], k = 0;
+                TJ[0] = th; VJ[0] = v;
+                for (var n = 0; n < nPeriods; n++) {
+                    for (var s = 0; s < STEPS; s++) {
+                        var t = n + s * h;
+                        for (var i = 0; i < 3; i++) {
+                            th += C[i] * h * v;
+                            t += C[i] * h;
+                            v += D[i] * h * (-alpha * Math.sin(th) - eps * (Math.sin(th - TWO_PI * t) + Math.sin(th + TWO_PI * t)));
+                        }
+                        th += C[3] * h * v;
+                        if (dense) { k++; TJ[k] = th; VJ[k] = v; }
+                    }
+                    if (!dense) { TJ[n + 1] = th; VJ[n + 1] = v; }
+                }
+                TH.push(TJ); V.push(VJ);
+            }
+            return { t: T, th: TH, v: V };
+        }
+
+        function wrap(x) {   // map angle to [-pi, pi)
+            return ((x + Math.PI) % TWO_PI + TWO_PI) % TWO_PI - Math.PI;
+        }
+
+        // phase-space distance of two orbits, with the angle difference taken modulo 2 pi
+        function separation(thA, vA, thB, vB) {
+            var d = new Float64Array(thA.length);
+            for (var i = 0; i < d.length; i++) d[i] = Math.hypot(wrap(thB[i] - thA[i]), vB[i] - vA[i]);
+            return d;
+        }
+        // </dp2-core>
+
+        var COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                      '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+        var FONT = '12px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+        var PM = { l: 52, r: 58, t: 8, b: 42 };   // phase-plane margins (room on the right for guide labels)
+
+        // ---------- shared drawing ----------
+        function fit(cv, aspect) {
+            var dpr = window.devicePixelRatio || 1;
+            var w = cv.clientWidth, h = Math.round(w * aspect);
+            cv.style.height = h + 'px';
+            cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+            cv.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+            cv._w = w; cv._h = h;
+        }
+
+        function boxOf(cv, M) { return { x0: M.l, y0: M.t, w: cv._w - M.l - M.r, h: cv._h - M.t - M.b }; }
+        function phaseX(b, th) { return b.x0 + (th + Math.PI) / TWO_PI * b.w; }
+        function phaseY(b, v) { return b.y0 + (V_MAX - v) / (2 * V_MAX) * b.h; }
+        function clip(ctx, b) { ctx.beginPath(); ctx.rect(b.x0, b.y0, b.w, b.h); ctx.clip(); }
+        function minus(s) { return String(s).replace('-', '−'); }
+
+        function resonances(alpha, eps) {
+            return [[0, 2 * Math.sqrt(alpha), 'v = 0'], [TWO_PI, 2 * Math.sqrt(eps), 'v = 2π'],
+                    [-TWO_PI, 2 * Math.sqrt(eps), 'v = −2π']];
+        }
+
+        // shaded bands (pendulum half-widths) and dashed lines at the resonance centres; call clipped
+        function drawGuides(ctx, b, alpha, eps) {
+            resonances(alpha, eps).forEach(function(r) {
+                ctx.fillStyle = 'rgba(217,217,217,0.35)';
+                ctx.fillRect(b.x0, phaseY(b, r[0] + r[1]), b.w, phaseY(b, r[0] - r[1]) - phaseY(b, r[0] + r[1]));
+                ctx.setLineDash([4, 3]); ctx.lineWidth = 0.8; ctx.strokeStyle = '#808080';
+                ctx.beginPath(); ctx.moveTo(b.x0, phaseY(b, r[0])); ctx.lineTo(b.x0 + b.w, phaseY(b, r[0])); ctx.stroke();
+                ctx.setLineDash([]);
+            });
+        }
+
+        function guideLabels(ctx, b, alpha, eps) {
+            ctx.fillStyle = '#666'; ctx.font = '11px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+            ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+            resonances(alpha, eps).forEach(function(r) { ctx.fillText(r[2], b.x0 + b.w + 5, phaseY(b, r[0])); });
+        }
+
+        function phaseFrame(ctx, b, H) {
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+            ctx.strokeRect(b.x0, b.y0, b.w, b.h);
+            ctx.fillStyle = '#000'; ctx.font = FONT;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            ['−π', '−π/2', '0', 'π/2', 'π'].forEach(function(lab, i) {
+                var x = b.x0 + i / 4 * b.w;
+                ctx.beginPath(); ctx.moveTo(x, b.y0 + b.h); ctx.lineTo(x, b.y0 + b.h + 4); ctx.stroke();
+                ctx.fillText(lab, x, b.y0 + b.h + 6);
+            });
+            ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            [-10, -5, 0, 5, 10].forEach(function(v) {
+                var y = phaseY(b, v);
+                ctx.beginPath(); ctx.moveTo(b.x0 - 4, y); ctx.lineTo(b.x0, y); ctx.stroke();
+                ctx.fillText(minus(v), b.x0 - 6, y);
+            });
+            ctx.font = 'italic 15px "Times New Roman", serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+            ctx.fillText('θ', b.x0 + b.w / 2, H - 2);
+            ctx.save();
+            ctx.translate(14, b.y0 + b.h / 2); ctx.rotate(-Math.PI / 2);
+            ctx.textBaseline = 'middle';
+            ctx.fillText('v = θ̇', 0, 0);
+            ctx.restore();
+        }
+
+        // continuous path in (theta, v), broken where the wrapped angle jumps
+        function wrappedPath(ctx, b, th, v, lo, hi) {
+            ctx.beginPath();
+            var prev = null;
+            for (var i = lo; i <= hi; i++) {
+                var w = wrap(th[i]), x = phaseX(b, w), y = phaseY(b, v[i]);
+                if (prev === null || Math.abs(w - prev) > Math.PI) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                prev = w;
+            }
+            ctx.stroke();
+        }
+
+        function dot(ctx, x, y, r, fill, stroke, lw) {
+            ctx.beginPath(); ctx.arc(x, y, r, 0, TWO_PI);
+            ctx.fillStyle = fill; ctx.fill();
+            if (stroke) { ctx.lineWidth = lw || 1; ctx.strokeStyle = stroke; ctx.stroke(); }
+        }
+
+        function starMarker(ctx, x, y, R, fill) {
+            ctx.beginPath();
+            for (var i = 0; i < 10; i++) {
+                var r = i % 2 ? 0.42 * R : R, a = -Math.PI / 2 + i * Math.PI / 5;
+                ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
+            }
+            ctx.closePath();
+            ctx.fillStyle = fill; ctx.fill();
+            ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.stroke();
+        }
+
+        function clickPhase(cv, e) {   // (theta, v) under a click, or null outside the plot
+            var r = cv.getBoundingClientRect(), b = boxOf(cv, PM);
+            var x = e.clientX - r.left - b.x0, y = e.clientY - r.top - b.y0;
+            if (x < 0 || x > b.w || y < 0 || y > b.h) return null;
+            return [-Math.PI + x / b.w * TWO_PI, V_MAX - y / b.h * 2 * V_MAX];
+        }
+
+        function bindRange(id, fmt, fn) {
+            var el = document.getElementById(id), out = document.getElementById(id + '-val');
+            function show() { if (out) out.textContent = fmt(parseFloat(el.value)); }
+            el.addEventListener('input', function() { show(); if (fn) fn(parseFloat(el.value)); });
+            show();
+            return el;
+        }
+
+        // ================= surface of section =================
+        var ss = { alpha: 1.5, eps: 0.75, ncross: 500, guides: true, orbits: [], grid: [] };
+        var cvSS = document.getElementById('ss-plot');
+        var ssTitle = document.getElementById('ss-title'), ssStatus = document.getElementById('ss-status');
+
+        function drawSS() {
+            var ctx = cvSS.getContext('2d'), b = boxOf(cvSS, PM);
+            ctx.clearRect(0, 0, cvSS._w, cvSS._h);
+            ctx.save(); clip(ctx, b);
+            if (ss.guides) drawGuides(ctx, b, ss.alpha, ss.eps);
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';           // populated grid: one pixel per crossing
+            ss.grid.forEach(function(g) {
+                for (var j = 0; j < g.th.length; j++)
+                    for (var i = 0; i < g.th[j].length; i++)
+                        ctx.fillRect(phaseX(b, wrap(g.th[j][i])) - 0.5, phaseY(b, g.v[j][i]) - 0.5, 1, 1);
+            });
+            ss.orbits.forEach(function(o) {
+                ctx.fillStyle = o.col;
+                for (var i = 0; i < o.th.length; i++)
+                    ctx.fillRect(phaseX(b, wrap(o.th[i])) - 1.1, phaseY(b, o.v[i]) - 1.1, 2.2, 2.2);
+            });
+            ss.orbits.forEach(function(o) { dot(ctx, phaseX(b, wrap(o.th0)), phaseY(b, o.v0), 4, o.col, '#000', 1); });
+            ctx.restore();
+            phaseFrame(ctx, b, cvSS._h);
+            if (ss.guides) guideLabels(ctx, b, ss.alpha, ss.eps);
+        }
+
+        function clearSS() {
+            ss.orbits = []; ss.grid = [];
+            var s = (2 * Math.sqrt(ss.alpha) + 2 * Math.sqrt(ss.eps)) / TWO_PI;
+            ssTitle.innerHTML = 'Surface of section (<i>t</i> = integer): &alpha; = ' + ss.alpha.toFixed(2) +
+                ', &epsilon; = ' + ss.eps.toFixed(2) + ', overlap <i>s</i> = ' + s.toFixed(2);
+            ssStatus.textContent = 'Click on the plot to launch an orbit.';
+            drawSS();
+        }
+
+        cvSS.addEventListener('click', function(e) {
+            var p = clickPhase(cvSS, e);
+            if (!p) return;
+            var r = integrate([p[0]], [p[1]], ss.ncross, ss.alpha, ss.eps, false);
+            ss.orbits.push({ th: r.th[0], v: r.v[0], th0: p[0], v0: p[1], col: COLORS[ss.orbits.length % COLORS.length] });
+            ssStatus.innerHTML = 'Orbit ' + ss.orbits.length + ': &theta;<sub>0</sub> = ' + p[0].toFixed(2) +
+                ', v<sub>0</sub> = ' + p[1].toFixed(2) + ', ' + ss.ncross + ' crossings';
+            drawSS();
+        });
+
+        document.getElementById('ss-populate').addEventListener('click', function() {
+            // a grid of initial conditions on the theta = 0 and theta = pi lines
+            var nV = 28, th0 = [], v0 = [], n = Math.min(ss.ncross, 400);
+            for (var i = 0; i < nV; i++) {
+                var v = -0.95 * V_MAX + 1.9 * V_MAX * i / (nV - 1);
+                th0.push(0, Math.PI); v0.push(v, v);
+            }
+            ss.grid.push(integrate(th0, v0, n, ss.alpha, ss.eps, false));
+            ssStatus.textContent = 'Populated ' + th0.length + ' orbits × ' + n + ' crossings. Click to add your own.';
+            drawSS();
+        });
+
+        document.getElementById('ss-clear').addEventListener('click', clearSS);
+        bindRange('ss-alpha', function(x) { return x.toFixed(2); }, function(x) { ss.alpha = x; clearSS(); });
+        bindRange('ss-eps', function(x) { return x.toFixed(2); }, function(x) { ss.eps = x; clearSS(); });
+        bindRange('ss-ncross', function(x) { return String(x); }, function(x) { ss.ncross = x; });
+        document.getElementById('ss-guides').addEventListener('change', function(e) { ss.guides = e.target.checked; clearSS(); });
+
+        // ================= sensitive dependence: two nearby orbits =================
+        var ALPHA = 1.5, EPSILON = 0.75;
+        var FRAME_MS = 40;          // one player step (of `speed` integration steps) per 40 ms
+        var DM = { l: 62, r: 12, t: 8, b: 42 };
+        var sd = { cur: null, retired: [], nPairs: 0, k: 0, playing: false, dmin: Infinity, dmax: 0, xmax: 60 };
+        var cvSP = document.getElementById('sd-phase'), cvSD = document.getElementById('sd-dist');
+        var cvPend = document.getElementById('sd-pend');
+        var sdStatus = document.getElementById('sd-status');
+        var playBtn = document.getElementById('sd-play'), endBtn = document.getElementById('sd-end');
+        var frameEl = document.getElementById('sd-frame'), logEl = document.getElementById('sd-log');
+        var animateEl = document.getElementById('sd-animate');
+        var lastTs = null, acc = 0;
+
+        var periodsEl = bindRange('sd-periods', String);
+        var d0El = bindRange('sd-d0', function(x) { return Math.pow(10, x).toExponential(0).replace('e', 'e'); });
+        var trailEl = bindRange('sd-trail', function(x) { return x === 0 ? 'whole path' : x + (x === 1 ? ' period' : ' periods'); }, drawSD);
+        var speedEl = bindRange('sd-speed', String);
+
+        function niceStep(range, target) {
+            var raw = range / target, p = Math.pow(10, Math.floor(Math.log10(raw)));
+            return [1, 2, 5, 10].map(function(m) { return m * p; }).filter(function(s) { return s >= raw * 0.999; })[0];
+        }
+        function decimals(step) { return Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); }
+
+        function distScale() {
+            var b = boxOf(cvSD, DM), log = logEl.checked, lo, hi;
+            if (log) {
+                lo = sd.dmax > 0 ? 0.5 * sd.dmin : 1e-4; hi = sd.dmax > 0 ? 2 * sd.dmax : 1;
+                var L0 = Math.log10(lo), L1 = Math.log10(hi);
+                return { b: b, log: true, lo: lo, hi: hi,
+                         X: function(t) { return b.x0 + t / sd.xmax * b.w; },
+                         Y: function(d) { return b.y0 + (L1 - Math.log10(d)) / (L1 - L0) * b.h; } };
+            }
+            hi = sd.dmax > 0 ? 1.05 * sd.dmax : 1;
+            return { b: b, log: false, lo: 0, hi: hi,
+                     X: function(t) { return b.x0 + t / sd.xmax * b.w; },
+                     Y: function(d) { return b.y0 + (hi - d) / hi * b.h; } };
+        }
+
+        function distCurve(ctx, S, t, d, kEnd) {
+            ctx.beginPath();
+            var pen = false;
+            for (var i = 0; i <= kEnd; i++) {
+                if (S.log && !(d[i] > 0)) { pen = false; continue; }
+                var x = S.X(t[i]), y = S.Y(d[i]);
+                if (pen) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+                pen = true;
+            }
+            ctx.stroke();
+        }
+
+        function distAxes(ctx, S) {
+            var b = S.b;
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+            ctx.strokeRect(b.x0, b.y0, b.w, b.h);
+            ctx.fillStyle = '#000'; ctx.font = FONT;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            var xs = niceStep(sd.xmax, 6);
+            for (var x = 0; x <= sd.xmax + 1e-9; x += xs) {
+                var px = S.X(x);
+                ctx.beginPath(); ctx.moveTo(px, b.y0 + b.h); ctx.lineTo(px, b.y0 + b.h + 4); ctx.stroke();
+                ctx.fillText(String(Math.round(x)), px, b.y0 + b.h + 6);
+            }
+            ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            if (S.log) {
+                var e0 = Math.ceil(Math.log10(S.lo) - 1e-9), e1 = Math.floor(Math.log10(S.hi) + 1e-9);
+                var stride = Math.max(1, Math.ceil((e1 - e0 + 1) / 8));
+                for (var e = e0; e <= e1; e++) {
+                    var py = S.Y(Math.pow(10, e));
+                    ctx.beginPath(); ctx.moveTo(b.x0 - (e % stride ? 2 : 4), py); ctx.lineTo(b.x0, py); ctx.stroke();
+                    if (e % stride) continue;
+                    var ex = minus(e);
+                    ctx.font = '9px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+                    var ew = ctx.measureText(ex).width;
+                    ctx.fillText(ex, b.x0 - 6, py - 5);
+                    ctx.font = FONT;
+                    ctx.fillText('10', b.x0 - 7 - ew, py);
+                }
+            } else {
+                var ys = niceStep(S.hi, 5), dec = decimals(ys);
+                for (var y = 0; y <= S.hi + 1e-12; y += ys) {
+                    var qy = S.Y(y);
+                    ctx.beginPath(); ctx.moveTo(b.x0 - 4, qy); ctx.lineTo(b.x0, qy); ctx.stroke();
+                    ctx.fillText(y.toFixed(dec), b.x0 - 6, qy);
+                }
+            }
+            ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.font = '13px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+            ctx.fillText('t (drive periods)', b.x0 + b.w / 2, cvSD._h - 2);
+            ctx.save();
+            ctx.translate(12, b.y0 + b.h / 2); ctx.rotate(-Math.PI / 2);
+            ctx.textBaseline = 'middle';
+            ctx.fillText('phase-space distance d(t)', 0, 0);
+            ctx.restore();
+        }
+
+        function legend(ctx, b, items) {
+            if (!items.length) return;
+            ctx.font = '11px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+            var lh = 16, w = 0;
+            items.forEach(function(it) { w = Math.max(w, ctx.measureText(it.label).width); });
+            var x = b.x0 + 8, y = b.y0 + 8, W = w + 40, H = items.length * lh + 8;
+            ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillRect(x, y, W, H);
+            ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1; ctx.strokeRect(x, y, W, H);
+            items.forEach(function(it, i) {
+                var yy = y + 4 + lh * (i + 0.5);
+                ctx.globalAlpha = it.alpha; ctx.strokeStyle = it.col; ctx.lineWidth = 1.6;
+                ctx.beginPath(); ctx.moveTo(x + 6, yy); ctx.lineTo(x + 28, yy); ctx.stroke();
+                ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                ctx.fillText(it.label, x + 34, yy);
+            });
+        }
+
+        // the two physical pendulums (rod length 1) on the same shaken pivot, y_p = -h cos(2 pi t)
+        function drawPendulums() {
+            var ctx = cvPend.getContext('2d'), W = cvPend._w, H = cvPend._h;
+            var s = Math.min(W, H) / 2.7, cx = W / 2, cy = H / 2;
+            var P = function(x, y) { return [cx + x * s, cy - y * s]; };
+            var hp = EPSILON / (2 * Math.PI * Math.PI);
+            var pivotY = function(t) { return -hp * Math.cos(TWO_PI * t); };
+            var o = sd.cur, k = sd.k;
+            ctx.clearRect(0, 0, W, H);
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+            // reference line, the circle of the rod's reach, and the pivot's track
+            ctx.setLineDash([5, 4]); ctx.strokeStyle = '#bfbfbf'; ctx.lineWidth = 1;
+            var a = P(-1.3, 0), bb = P(1.3, 0);
+            ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(bb[0], bb[1]); ctx.stroke();
+            ctx.setLineDash([1.5, 3]); ctx.strokeStyle = '#cccccc';
+            ctx.beginPath(); ctx.arc(cx, cy, s, 0, TWO_PI); ctx.stroke();
+            ctx.setLineDash([]);
+            var p1 = P(0, -hp), p2 = P(0, hp);
+            ctx.strokeStyle = 'rgba(153,153,153,0.35)'; ctx.lineWidth = 8;
+            ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke();
+
+            var t = o ? o.t[k] : 0, yp = pivotY(t), piv = P(0, yp);
+            var bob = function(th) { return P(Math.sin(th), yp - Math.cos(th)); };
+            if (o) {
+                // bob trails over the last two drive periods: A in the pair's colour, B dashed black
+                var lo = Math.max(0, k - 2 * STEPS);
+                [[o.thA, o.col, 1.3, [], 0.45], [o.thB, '#000', 1, [4, 3], 0.4]].forEach(function(tr) {
+                    ctx.strokeStyle = tr[1]; ctx.lineWidth = tr[2]; ctx.setLineDash(tr[3]); ctx.globalAlpha = tr[4];
+                    ctx.beginPath();
+                    for (var i = lo; i <= k; i++) {
+                        var q = P(Math.sin(tr[0][i]), pivotY(o.t[i]) - Math.cos(tr[0][i]));
+                        if (i === lo) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+                    }
+                    ctx.stroke();
+                });
+                ctx.setLineDash([]); ctx.globalAlpha = 1;
+                // rods, then bobs: B (open) on top of A (filled), as in the phase panel
+                var bA = bob(o.thA[k]), bB = bob(o.thB[k]);
+                ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(piv[0], piv[1]); ctx.lineTo(bA[0], bA[1]); ctx.stroke();
+                ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.setLineDash([5, 3]);
+                ctx.beginPath(); ctx.moveTo(piv[0], piv[1]); ctx.lineTo(bB[0], bB[1]); ctx.stroke();
+                ctx.setLineDash([]);
+                dot(ctx, bA[0], bA[1], 12, o.col, '#000', 1.3);
+                dot(ctx, bB[0], bB[1], 7.5, '#fff', '#000', 1.8);
+            } else {
+                var b0 = bob(0);
+                ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(piv[0], piv[1]); ctx.lineTo(b0[0], b0[1]); ctx.stroke();
+                dot(ctx, b0[0], b0[1], 12, '#4d4d4d', '#000', 1.3);
+            }
+            dot(ctx, piv[0], piv[1], 5, '#fff', '#000', 2);
+
+            ctx.fillStyle = '#000'; ctx.font = '13px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+            ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+            var lab = P(-1.3, 1.3);
+            ctx.fillText('t = ' + t.toFixed(2) + ' drive periods', lab[0], lab[1]);
+        }
+
+        function pairLabel(o) { return 'θ₀ = ' + o.th0.toFixed(2) + ', v₀ = ' + o.v0.toFixed(2); }
+
+        function drawSD() {
+            // left: the two orbits
+            var ctx = cvSP.getContext('2d'), b = boxOf(cvSP, PM), o = sd.cur, k = sd.k;
+            ctx.clearRect(0, 0, cvSP._w, cvSP._h);
+            ctx.save(); clip(ctx, b);
+            drawGuides(ctx, b, ALPHA, EPSILON);
+            sd.retired.forEach(function(r) {
+                ctx.globalAlpha = 0.5; starMarker(ctx, phaseX(b, wrap(r.th0)), phaseY(b, r.v0), 7, r.col); ctx.globalAlpha = 1;
+            });
+            if (o) {
+                var trail = parseInt(trailEl.value, 10), lo = trail === 0 ? 0 : Math.max(0, k - trail * STEPS);
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = o.col; ctx.lineWidth = 1.2;
+                wrappedPath(ctx, b, o.thA, o.vA, lo, k);
+                ctx.globalAlpha = 0.8; ctx.strokeStyle = '#000'; ctx.lineWidth = 0.9; ctx.setLineDash([5, 3]);
+                wrappedPath(ctx, b, o.thB, o.vB, lo, k);
+                ctx.setLineDash([]); ctx.globalAlpha = 1;
+                dot(ctx, phaseX(b, wrap(o.thA[k])), phaseY(b, o.vA[k]), 5, o.col, '#000', 1);
+                dot(ctx, phaseX(b, wrap(o.thB[k])), phaseY(b, o.vB[k]), 4, '#fff', '#000', 1.5);
+            }
+            ctx.restore();
+            phaseFrame(ctx, b, cvSP._h);
+            guideLabels(ctx, b, ALPHA, EPSILON);
+
+            drawPendulums();
+
+            // right: their separation, earlier pairs faded
+            var dctx = cvSD.getContext('2d'), S = distScale(), items = [];
+            dctx.clearRect(0, 0, cvSD._w, cvSD._h);
+            dctx.save(); clip(dctx, S.b);
+            dctx.lineJoin = 'round';
+            sd.retired.forEach(function(r) {
+                dctx.globalAlpha = 0.45; dctx.strokeStyle = r.col; dctx.lineWidth = 1;
+                distCurve(dctx, S, r.t, r.d, r.d.length - 1);
+                items.push({ col: r.col, alpha: 0.45, label: pairLabel(r) });
+            });
+            dctx.globalAlpha = 1;
+            if (o) {
+                dctx.strokeStyle = o.col; dctx.lineWidth = 1.4;
+                distCurve(dctx, S, o.t, o.d, k);
+                if (!S.log || o.d[k] > 0) dot(dctx, S.X(o.t[k]), S.Y(o.d[k]), 4, o.col, '#000', 1);
+                items.push({ col: o.col, alpha: 1, label: pairLabel(o) });
+            }
+            legend(dctx, S.b, items);
+            dctx.restore();
+            distAxes(dctx, S);
+
+            if (o) {
+                sdStatus.innerHTML = 'Pair ' + sd.nPairs + ': &theta;<sub>0</sub> = ' + o.th0.toFixed(2) +
+                    ', v<sub>0</sub> = ' + o.v0.toFixed(2) + ', d<sub>0</sub> = ' + o.d0.toExponential(0) +
+                    '. &nbsp; t = ' + o.t[k].toFixed(2) + ', &nbsp;d = ' + Number(o.d[k].toPrecision(3));
+            }
+        }
+
+        function setPlaying(p) {
+            sd.playing = p;
+            playBtn.innerHTML = p ? '<i class="fa fa-pause"></i> Pause' : '<i class="fa fa-play"></i> Play';
+            if (p) { lastTs = null; acc = 0; requestAnimationFrame(tickSD); }
+        }
+
+        function tickSD(ts) {
+            if (!sd.playing || !sd.cur) return;
+            if (lastTs !== null) acc += ts - lastTs;
+            lastTs = ts;
+            var n = Math.min(5, Math.floor(acc / FRAME_MS));
+            if (n > 0) {
+                acc = n === 5 ? 0 : acc - n * FRAME_MS;
+                sd.k = Math.min(sd.k + n * parseInt(speedEl.value, 10), sd.cur.d.length - 1);
+                frameEl.value = sd.k;
+                drawSD();
+                if (sd.k === sd.cur.d.length - 1) { setPlaying(false); return; }
+            }
+            requestAnimationFrame(tickSD);
+        }
+
+        function jumpToEnd() {
+            if (!sd.cur) return;
+            setPlaying(false);
+            sd.k = sd.cur.d.length - 1;
+            frameEl.value = sd.k;
+            drawSD();
+        }
+
+        function addPair(th0, v0) {
+            var d0 = Math.pow(10, parseFloat(d0El.value)), n = parseInt(periodsEl.value, 10);
+            if (sd.cur) sd.retired.push(sd.cur);   // keep its full distance curve, faded
+            var r = integrate([th0, th0 + d0], [v0, v0], n, ALPHA, EPSILON, true);
+            var d = separation(r.th[0], r.v[0], r.th[1], r.v[1]);
+            var dm = Infinity, dM = 0;
+            for (var i = 0; i < d.length; i++) { if (d[i] < dm) dm = d[i]; if (d[i] > dM) dM = d[i]; }
+            sd.cur = { t: r.t, thA: r.th[0], vA: r.v[0], thB: r.th[1], vB: r.v[1], d: d,
+                       th0: th0, v0: v0, d0: d0, col: COLORS[sd.nPairs % COLORS.length] };
+            sd.nPairs++;
+            sd.xmax = Math.max(n, sd.xmax);
+            sd.dmin = Math.min(sd.dmin, Math.max(dm, 1e-12)); sd.dmax = Math.max(sd.dmax, dM);
+            sd.k = 0;
+            frameEl.max = d.length - 1; frameEl.value = 0;
+            [playBtn, endBtn, frameEl].forEach(function(el) { el.disabled = false; });
+            setPlaying(false);
+            drawSD();
+            if (animateEl.checked) setPlaying(true); else jumpToEnd();
+        }
+
+        function clearSD() {
+            setPlaying(false);
+            sd.cur = null; sd.retired = []; sd.nPairs = 0; sd.k = 0;
+            sd.dmin = Infinity; sd.dmax = 0; sd.xmax = parseInt(periodsEl.value, 10);
+            [playBtn, endBtn, frameEl].forEach(function(el) { el.disabled = true; });
+            sdStatus.textContent = 'Click on the left panel to launch a pair of nearby orbits.';
+            drawSD();
+        }
+
+        cvSP.addEventListener('click', function(e) {
+            var p = clickPhase(cvSP, e);
+            if (p) addPair(p[0], p[1]);
+        });
+        playBtn.addEventListener('click', function() {
+            if (!sd.cur) return;
+            if (!sd.playing && sd.k === sd.cur.d.length - 1) sd.k = 0;
+            setPlaying(!sd.playing);
+        });
+        endBtn.addEventListener('click', jumpToEnd);
+        frameEl.addEventListener('input', function() { sd.k = parseInt(frameEl.value, 10); drawSD(); });
+        logEl.addEventListener('change', drawSD);
+        document.getElementById('sd-clear').addEventListener('click', clearSD);
+
+        function resize() {
+            fit(cvSS, 0.875);
+            // equal heights side by side (columns 4 : 3 : 5)
+            fit(cvSP, 0.95);
+            fit(cvPend, 0.95 * 4 / 3);
+            fit(cvSD, 0.95 * 4 / 5);
+            drawSS(); drawSD();
+        }
+        window.addEventListener('resize', resize);
+        resize();
+        clearSS();
+        clearSD();
+    })();
+    </script>
+
+    <!-- The Three-Body Problem: a surface of section from the Namouni map, and an N-body integration
+         (star, planet, massless test body) started from the same clicked point.
+         Ported from threebody_interactive_ver5.ipynb. -->
+    <script>
+    (function() {
+        // <tb-core> physics, kept free of the page so it can be checked against the notebook
+        var TWO_PI = 2 * Math.PI;
+        var EPS = Math.cbrt(3e-6 / 3);              // Hill radius scale
+        var MU = 3 * EPS * EPS * EPS;               // planet-star mass ratio
+        var J = 10;                                 // J:J-1 resonance
+        var A1 = 1, A2 = Math.pow(J / (J - 1), 2 / 3) * A1;
+        var ECROSS = (A2 - A1) / A1;
+        var AR_RES = ECROSS / EPS;                  // a_r at exact resonance, in Hill units
+        var ECC = 3 * EPS;                          // eccentricity at the bottom of the a_r range
+        // period-ratio range of the section: regular islands and a chaotic sea for MU = 3e-6,
+        // and every point in it runs the 10th-order map without error
+        var RATIO_LO = 1.14, RATIO_HI = 1.165;
+        var AR_LO = arFromRatio(RATIO_LO);
+        var C_KI = 3 / 8 * AR_LO * AR_LO - Math.pow(ECC / EPS, 2) / 2;   // conserved C = K - I
+        var NCONJ = 200;          // conjunctions per clicked orbit on the section
+        var NB_STEPS = 200;       // N-body steps (and samples) per planet orbit
+        var NB_CHUNK = 5;         // planet orbits integrated at a time, ahead of the animation
+
+        function ratioFromAr(ar) { return Math.pow(1 + EPS * ar, 1.5); }
+        function arFromRatio(r) { return (Math.pow(r, 2 / 3) - 1) / EPS; }
+        function wrap(x) { return ((x + Math.PI) % TWO_PI + TWO_PI) % TWO_PI - Math.PI; }
+
+        // eccentricity on the section's C = K - I surface, or null if a_r is below it
+        function eccentricityFor(ar) {
+            var I0 = 3 / 8 * ar * ar - C_KI;
+            return I0 > 0 ? Math.sqrt(2 * I0) * EPS : null;
+        }
+
+        // ---------- Namouni map, 10th order (massive planet inside the test body) ----------
+        // [A, B, W^{A,B}]: the term W (2I)^{A/2} / a_r^{A+1} of the generating function, with
+        // harmonic B of theta'. W^{1,1} is the first-order kick and is applied separately.
+        var W101 = 3.359350011;
+        var WTERMS = [
+            [2, 0, -1], [4, 0, -3 / 8], [6, 0, -5 / 24], [8, 0, -35 / 256], [10, 0, -63 / 640],
+            [3, 1, 0.1430675142], [5, 1, 0.2652528982], [7, 1, 0.1598760057], [9, 1, 0.1125398541],
+            [2, 2, -2.678665722], [4, 2, 0.5232506456], [6, 2, -0.2880525893], [8, 2, -0.1146109541], [10, 2, -0.09264257446],
+            [3, 3, 2.639498803], [5, 3, -1.270297850], [7, 3, 0.5079066956], [9, 3, 0.04027194541],
+            [4, 4, -2.855951527], [6, 4, 2.244981532], [8, 4, -1.030263325], [10, 4, 0.1370220235],
+            [5, 5, 3.259400253], [7, 5, -3.586274249], [9, 5, 2.034584646],
+            [6, 6, -3.850815349], [8, 6, 5.467708834], [10, 6, -3.807558748],
+            [7, 7, 4.661571101], [9, 7, -8.124434579],
+            [8, 8, -5.745863967], [10, 8, 11.88290720],
+            [9, 9, 7.181868977],
+            [10, 10, -9.077037610]
+        ];
+
+        function synodicAngle(K) {   // exact (Duncan et al. 1989) advance of the conjunction longitude
+            return TWO_PI * Math.abs(1 / (Math.pow(1 + Math.sqrt(8 * K / 3) * EPS, -1.5) - 1));
+        }
+
+        // one conjunction: [I, K, phi, lambda] -> next, or null where the map fails
+        function namouniStep(I, K, phi, lam, ar) {
+            var s = Math.sqrt(2 * I), ar2 = ar * ar;
+            var hp = s * Math.cos(phi) + 2 * W101 * Math.sin(lam) / ar2;
+            var kp = s * Math.sin(phi) - 2 * W101 * Math.cos(lam) / ar2;
+            var phip = Math.atan2(kp, hp), thp = phip - lam;
+            var Ip = 0.5 * (hp * hp + kp * kp);
+            // implicit update of I and phi, iterated to convergence
+            var nT = WTERMS.length, cI = new Float64Array(nT), cP = new Float64Array(nT);
+            for (var j = 0; j < nT; j++) {
+                var A = WTERMS[j][0], B = WTERMS[j][1], c = WTERMS[j][2] / Math.pow(ar, A + 1);
+                cI[j] = 2 * B * c * Math.sin(B * thp);
+                cP[j] = (B === 0 ? 1 : 2) * c * Math.pow(2, A / 2) * (A / 2) * Math.cos(B * thp);
+            }
+            var Iprev = Ip, phiprev = phip, In, phin;
+            for (var it = 0; ; it++) {
+                if (it === 1000) return null;
+                var dI = 0, dphi = 0;
+                for (j = 0; j < nT; j++) {
+                    var Ah = WTERMS[j][0] / 2;
+                    dI += cI[j] * Math.pow(2 * Iprev, Ah);
+                    dphi += cP[j] * Math.pow(Iprev, Ah - 1);
+                }
+                In = Ip - dI; phin = phip - dphi;
+                if (!isFinite(In) || !isFinite(phin)) return null;
+                if (Math.abs((In - Iprev) / In) < 1e-12 && Math.abs((phin - phiprev) / phin) < 1e-12) break;
+                Iprev = In; phiprev = phin;
+            }
+            var Kn = K + In - I;
+            return [In, Kn, phin, lam + synodicAngle(Kn)];
+        }
+
+        // the map's orbit from a clicked (theta0, ar0): section points (theta, a_r), or null
+        function namouniOrbit(theta0, ar0) {
+            var e0 = eccentricityFor(ar0);
+            var X = [Math.pow(e0 / EPS, 2) / 2, 3 / 8 * ar0 * ar0, theta0, 0];   // lambda0 = 0, phi0 = theta0
+            var th = [], ar = [];
+            for (var i = 0; i <= NCONJ; i++) {
+                if (i > 0) X = namouniStep(X[0], X[1], X[2], X[3], ar0);
+                if (X === null || !(X[1] >= 0)) return null;
+                th.push(wrap(X[2] - X[3]));
+                ar.push(Math.sqrt(8 / 3 * X[1]));
+            }
+            return { theta: th, ar: ar };
+        }
+
+        // ---------- Kepler orbits about the star (GM = 1) ----------
+        function keplerSolve(M, e) {
+            var E = M + e * Math.sin(M);
+            for (var i = 0; i < 50; i++) {
+                var dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+                E -= dE;
+                if (Math.abs(dE) < 1e-14) break;
+            }
+            return E;
+        }
+
+        function stateFromElements(a, e, pomega, l) {
+            var E = keplerSolve(l - pomega, e), cE = Math.cos(E), sE = Math.sin(E), b = Math.sqrt(1 - e * e);
+            var n = Math.pow(a, -1.5), q = n * a / (1 - e * cE);
+            var xo = a * (cE - e), yo = a * b * sE, vxo = -q * sE, vyo = q * b * cE;
+            var c = Math.cos(pomega), s = Math.sin(pomega);
+            return [xo * c - yo * s, xo * s + yo * c, vxo * c - vyo * s, vxo * s + vyo * c];
+        }
+
+        // [a, e, pomega] of a heliocentric state
+        function elementsOf(st) {
+            var x = st[0], y = st[1], vx = st[2], vy = st[3];
+            var r = Math.sqrt(x * x + y * y), v2 = vx * vx + vy * vy, rv = x * vx + y * vy;
+            var ex = (v2 - 1 / r) * x - rv * vx, ey = (v2 - 1 / r) * y - rv * vy;
+            return [1 / (2 / r - v2), Math.sqrt(ex * ex + ey * ey), Math.atan2(ey, ex)];
+        }
+
+        // move a state along its Kepler ellipse by dt (Gauss's f and g functions); writes into out
+        function keplerDrift(st, dt, out) {
+            var x = st[0], y = st[1], vx = st[2], vy = st[3];
+            var r0 = Math.sqrt(x * x + y * y), v2 = vx * vx + vy * vy, sig = x * vx + y * vy;
+            var a = 1 / (2 / r0 - v2), sa = Math.sqrt(a), n = 1 / (a * sa);
+            var c1 = sig / sa, c2 = 1 - r0 / a, M = n * dt, dE = M, s, c;
+            for (var i = 0; i < 30; i++) {
+                s = Math.sin(dE); c = Math.cos(dE);
+                var d = (dE + c1 * (1 - c) - c2 * s - M) / (1 + c1 * s - c2 * c);
+                dE -= d;
+                if (Math.abs(d) < 1e-15) break;
+            }
+            s = Math.sin(dE); c = Math.cos(dE);
+            var f = 1 - a / r0 * (1 - c), g = dt + (s - dE) / n;
+            var r = a + (r0 - a) * c + sig * sa * s;
+            var fd = -sa * s / (r * r0), gd = 1 - a / r * (1 - c);
+            out[0] = f * x + g * vx; out[1] = f * y + g * vy;
+            out[2] = fd * x + gd * vx; out[3] = fd * y + gd * vy;
+            return out;
+        }
+
+        // ---------- N-body: star, planet and a massless test body ----------
+        // The planet only feels the star, so its heliocentric orbit is an exact circle and only
+        // the test body is integrated: a Wisdom-Holman map in heliocentric coordinates, with a Kepler
+        // drift about the star and a kick from the planet (direct plus indirect term). Units: G = 1,
+        // star mass 1, a_p = 1, time t in planet orbits (2 pi in these units). The body starts half a
+        // synodic period before its first conjunction, with the clicked elements, and both mean
+        // longitudes reach 0 at that conjunction, so it happens at the clicked theta0.
+        function NBodyOrbit(theta0, ar0) {
+            var a = A1 * (1 + EPS * ar0), nq = Math.pow(a / A1, -1.5);
+            this.tFirst = 0.5 / (1 - nq);              // time of the first conjunction
+            this.lp0 = -TWO_PI * this.tFirst;          // planet's longitude at t = 0
+            this.np = Math.sqrt(1 + MU);               // its mean motion
+            this.st = stateFromElements(a, eccentricityFor(ar0), theta0 + Math.PI, -TWO_PI * nq * this.tFirst);
+            this.tau = 0;
+            this.ts = []; this.S = []; this.el = [];   // samples: time, test body state, [a, e, pomega]
+            this.bounds = [0];                         // segment boundaries: start, then each conjunction
+            this.tDone = [];                           // when the body has gone once round after each boundary
+            this.segAE = [];                           // its [a, e] at those times
+            this._tmp = [0, 0, 0, 0];
+            this._push();
+            this._advance(NB_CHUNK);
+        }
+
+        NBodyOrbit.prototype.planetAngle = function(t) { return this.lp0 + this.np * TWO_PI * t; };
+
+        NBodyOrbit.prototype._kick = function(h) {
+            var ang = this.planetAngle(this.tau / TWO_PI), px = A1 * Math.cos(ang), py = A1 * Math.sin(ang);
+            var st = this.st, dx = st[0] - px, dy = st[1] - py;
+            var d2 = dx * dx + dy * dy, d3 = d2 * Math.sqrt(d2), p3 = A1 * A1 * A1;
+            st[2] -= h * MU * (dx / d3 + px / p3);
+            st[3] -= h * MU * (dy / d3 + py / p3);
+        };
+
+        NBodyOrbit.prototype._step = function(h) {
+            this._kick(h / 2);
+            keplerDrift(this.st, h, this._tmp);
+            var t = this.st; this.st = this._tmp; this._tmp = t;
+            this.tau += h;
+            this._kick(h / 2);
+        };
+
+        NBodyOrbit.prototype._push = function() {
+            this.ts.push(this.tau / TWO_PI);
+            this.S.push(this.st.slice());
+            this.el.push(elementsOf(this.st));
+        };
+
+        // index of the last sample at or before t (clipped to the samples held)
+        NBodyOrbit.prototype._index = function(t, lo) {
+            var ts = this.ts, hi = ts.length - 1;
+            lo = lo || 0;
+            if (t >= ts[hi]) return hi;
+            if (t < ts[lo]) return lo;
+            while (hi - lo > 1) { var m = (lo + hi) >> 1; if (ts[m] <= t) lo = m; else hi = m; }
+            return lo;
+        };
+
+        // test body's heliocentric [x, y] at t, Kepler-propagated from the sample before
+        NBodyOrbit.prototype._bodyAt = function(t, k) {
+            return keplerDrift(this.S[k], (t - this.ts[k]) * TWO_PI, this._tmp2 || (this._tmp2 = [0, 0, 0, 0]));
+        };
+
+        function gapOf(pa, x, y) {   // true longitude of (x, y) minus the planet's, in (-pi, pi]
+            var px = Math.cos(pa), py = Math.sin(pa);
+            return Math.atan2(px * y - py * x, px * x + py * y);
+        }
+
+        NBodyOrbit.prototype.longitudeGap = function(t) {
+            var q = this._bodyAt(t, this._index(t));
+            return gapOf(this.planetAngle(t), q[0], q[1]);
+        };
+
+        // integrate to tEnd, find the conjunctions on the way, and drop samples before tKeep
+        NBodyOrbit.prototype._advance = function(tEnd, tKeep) {
+            var n0 = this.ts.length, h = TWO_PI / NB_STEPS;
+            while (this.tau < TWO_PI * tEnd) { this._step(h); this._push(); }
+            // conjunctions: the longitude gap changes sign (but not at opposition, where it wraps)
+            var gPrev = null;
+            for (var i = n0 - 1; i < this.ts.length; i++) {
+                var g = gapOf(this.planetAngle(this.ts[i]), this.S[i][0], this.S[i][1]);
+                if (gPrev !== null && gPrev * g < 0 && Math.abs(gPrev) < Math.PI / 2 && Math.abs(g) < Math.PI / 2) {
+                    var lo = this.ts[i - 1], hi = this.ts[i];
+                    for (var b = 0; b < 40; b++) {
+                        var mid = (lo + hi) / 2;
+                        if (this.longitudeGap(mid) * gPrev > 0) lo = mid; else hi = mid;
+                    }
+                    this.bounds.push(hi);
+                }
+                gPrev = g;
+            }
+            // the body's [a, e] one orbit after each boundary, for the traces in the zoom panel
+            while (this.tDone.length < this.bounds.length) {
+                var bt = this.bounds[this.tDone.length];
+                var tE = bt + Math.pow(this.el[this._index(bt)][0] / A1, 1.5);
+                if (tE > this.ts[this.ts.length - 1]) break;
+                var el = this.el[this._index(tE)];
+                this.tDone.push(tE);
+                this.segAE.push([el[0], el[1]]);
+            }
+            if (tKeep !== undefined) {
+                var keep = Math.max(0, this._index(tKeep));
+                if (keep > 0) { this.ts.splice(0, keep); this.S.splice(0, keep); this.el.splice(0, keep); }
+            }
+        };
+
+        // make sure the integration has reached tMax; samples well before tMin can go
+        NBodyOrbit.prototype.ensure = function(tMax, tMin) {
+            if (this.ts[this.ts.length - 1] < tMax) this._advance(tMax + NB_CHUNK, tMin - 2);
+        };
+
+        // positions at increasing times T in the frame that rotates with the body's pericentre (at the
+        // top): planet in (px, py), test body in (qx, qy)
+        NBodyOrbit.prototype.framePositions = function(T) {
+            var n = T.length;
+            this.ensure(T[n - 1], T[0]);
+            var out = { px: new Float64Array(n), py: new Float64Array(n), qx: new Float64Array(n), qy: new Float64Array(n) };
+            var k = 0;
+            for (var i = 0; i < n; i++) {
+                var t = T[i];
+                k = this._index(t, k);
+                var q = this._bodyAt(t, k), pa = this.planetAngle(t);
+                var psi = Math.PI / 2 - this.el[k][2], c = Math.cos(psi), s = Math.sin(psi);
+                var px = A1 * Math.cos(pa), py = A1 * Math.sin(pa);
+                out.px[i] = c * px - s * py; out.py[i] = s * px + c * py;
+                out.qx[i] = c * q[0] - s * q[1]; out.qy[i] = s * q[0] + c * q[1];
+            }
+            return out;
+        };
+
+        // number of conjunctions before t
+        NBodyOrbit.prototype.segment = function(t) {
+            var n = 0;
+            while (n < this.bounds.length && this.bounds[n] <= t) n++;
+            return n - 1;
+        };
+
+        // directions (in the rotating frame) of the conjunctions in (t0, t1]
+        NBodyOrbit.prototype.conjunctionAngles = function(t0, t1) {
+            this.ensure(t1, t0);
+            var out = [];
+            for (var i = this.bounds.length - 1; i > 0 && this.bounds[i] > t0; i--) {
+                var b = this.bounds[i];
+                if (b <= t1) out.unshift(this.planetAngle(b) + Math.PI / 2 - this.el[this._index(b)][2]);
+            }
+            return out;
+        };
+
+        // number of segments (between conjunctions) the body has been all the way round in by t
+        NBodyOrbit.prototype.segmentsDone = function(t) {
+            var n = this.tDone.length;
+            while (n > 0 && this.tDone[n - 1] > t) n--;
+            return n;
+        };
+        // </tb-core>
+
+        // ---------- display settings ----------
+        var NTRACE = 500;               // conjunctions whose passes are traced in the zoom panel
+        var TRAIL_N = 1000;             // trail points over the last planet orbit
+        var NLINES = 20;                // conjunction lines kept on screen
+        var ZOOM_MIN = 0.1, ZOOM_MAX = 100;   // zoom half-width range, in Hill radii
+        var HILL = EPS * A1;            // one Hill radius in AU
+        var LIM = 1.15 * A2 * (1 + 0.25 * ECROSS);   // half-width of the middle panel, AU
+        var SKY_HALF = 1.5 * LIM;
+        var FG = '#e6e6e6';             // planet, its trail and the zoom box
+        var SPACE = 'rgb(2,3,9)';
+        var PALETTE = ['#1f9bff', '#ff4f4f', '#2ecc40', '#ff9f1c', '#c77dff', '#00c2c7', '#ff5cad', '#c9b400'];
+        var FONT = '13px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+        var MARGIN = { l: 66, r: 10, t: 6, b: 42 };
+
+        // ---------- a star field in rotating-frame AU, shared by the middle and zoom panels ----------
+        function makeSky(seed, half) {
+            var s = seed >>> 0;
+            function rand() {   // mulberry32
+                s = (s + 0x6D2B79F5) >>> 0;
+                var t = Math.imul(s ^ (s >>> 15), 1 | s);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            }
+            function normal() { return Math.sqrt(-2 * Math.log(1 - rand())) * Math.cos(TWO_PI * rand()); }
+
+            // faint nebulae: smoothed noise, thresholded (periodic Gaussian blur on an N x N grid)
+            var N = 256, img = new Float32Array(N * N * 3);
+            for (var p = 0; p < N * N; p++) { img[3 * p] = 0.008; img[3 * p + 1] = 0.012; img[3 * p + 2] = 0.035; }
+            [[[0.35, 0.12, 0.55], 0.004, 0.14], [[0.10, 0.28, 0.55], 0.0075, 0.12]].forEach(function(spec) {
+                var sigma = N / (Math.SQRT2 * Math.PI * spec[1] * 1200), R = Math.ceil(3 * sigma);
+                var ker = [], kSum = 0;
+                for (var d = -R; d <= R; d++) { var w = Math.exp(-d * d / (2 * sigma * sigma)); ker.push(w); kSum += w; }
+                var a = new Float64Array(N * N), b = new Float64Array(N * N), i, j, d2, acc;
+                for (i = 0; i < N * N; i++) a[i] = normal();
+                for (i = 0; i < N; i++) for (j = 0; j < N; j++) {
+                    for (acc = 0, d2 = -R; d2 <= R; d2++) acc += ker[d2 + R] * a[i * N + ((j + d2 + N) % N)];
+                    b[i * N + j] = acc / kSum;
+                }
+                for (i = 0; i < N; i++) for (j = 0; j < N; j++) {
+                    for (acc = 0, d2 = -R; d2 <= R; d2++) acc += ker[d2 + R] * b[((i + d2 + N) % N) * N + j];
+                    a[i * N + j] = acc / kSum;
+                }
+                var mean = 0, sq = 0;
+                for (i = 0; i < N * N; i++) mean += a[i];
+                mean /= N * N;
+                for (i = 0; i < N * N; i++) sq += (a[i] - mean) * (a[i] - mean);
+                var sd = Math.sqrt(sq / (N * N));
+                for (i = 0; i < N * N; i++) {
+                    var v = Math.max(0, (a[i] - mean) / sd - 0.4);
+                    v = Math.pow(v, 1.5) * spec[2];
+                    for (var ch = 0; ch < 3; ch++) img[3 * i + ch] += v * spec[0][ch];
+                }
+            });
+            var neb = document.createElement('canvas');
+            neb.width = neb.height = N;
+            var nctx = neb.getContext('2d'), data = nctx.createImageData(N, N);
+            for (var q = 0; q < N * N; q++) {
+                for (var c = 0; c < 3; c++) data.data[4 * q + c] = Math.round(255 * Math.min(1, img[3 * q + c]));
+                data.data[4 * q + 3] = 255;
+            }
+            nctx.putImageData(data, 0, 0);   // row 0 is the top, y = +half
+
+            // stars: position in AU, brightness and a slight tint
+            var tints = [[255, 255, 255], [191, 217, 255], [255, 230, 179], [255, 191, 153]], cum = [0.55, 0.8, 0.95, 1];
+            var stars = [];
+            for (var m = 0; m < 4000; m++) {
+                var x = (2 * rand() - 1) * half, y = (2 * rand() - 1) * half;
+                var br = Math.min(1, 0.15 + 0.3 * (Math.pow(1 - rand(), -1 / 2.2) - 1));
+                var u = rand(), ti = 0;
+                while (u > cum[ti]) ti++;
+                var tc = tints[ti];
+                stars.push({ x: x, y: y, b: br, r: 0.67 * Math.sqrt(0.4 + 3.5 * br * br),
+                             col: 'rgba(' + tc[0] + ',' + tc[1] + ',' + tc[2] + ',' + br.toFixed(3) + ')',
+                             tint: tc });
+            }
+            // a soft halo round the brightest
+            var glow = stars.slice().sort(function(p1, p2) { return p2.b - p1.b; }).slice(0, 40).map(function(st) {
+                return { x: st.x, y: st.y, r: 0.67 * Math.sqrt(60 * st.b),
+                         col: 'rgba(' + st.tint.join(',') + ',' + (0.12 * st.b).toFixed(3) + ')' };
+            });
+            return { neb: neb, N: N, half: half, stars: stars, glow: glow };
+        }
+
+        // ---------- canvases ----------
+        var cvSec = document.getElementById('tb-sec');
+        var cvMid = document.getElementById('tb-mid');
+        var cvZoom = document.getElementById('tb-zoomview');
+        var statusEl = document.getElementById('tb-status');
+        var pauseBtn = document.getElementById('tb-pause');
+        var speedEl = document.getElementById('tb-speed'), speedVal = document.getElementById('tb-speed-val');
+        var zoomEl = document.getElementById('tb-zoom'), zoomVal = document.getElementById('tb-zoom-val');
+        var sky = null, midCache = document.createElement('canvas'), zoomCache = document.createElement('canvas');
+
+        function fit(cv) {   // square plot box inside the margins
+            var dpr = window.devicePixelRatio || 1, w = cv.clientWidth;
+            var side = Math.max(50, w - MARGIN.l - MARGIN.r), h = side + MARGIN.t + MARGIN.b;
+            cv.style.height = h + 'px';
+            cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+            cv._w = w; cv._h = h; cv._dpr = dpr;
+            cv._b = { x0: MARGIN.l, y0: MARGIN.t, s: side };
+        }
+
+        // data -> CSS pixel transforms for a view [x0, x1] x [y0, y1]
+        function viewOf(cv, x0, x1, y0, y1) {
+            var b = cv._b;
+            return { b: b, x0: x0, x1: x1, y0: y0, y1: y1,
+                     X: function(x) { return b.x0 + (x - x0) / (x1 - x0) * b.s; },
+                     Y: function(y) { return b.y0 + (y1 - y) / (y1 - y0) * b.s; } };
+        }
+        function midView() { return viewOf(cvMid, -LIM, LIM, -LIM, LIM); }
+        function zoomView() {
+            var c = zoom.centre, h = zoom.half;
+            return viewOf(cvZoom, c[0] - h, c[0] + h, c[1] - h, c[1] + h);
+        }
+
+        function ctxFor(cv, clear) {
+            var ctx = cv.getContext('2d'), d = cv._dpr || 1;
+            ctx.setTransform(d, 0, 0, d, 0, 0);
+            if (clear) ctx.clearRect(0, 0, cv._w, cv._h);
+            return ctx;
+        }
+
+        function minus(s) { return s.replace('-', '−'); }
+
+        function axes(ctx, v, xticks, yticks, xlab, ylab) {
+            var b = v.b;
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+            ctx.strokeRect(b.x0, b.y0, b.s, b.s);
+            ctx.fillStyle = '#000'; ctx.font = FONT;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            xticks.forEach(function(tk) {
+                var x = v.X(tk[0]);
+                ctx.beginPath(); ctx.moveTo(x, b.y0 + b.s); ctx.lineTo(x, b.y0 + b.s + 4); ctx.stroke();
+                ctx.fillText(tk[1], x, b.y0 + b.s + 6);
+            });
+            ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            yticks.forEach(function(tk) {
+                var y = v.Y(tk[0]);
+                ctx.beginPath(); ctx.moveTo(b.x0 - 4, y); ctx.lineTo(b.x0, y); ctx.stroke();
+                ctx.fillText(tk[1], b.x0 - 6, y);
+            });
+            ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+            ctx.fillText(xlab, b.x0 + b.s / 2, b.y0 + b.s + MARGIN.b - 2);
+            ctx.save();
+            ctx.translate(13, b.y0 + b.s / 2); ctx.rotate(-Math.PI / 2);
+            ctx.textBaseline = 'middle';
+            richText(ctx, typeof ylab === 'string' ? [[ylab]] : ylab);
+            ctx.restore();
+        }
+
+        // text centred on (0, 0), from parts [text] or [text, true] for a subscript
+        function richText(ctx, parts) {
+            var SUB = '10px Lato, "Helvetica Neue", Helvetica, Arial, sans-serif', w = 0;
+            parts.forEach(function(p) { ctx.font = p[1] ? SUB : FONT; w += ctx.measureText(p[0]).width; });
+            var x = -w / 2;
+            ctx.textAlign = 'left';
+            parts.forEach(function(p) {
+                ctx.font = p[1] ? SUB : FONT;
+                ctx.fillText(p[0], x, p[1] ? 4 : 0);
+                x += ctx.measureText(p[0]).width;
+            });
+            ctx.font = FONT;
+        }
+
+        function clipBox(ctx, b) { ctx.beginPath(); ctx.rect(b.x0, b.y0, b.s, b.s); ctx.clip(); }
+
+        function goldStar(ctx, x, y, R) {
+            ctx.beginPath();
+            for (var i = 0; i < 10; i++) {
+                var r = i % 2 ? 0.42 * R : R, a = -Math.PI / 2 + i * Math.PI / 5;
+                ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
+            }
+            ctx.closePath();
+            ctx.fillStyle = 'gold'; ctx.fill();
+        }
+
+        function drawSky(ctx, v) {
+            var b = v.b, H = sky.half, N = sky.N;
+            ctx.fillStyle = SPACE; ctx.fillRect(b.x0, b.y0, b.s, b.s);
+            // the nebula image covers [-H, H] in x and y; draw the part in view
+            var sx = (v.x0 + H) / (2 * H) * N, sy = (H - v.y1) / (2 * H) * N, sw = (v.x1 - v.x0) / (2 * H) * N;
+            var cx0 = Math.max(0, sx), cy0 = Math.max(0, sy), cx1 = Math.min(N, sx + sw), cy1 = Math.min(N, sy + sw);
+            if (cx1 > cx0 && cy1 > cy0) {
+                var k = b.s / sw;
+                ctx.imageSmoothingEnabled = true;
+                ctx.drawImage(sky.neb, cx0, cy0, cx1 - cx0, cy1 - cy0,
+                              b.x0 + (cx0 - sx) * k, b.y0 + (cy0 - sy) * k, (cx1 - cx0) * k, (cy1 - cy0) * k);
+            }
+            // stars stay sharp however far the view is magnified
+            var pad = (v.x1 - v.x0) * 0.02;
+            [sky.stars, sky.glow].forEach(function(list) {
+                list.forEach(function(st) {
+                    if (st.x < v.x0 - pad || st.x > v.x1 + pad || st.y < v.y0 - pad || st.y > v.y1 + pad) return;
+                    ctx.beginPath(); ctx.arc(v.X(st.x), v.Y(st.y), st.r, 0, TWO_PI);
+                    ctx.fillStyle = st.col; ctx.fill();
+                });
+            });
+            if (v.X(0) > b.x0 - 10 && v.X(0) < b.x0 + b.s + 10 && v.Y(0) > b.y0 - 10 && v.Y(0) < b.y0 + b.s + 10)
+                goldStar(ctx, v.X(0), v.Y(0), 9);
+        }
+
+        // polyline in data coordinates, skipping segments that are wholly off one side of the view
+        // (at high magnification they map far off the canvas)
+        function polyline(ctx, v, xs, ys, n) {
+            var pad = (v.x1 - v.x0) * 0.05, pen = false;
+            ctx.beginPath();
+            for (var i = 0; i < n; i++) {
+                var x = xs[i], y = ys[i];
+                if (i > 0) {
+                    var x0 = xs[i - 1], y0 = ys[i - 1];
+                    if ((x < v.x0 - pad && x0 < v.x0 - pad) || (x > v.x1 + pad && x0 > v.x1 + pad) ||
+                        (y < v.y0 - pad && y0 < v.y0 - pad) || (y > v.y1 + pad && y0 > v.y1 + pad)) { pen = false; continue; }
+                    if (!pen) ctx.moveTo(v.X(x0), v.Y(y0));
+                    ctx.lineTo(v.X(x), v.Y(y));
+                    pen = true;
+                }
+            }
+            ctx.stroke();
+        }
+
+        // ray from the star at angle a, out to 2 LIM, clipped to the view (Liang-Barsky)
+        function ray(ctx, v, a) {
+            var dx = 2 * LIM * Math.cos(a), dy = 2 * LIM * Math.sin(a), t0 = 0, t1 = 1;
+            var p = [-dx, dx, -dy, dy], q = [-v.x0, v.x1, -v.y0, v.y1];
+            for (var i = 0; i < 4; i++) {
+                if (p[i] === 0) { if (q[i] < 0) return; continue; }
+                var r = q[i] / p[i];
+                if (p[i] < 0) t0 = Math.max(t0, r); else t1 = Math.min(t1, r);
+            }
+            if (t0 >= t1) return;
+            ctx.beginPath(); ctx.moveTo(v.X(t0 * dx), v.Y(t0 * dy)); ctx.lineTo(v.X(t1 * dx), v.Y(t1 * dy)); ctx.stroke();
+        }
+
+        function dot(ctx, x, y, r, fill, stroke) {
+            ctx.beginPath(); ctx.arc(x, y, r, 0, TWO_PI);
+            ctx.fillStyle = fill; ctx.fill();
+            if (stroke) { ctx.lineWidth = 1.2; ctx.strokeStyle = stroke; ctx.stroke(); }
+        }
+
+        // ---------- state ----------
+        var sections = [];   // section points of each clicked orbit
+        var zoom = { centre: [A1 * (1 + EPS * AR_RES / 2), 0], half: Math.pow(10, parseFloat(zoomEl.value)) * HILL };
+        var anim = { orb: null, col: null, t: 0, last: 0, paused: false, frame: null, conj: [],
+                     traceKey: null, traceAE: null, shown: 0, traced: 0 };
+        var rafId = null, renderQueued = false, visible = true;
+
+        function setStatus(text, color) { statusEl.textContent = text; statusEl.style.color = color || '#555'; }
+
+        // ---------- left: surface of section ----------
+        var SEC_Y0 = RATIO_LO, SEC_Y1 = RATIO_HI;
+        function secView() { return viewOf(cvSec, -Math.PI, Math.PI, SEC_Y0, SEC_Y1); }
+
+        function drawSection() {
+            var ctx = ctxFor(cvSec, true), v = secView(), b = v.b;
+            ctx.save(); clipBox(ctx, b);
+            ctx.fillStyle = '#fff'; ctx.fillRect(b.x0, b.y0, b.s, b.s);
+            sections.forEach(function(o) {
+                ctx.fillStyle = o.col;
+                for (var i = 0; i < o.x.length; i++) {
+                    ctx.beginPath(); ctx.arc(v.X(o.x[i]), v.Y(o.y[i]), 1.5, 0, TWO_PI); ctx.fill();
+                }
+            });
+            ctx.restore();
+            var yt = [];
+            for (var r = 1.14; r <= 1.1651; r += 0.005) yt.push([r, r.toFixed(3)]);
+            axes(ctx, v, [[-Math.PI, '−π'], [-Math.PI / 2, '−π/2'], [0, '0'], [Math.PI / 2, 'π/2'], [Math.PI, 'π']],
+                 yt, 'Conjunction angle', [['Period ratio  P'], ['test', true], [' / P'], ['planet', true]]);
+        }
+
+        // ---------- middle: rotating frame, with the zoom box ----------
+        function buildMid() {
+            fit(cvMid);
+            midCache.width = cvMid.width; midCache.height = cvMid.height;
+            midCache._w = cvMid._w; midCache._h = cvMid._h; midCache._dpr = cvMid._dpr;
+            var ctx = ctxFor(midCache, true), v = midView();
+            ctx.save(); clipBox(ctx, v.b); drawSky(ctx, v); ctx.restore();
+            var tk = [-1, -0.5, 0, 0.5, 1].map(function(x) { return [x, minus(x.toFixed(1))]; });
+            axes(ctx, v, tk, tk, 'x (AU)', 'y (AU)');
+        }
+
+        function drawMoving(ctx, v, zoomPanel) {
+            var f = anim.frame;
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            // conjunction lines: the previous NLINES - 1 dim, the latest bright
+            anim.conj.forEach(function(a, i) {
+                var last = i === anim.conj.length - 1;
+                ctx.strokeStyle = last ? '#d9d9d9' : '#737373'; ctx.lineWidth = last ? 1.3 : 0.9;
+                ray(ctx, v, a);
+            });
+            if (!f) return;
+            var n = f.px.length;
+            ctx.globalAlpha = 0.5; ctx.strokeStyle = FG; ctx.lineWidth = 1;
+            polyline(ctx, v, f.px, f.py, n);
+            ctx.globalAlpha = 1; ctx.strokeStyle = anim.col; ctx.lineWidth = zoomPanel ? 1.6 : 1.2;
+            polyline(ctx, v, f.qx, f.qy, n);
+            dot(ctx, v.X(f.px[n - 1]), v.Y(f.py[n - 1]), 4.5, FG);
+            if (zoomPanel) dot(ctx, v.X(f.qx[n - 1]), v.Y(f.qy[n - 1]), 5, anim.col, '#fff');
+            else dot(ctx, v.X(f.qx[n - 1]), v.Y(f.qy[n - 1]), 4, anim.col);
+        }
+
+        function renderMid() {
+            var ctx = cvMid.getContext('2d');
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, cvMid.width, cvMid.height);
+            ctx.drawImage(midCache, 0, 0);
+            ctx = ctxFor(cvMid, false);
+            var v = midView(), b = v.b, c = zoom.centre, h = zoom.half;
+            ctx.save(); clipBox(ctx, b);
+            drawMoving(ctx, v, false);
+            ctx.strokeStyle = FG; ctx.lineWidth = 1.5; ctx.setLineDash([6, 4]);
+            ctx.strokeRect(v.X(c[0] - h), v.Y(c[1] + h), v.X(c[0] + h) - v.X(c[0] - h), v.Y(c[1] - h) - v.Y(c[1] + h));
+            ctx.setLineDash([]);
+            var X = v.X(c[0]), Y = v.Y(c[1]);   // marks the box when it is too small to see
+            ctx.beginPath(); ctx.moveTo(X - 9, Y); ctx.lineTo(X + 9, Y); ctx.moveTo(X, Y - 9); ctx.lineTo(X, Y + 9); ctx.stroke();
+            ctx.restore();
+        }
+
+        // ---------- right: zoom ----------
+        // arcs of ellipses r = a(1 - e^2)/(1 + e cos(th - pi/2)) (pericentre at the top) near the box
+        function ellipseArcs(ctx, v, list, needInside) {
+            var cx = zoom.centre[0], cy = zoom.centre[1], h = zoom.half;
+            var rc = Math.hypot(cx, cy), psi = Math.atan2(cy, cx), reach = 1.5 * Math.SQRT2 * h;
+            var win = rc <= reach ? Math.PI : Math.min(Math.PI, 1.2 * Math.asin(reach / rc));
+            var dth = Math.sqrt(0.0064 * h / A1);   // keeps the chords within ~0.1 pixel of the ellipse
+            var n = Math.min(1000, Math.max(16, Math.ceil(2 * win / dth)));
+            var C = new Float64Array(n), S = new Float64Array(n), xs = new Float64Array(n), ys = new Float64Array(n);
+            for (var i = 0; i < n; i++) { var th = psi - win + 2 * win * i / (n - 1); C[i] = Math.cos(th); S[i] = Math.sin(th); }
+            ctx.beginPath();
+            list.forEach(function(ae) {
+                var p = ae[0] * (1 - ae[1] * ae[1]), e = ae[1], inside = !needInside;
+                for (var j = 0; j < n; j++) {
+                    var r = p / (1 + e * S[j]);
+                    xs[j] = r * C[j]; ys[j] = r * S[j];
+                    if (!inside && Math.abs(xs[j] - cx) < h && Math.abs(ys[j] - cy) < h) inside = true;
+                }
+                if (!inside) return;
+                ctx.moveTo(v.X(xs[0]), v.Y(ys[0]));
+                for (j = 1; j < n; j++) ctx.lineTo(v.X(xs[j]), v.Y(ys[j]));
+            });
+            ctx.stroke();
+        }
+
+        function zoomTicks() {   // about 4 ticks at round numbers of AU, with just enough decimals
+            var h = zoom.half, raw = 2 * h / 4, p = Math.pow(10, Math.floor(Math.log10(raw)));
+            var step = [1, 2, 5, 10].map(function(m) { return m * p; }).filter(function(s) { return s >= raw; })[0];
+            var dec = Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
+            function along(c) {
+                var out = [];
+                for (var k = Math.ceil((c - h) / step); k * step <= c + h; k++) out.push([k * step, minus((k * step).toFixed(dec))]);
+                return out;
+            }
+            return { x: along(zoom.centre[0]), y: along(zoom.centre[1]) };
+        }
+
+        function buildZoom() {
+            zoomCache.width = cvZoom.width; zoomCache.height = cvZoom.height;
+            zoomCache._w = cvZoom._w; zoomCache._h = cvZoom._h; zoomCache._dpr = cvZoom._dpr;
+            var ctx = ctxFor(zoomCache, true), v = zoomView(), b = v.b, tk = zoomTicks();
+            ctx.save(); clipBox(ctx, b);
+            drawSky(ctx, v);
+            ctx.strokeStyle = 'rgba(153,153,153,0.3)'; ctx.lineWidth = 1;
+            ctx.beginPath();
+            tk.x.forEach(function(t) { ctx.moveTo(v.X(t[0]), b.y0); ctx.lineTo(v.X(t[0]), b.y0 + b.s); });
+            tk.y.forEach(function(t) { ctx.moveTo(b.x0, v.Y(t[0])); ctx.lineTo(b.x0 + b.s, v.Y(t[0])); });
+            ctx.stroke();
+            ctx.strokeStyle = '#999'; ctx.setLineDash([1.5, 3]);   // the planet's circular orbit
+            ellipseArcs(ctx, v, [[A1, 0]], false);
+            ctx.setLineDash([]);
+            if (anim.traceAE && anim.traceAE.length) {   // earlier passes
+                ctx.strokeStyle = anim.col; ctx.globalAlpha = 0.45; ctx.lineWidth = 0.8;
+                ellipseArcs(ctx, v, anim.traceAE, true);
+                ctx.globalAlpha = 1;
+            }
+            ctx.restore();
+            axes(ctx, v, tk.x, tk.y, 'x (AU)', 'y (AU)');
+        }
+
+        function renderZoom() {
+            var ctx = cvZoom.getContext('2d');
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, cvZoom.width, cvZoom.height);
+            ctx.drawImage(zoomCache, 0, 0);
+            ctx = ctxFor(cvZoom, false);
+            var v = zoomView();
+            ctx.save(); clipBox(ctx, v.b);
+            drawMoving(ctx, v, true);
+            ctx.restore();
+        }
+
+        // redraw the traces when a segment finishes or the box changes; true if they changed
+        function refreshTraces(force) {
+            var orb = anim.orb;
+            if (!orb) return false;
+            var done = orb.segmentsDone(anim.t);
+            var key = done + ',' + zoom.centre[0] + ',' + zoom.centre[1] + ',' + zoom.half;
+            if (!force && key === anim.traceKey) return false;
+            anim.traceKey = key;
+            anim.traceAE = orb.segAE.slice(Math.max(0, done - NTRACE), done);
+            return true;
+        }
+
+        function setZoom(centre, half) {
+            if (centre) zoom.centre = centre;
+            if (half) zoom.half = half;
+            refreshTraces(true);
+            buildZoom();
+            requestRender();
+        }
+
+        function zoomText(h) { return h >= 0.01 ? parseFloat(h.toPrecision(2)) + ' AU' : h.toExponential(1) + ' AU'; }
+        function speed() { return Math.pow(10, parseFloat(speedEl.value)); }
+        function showSliders() {
+            speedVal.textContent = parseFloat(speed().toPrecision(3)) + ' planet orbits/s';
+            zoomVal.textContent = zoomText(zoom.half);
+        }
+
+        // ---------- animation ----------
+        function computeFrame() {
+            var T = new Float64Array(TRAIL_N + 1);
+            for (var i = 0; i <= TRAIL_N; i++) T[i] = Math.max(0, anim.t - 1 + i / TRAIL_N);
+            anim.frame = anim.orb.framePositions(T);
+        }
+
+        function tick(now) {
+            var dt = Math.max(0, Math.min((now - anim.last) / 1000, 0.5));   // cap the jump after a stall
+            anim.last = now;
+            var orb = anim.orb, tPrev = anim.t;
+            anim.t += speed() * dt;
+            computeFrame();   // integrates as far as needed
+            var angles = orb.conjunctionAngles(tPrev, anim.t);
+            if (angles.length) anim.conj = anim.conj.concat(angles).slice(-NLINES);
+            if (now - anim.shown > 500) {
+                anim.shown = now;
+                setStatus('Running: t = ' + anim.t.toFixed(1) + ' planet orbits\nconjunction ' + orb.segment(anim.t));
+            }
+            if (now - anim.traced > 250 && refreshTraces(false)) { anim.traced = now; buildZoom(); }
+            renderMid(); renderZoom();
+        }
+
+        function running() { return anim.orb && !anim.paused && visible; }
+
+        function fail(err) {
+            anim.orb = null;
+            if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+            setStatus('Stopped by an error:\n' + (err && err.message ? err.message : err), 'crimson');
+            if (window.console) console.error(err);
+        }
+
+        function loop(now) {
+            rafId = null;
+            if (!running()) return;
+            try { tick(now); } catch (err) { fail(err); return; }
+            rafId = requestAnimationFrame(loop);
+        }
+
+        function startLoop() {
+            if (rafId === null && running()) { anim.last = performance.now(); rafId = requestAnimationFrame(loop); }
+        }
+
+        function requestRender() {
+            if (rafId !== null || renderQueued) return;
+            renderQueued = true;
+            requestAnimationFrame(function() { renderQueued = false; renderMid(); renderZoom(); });
+        }
+
+        function setPauseLabel() {
+            pauseBtn.innerHTML = anim.paused ? '<i class="fa fa-play"></i> Resume' : '<i class="fa fa-pause"></i> Pause';
+            pauseBtn.disabled = !anim.orb;
+        }
+
+        // ---------- mouse and controls ----------
+        function eventXY(cv, e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+        function toData(v, p) {
+            var b = v.b;
+            return [v.x0 + (p[0] - b.x0) / b.s * (v.x1 - v.x0), v.y1 - (p[1] - b.y0) / b.s * (v.y1 - v.y0)];
+        }
+        function inBox(cv, p) { var b = cv._b; return p[0] >= b.x0 && p[0] <= b.x0 + b.s && p[1] >= b.y0 && p[1] <= b.y0 + b.s; }
+
+        // left panel: run the Namouni map and the N-body integration from the clicked point
+        cvSec.addEventListener('click', function(e) {
+            var p = eventXY(cvSec, e);
+            if (!inBox(cvSec, p)) return;
+            var d = toData(secView(), p), angle = d[0], ratio = d[1];
+            var theta0 = -angle, ar0 = arFromRatio(ratio);   // conjunction angle = -theta
+            if (eccentricityFor(ar0) === null) {
+                setStatus('Period ratio ' + ratio.toFixed(4) + " is below the section's C = K − I surface; click higher.", 'crimson');
+                return;
+            }
+            var sec = namouniOrbit(theta0, ar0);
+            if (!sec) {
+                setStatus('The Namouni map failed from angle ' + angle.toFixed(3) + ', period ratio ' + ratio.toFixed(4) + '.', 'crimson');
+                return;
+            }
+            var col = PALETTE[sections.length % PALETTE.length];
+            sections.push({ col: col, x: sec.theta.map(function(t) { return wrap(-t); }), y: sec.ar.map(ratioFromAr) });
+            drawSection();
+            try {
+                anim.orb = new NBodyOrbit(theta0, ar0);
+            } catch (err) { fail(err); return; }
+            anim.col = col; anim.t = 0; anim.paused = false; anim.conj = []; anim.shown = performance.now();
+            anim.traced = 0; anim.traceKey = null;
+            computeFrame();
+            refreshTraces(true); buildZoom();
+            setPauseLabel();
+            setStatus('Orbit ' + sections.length + ': angle = ' + angle.toFixed(2) + ',\nperiod ratio = ' + ratio.toFixed(4));
+            requestRender();
+            startLoop();
+        });
+
+        // middle panel: a press outside the box centres the box there; pressing inside drags it.
+        // zoom panel: dragging pans the view (the box moves the opposite way)
+        var drag = null;
+        cvMid.addEventListener('pointerdown', function(e) {
+            var p = eventXY(cvMid, e);
+            if (e.button !== 0 || !inBox(cvMid, p)) return;
+            var d = toData(midView(), p);
+            if (Math.abs(d[0] - zoom.centre[0]) > zoom.half || Math.abs(d[1] - zoom.centre[1]) > zoom.half) setZoom(d);
+            drag = { mode: 'box', off: [d[0] - zoom.centre[0], d[1] - zoom.centre[1]] };
+            cvMid.setPointerCapture(e.pointerId);
+            e.preventDefault();
+        });
+        cvMid.addEventListener('pointermove', function(e) {
+            if (!drag || drag.mode !== 'box') return;
+            var d = toData(midView(), eventXY(cvMid, e));
+            setZoom([d[0] - drag.off[0], d[1] - drag.off[1]]);
+        });
+        cvZoom.addEventListener('pointerdown', function(e) {
+            var p = eventXY(cvZoom, e);
+            if (e.button !== 0 || !inBox(cvZoom, p)) return;
+            drag = { mode: 'pan', start: p, centre: zoom.centre.slice() };
+            cvZoom.setPointerCapture(e.pointerId);
+            cvZoom.classList.add('tb-dragging');
+            e.preventDefault();
+        });
+        cvZoom.addEventListener('pointermove', function(e) {
+            if (!drag || drag.mode !== 'pan') return;
+            var p = eventXY(cvZoom, e), per = 2 * zoom.half / cvZoom._b.s;
+            setZoom([drag.centre[0] - (p[0] - drag.start[0]) * per, drag.centre[1] + (p[1] - drag.start[1]) * per]);
+        });
+        function endDrag() { drag = null; cvZoom.classList.remove('tb-dragging'); }
+        ['pointerup', 'pointercancel'].forEach(function(name) {
+            cvMid.addEventListener(name, endDrag);
+            cvZoom.addEventListener(name, endDrag);
+        });
+
+        // zoom panel: scroll to zoom about the cursor, so the point under it stays put
+        cvZoom.addEventListener('wheel', function(e) {
+            var p = eventXY(cvZoom, e);
+            if (!inBox(cvZoom, p)) return;
+            e.preventDefault();
+            var dy = e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 400 : 1);
+            var h = zoom.half, hNew = Math.min(ZOOM_MAX * HILL, Math.max(ZOOM_MIN * HILL, h * Math.pow(1.5, Math.max(-1, Math.min(1, dy / 100)))));
+            if (hNew === h) return;
+            var d = toData(zoomView(), p);
+            zoomEl.value = Math.log10(hNew / HILL);
+            setZoom([d[0] + (zoom.centre[0] - d[0]) * hNew / h, d[1] + (zoom.centre[1] - d[1]) * hNew / h], hNew);
+            showSliders();
+        }, { passive: false });
+
+        speedEl.addEventListener('input', showSliders);
+        zoomEl.addEventListener('input', function() {
+            setZoom(null, Math.pow(10, parseFloat(zoomEl.value)) * HILL);
+            showSliders();
+        });
+
+        pauseBtn.addEventListener('click', function() {
+            if (!anim.orb) return;
+            anim.paused = !anim.paused;
+            setPauseLabel();
+            if (anim.paused) setStatus('Paused at t = ' + anim.t.toFixed(1) + ' planet orbits.');
+            else startLoop();
+        });
+
+        document.getElementById('tb-clear').addEventListener('click', function() {
+            anim.orb = null; anim.frame = null; anim.conj = []; anim.traceAE = null; anim.paused = false;
+            sections = [];
+            setPauseLabel();
+            setStatus('Cleared. Click the Namouni map to start an orbit.');
+            drawSection(); buildZoom(); requestRender();
+        });
+
+        // only animate while the panels are on screen
+        if ('IntersectionObserver' in window) {
+            new IntersectionObserver(function(entries) {
+                visible = entries[0].isIntersecting;
+                startLoop();
+            }).observe(document.getElementById('tb-stage'));
+        }
+
+        function resize() {
+            fit(cvSec); fit(cvZoom);
+            drawSection(); buildMid(); buildZoom();
+            renderMid(); renderZoom();
+        }
+
+        sky = makeSky(1, SKY_HALF);
+        showSliders();
         window.addEventListener('resize', resize);
         resize();
     })();
