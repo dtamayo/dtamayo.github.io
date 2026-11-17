@@ -297,51 +297,6 @@
             <div class="col-lg-12">
                 <hr class="section-heading-spacer">
                 <div class="clearfix"></div>
-                <h2 class="section-heading">Reflection as a Phase Shift</h2>
-            </div>
-        </div>
-    </div>
-
-    <div class="rt-stage">
-        <div class="rt-row">
-            <canvas class="rt-wave" id="ps-wave"></canvas>
-            <div class="rt-side">
-                <label class="rt-n"><span><i>n</i><sub>1</sub></span>
-                    <input type="number" class="form-control input-sm" id="ps-n1-num" min="1" max="10" step="0.01" value="2">
-                    <input type="range" id="ps-n1" min="1" max="10" step="0.01" value="2">
-                </label>
-                <label class="rt-n"><span><i>n</i><sub>2</sub></span>
-                    <input type="number" class="form-control input-sm" id="ps-n2-num" min="1" max="10" step="0.01" value="1.5">
-                    <input type="range" id="ps-n2" min="1" max="10" step="0.01" value="1.5">
-                </label>
-                <div class="rt-buttons">
-                    <button type="button" class="btn btn-default" id="ps-play"><i class="fa fa-pause"></i> Pause</button>
-                    <button type="button" class="btn btn-default" id="ps-reset"><i class="fa fa-undo"></i> Reset</button>
-                </div>
-                <label class="rt-n">Time
-                    <input type="range" id="ps-time" min="0" max="1" step="0.001" value="0">
-                    <span class="rt-time-val" id="ps-time-val">0.00 T</span>
-                </label>
-                <label class="rt-n"><span>&Delta;<i>x</i></span>
-                    <input type="range" id="ps-delta" min="0" max="1.5" step="0.01" value="0">
-                </label>
-                <div class="rt-check" id="ps-delta-val">&Delta;<i>x</i> = 0.00 &lambda;<sub>1</sub> &nbsp;(phase 0.00&pi;)</div>
-                <label class="rt-n"><span>Phase shift</span>
-                    <input type="range" id="ps-phi" min="0" max="2" step="0.01" value="0">
-                    <span class="rt-time-val" id="ps-phi-val">0.00&pi;</span>
-                </label>
-                <label class="rt-check"><input type="checkbox" id="ps-flip">Sign flip</label>
-                <label class="rt-check"><input type="checkbox" id="ps-inc" checked><span class="rt-swatch" style="background:#1f77b4"></span>Incident <i>E</i><sub>i</sub></label>
-                <label class="rt-check"><input type="checkbox" id="ps-ref" checked><span class="rt-swatch" style="background:#d62728"></span>Reflected <i>E</i><sub>r</sub></label>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <hr class="section-heading-spacer">
-                <div class="clearfix"></div>
                 <h2 class="section-heading">Reflection off solar panels</h2>
             </div>
         </div>
@@ -373,22 +328,22 @@
                 <!-- with a coating: layer sliders plus a checkbox for each wave -->
                 <div class="if-panel" id="if-coated" style="display:none">
                 <label class="rt-n">Middle <i>n</i>
-                    <input type="range" id="if-n" min="1" max="4" step="0.01" value="3.90">
-                    <span class="rt-time-val" id="if-n-val">3.90</span>
+                    <input type="range" id="if-n" min="1" max="4" step="0.01" value="1.90">
+                    <span class="rt-time-val" id="if-n-val">1.90</span>
                 </label>
                 <label class="rt-n">Thickness
-                    <input type="range" id="if-d" min="0.02" max="1" step="0.001" value="0.526">
-                    <span class="rt-time-val" id="if-d-val">0.526 &lambda;<sub>0</sub></span>
+                    <input type="range" id="if-d" min="0.02" max="1" step="0.001" value="0.461">
+                    <span class="rt-time-val" id="if-d-val">0.461 &lambda;<sub>0</sub></span>
                 </label>
                 <label class="rt-check"><input type="checkbox" id="if-inc" checked><span class="rt-swatch" style="background:#cc00cc"></span>Incident &rarr;</label>
                 <div class="if-group">First interface</div>
                 <label class="rt-check"><input type="checkbox" id="if-t1"><span class="rt-swatch" style="background:#d62728"></span>Transmitted &rarr;</label>
-                <label class="rt-check"><input type="checkbox" id="if-r1"><span class="rt-swatch" style="background:#ff7f0e"></span>Reflected &larr;</label>
+                <label class="rt-check"><input type="checkbox" id="if-r1" checked><span class="rt-swatch" style="background:#ff7f0e"></span>Reflected &larr;</label>
                 <div class="if-group">Second interface</div>
                 <label class="rt-check"><input type="checkbox" id="if-t2"><span class="rt-swatch" style="background:#2ca02c"></span>Transmitted &rarr;</label>
                 <label class="rt-check"><input type="checkbox" id="if-r2"><span class="rt-swatch" style="background:#9467bd"></span>Reflected &larr;</label>
                 <div class="if-group">Back at first interface</div>
-                <label class="rt-check"><input type="checkbox" id="if-t3"><span class="rt-swatch" style="background:#1f77b4"></span>Transmitted &larr;</label>
+                <label class="rt-check"><input type="checkbox" id="if-t3" checked><span class="rt-swatch" style="background:#1f77b4"></span>Transmitted &larr;</label>
                 <label class="rt-check"><input type="checkbox" id="if-r3"><span class="rt-swatch" style="background:#8c564b"></span>Reflected &rarr;</label>
                 <label class="rt-check" style="margin-top:10px"><input type="checkbox" id="if-tot"><span class="rt-swatch" style="background:#000"></span>Total reflected <i>E</i> &larr;</label>
                 </div>
@@ -1206,203 +1161,6 @@
     })();
     </script>
 
-    <!-- Reflection as a phase shift. Incident wave starts at xs = XB - delta x (lambda0 = 1) and hits the n1 | n2
-         interface at x = 0. The reflected wave is r cos(theta + phi): correct physics at phi = 0. The "Sign flip"
-         checkbox (unphysically) negates it; continuity (1 + r = t) is then restored by phi = pi, showing that
-         a sign flip and a pi phase shift are equivalent. -->
-    <script>
-    (function() {
-        var TWO_PI = 2 * Math.PI;
-        var PERIOD = 2.5;              // seconds per oscillation
-        var XL = -2.5, XR = 2.5;       // plot range in vacuum wavelengths; interface at 0
-        var XB = -1.0;                 // fixed bar: where the incident wave starts when delta x = 0
-        var YMAX = 2.15;
-        var C_I = '#1f77b4', C_R = '#d62728', C_T = '#2ca02c', C_IR = '#000', C_RT = '#9467bd';
-        var FONT = 'Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
-        var N1_DEF = 2, N2_DEF = 1.5;
-
-        var $ = function(id) { return document.getElementById(id); };
-        var cv = $('ps-wave');
-        var inN1 = $('ps-n1'), inN2 = $('ps-n2'), numN1 = $('ps-n1-num'), numN2 = $('ps-n2-num');
-        var btnPlay = $('ps-play'), btnReset = $('ps-reset'), inTime = $('ps-time'), timeVal = $('ps-time-val');
-        var inDelta = $('ps-delta'), deltaVal = $('ps-delta-val'), inPhi = $('ps-phi'), phiVal = $('ps-phi-val');
-        var chk = { inc: $('ps-inc'), ref: $('ps-ref') };
-        var chkFlip = $('ps-flip');
-
-        var n1 = N1_DEF, n2 = N2_DEF, time = 0, playing = true, lastTs = null;
-        var delta = 0;                 // incident start shift, in units of lambda1 = lambda0 / n1
-        var phi = 0;                   // phase added to the reflected wave, in units of pi
-        var r, t;
-
-        function coeffs() {
-            r = (n1 - n2) / (n1 + n2);
-            t = 2 * n1 / (n1 + n2);
-        }
-
-        function fit() {
-            var dpr = window.devicePixelRatio || 1;
-            var w = cv.clientWidth, h = Math.round(Math.min(w * 0.5, Math.max(260, window.innerHeight - 220)));
-            cv.style.height = h + 'px';
-            cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
-            cv.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
-            cv._w = w; cv._h = h;
-        }
-
-        function draw() {
-            var ctx = cv.getContext('2d'), W = cv._w, H = cv._h;
-            var m = { l: 46, r: 10, t: 72, b: 12 }, bw = W - m.l - m.r, bh = H - m.t - m.b;
-            var X = function(x) { return m.l + (x - XL) / (XR - XL) * bw; };
-            var Y = function(y) { return m.t + (YMAX - y) / (2 * YMAX) * bh; };
-            var x0 = X(0), w = TWO_PI * time / PERIOD, k1 = TWO_PI * n1, k2 = TWO_PI * n2;
-            var xs = XB - delta / n1;                       // incident start (delta is in lambda1 units)
-            var th0 = -k1 * xs;                             // incident phase gained on the way to the interface
-            var Ei = function(x) { return Math.cos(k1 * (x - xs) - w); };
-            // reflected amplitude is the signed r (correct physics); "Sign flip" negates it (unphysical)
-            var amp = chkFlip.checked ? -r : r;
-            var Er = function(x) { return amp * Math.cos(th0 - k1 * x - w + Math.PI * phi); };
-
-            ctx.clearRect(0, 0, W, H);
-
-            var shade = function(n) { return 'rgba(70,110,160,' + Math.min(0.32, 0.04 + 0.07 * (n - 1)).toFixed(3) + ')'; };
-            ctx.fillStyle = shade(n1); ctx.fillRect(m.l, m.t, x0 - m.l, bh);
-            ctx.fillStyle = shade(n2); ctx.fillRect(x0, m.t, m.l + bw - x0, bh);
-
-            ctx.lineWidth = 1; ctx.strokeStyle = '#888';
-            ctx.beginPath(); ctx.moveTo(m.l, Y(0)); ctx.lineTo(m.l + bw, Y(0)); ctx.stroke();
-            ctx.setLineDash([3, 4]); ctx.strokeStyle = '#aaa';
-            [1, -1].forEach(function(v) { ctx.beginPath(); ctx.moveTo(m.l, Y(v)); ctx.lineTo(m.l + bw, Y(v)); ctx.stroke(); });
-            ctx.setLineDash([]);
-            ctx.fillStyle = '#555'; ctx.font = '13px ' + FONT; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-            ctx.fillText('E₀', m.l - 6, Y(1)); ctx.fillText('0', m.l - 6, Y(0)); ctx.fillText('−E₀', m.l - 6, Y(-1));
-
-            // headers: media and propagation directions
-            ctx.font = 'bold 15px ' + FONT; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#000';
-            ctx.textAlign = 'left';  ctx.fillText('n₁ = ' + n1.toFixed(2), m.l + 4, 18);
-            ctx.textAlign = 'right'; ctx.fillText('n₂ = ' + n2.toFixed(2), m.l + bw - 4, 18);
-            ctx.font = '15px ' + FONT;
-            if (chk.inc.checked) { ctx.textAlign = 'left';  ctx.fillStyle = C_I; ctx.fillText('incident →', m.l + 4, 38); }
-            if (chk.ref.checked) { ctx.textAlign = 'right'; ctx.fillStyle = C_R; ctx.fillText('← reflected', x0 - 10, 38); }
-
-            ctx.save();
-            ctx.beginPath(); ctx.rect(m.l, m.t, bw, bh); ctx.clip();
-            function plot(f, xa, xb, color, lw) {
-                var pa = X(xa), pb = X(xb);
-                ctx.beginPath();
-                for (var p = pa; p <= pb + 0.01; p += 1) {
-                    var x = Math.min(XL + (p - m.l) / bw * (XR - XL), xb), y = Y(f(x));
-                    if (p === pa) ctx.moveTo(p, y); else ctx.lineTo(p, y);
-                }
-                ctx.lineWidth = lw; ctx.strokeStyle = color; ctx.stroke();
-            }
-            if (chk.inc.checked) plot(Ei, xs, 0, C_I, 2.5);
-            if (chk.ref.checked) plot(Er, XL, 0, C_R, 2.5);
-
-            // bars: interface, incident start (fixed), shifted start when delta x > 0
-            ctx.lineWidth = 2; ctx.strokeStyle = '#333';
-            var bars = [0, XB];
-            if (delta > 0) bars.push(xs);
-            bars.forEach(function(x) { ctx.beginPath(); ctx.moveTo(X(x), m.t); ctx.lineTo(X(x), m.t + bh); ctx.stroke(); });
-
-            function dot(x, y, color) {
-                ctx.beginPath(); ctx.arc(x, y, 6, 0, TWO_PI);
-                ctx.fillStyle = color; ctx.fill();
-                ctx.lineWidth = 1.5; ctx.strokeStyle = '#fff'; ctx.stroke();
-            }
-            if (chk.inc.checked) dot(x0 - 6, Y(Ei(0)), C_I);
-            if (chk.ref.checked) dot(x0 - 6, Y(Er(0)), C_R);
-            // measuring the reflected field far from the interface, at the left edge of the plot
-            if (chk.ref.checked) dot(X(XL) + 7, Y(Er(XL + 7 / bw * (XR - XL))), C_R);
-            ctx.restore();
-
-            // delta x arrow along the top
-            if (delta > 0) {
-                var xa = X(xs), xb = X(XB), ya = m.t - 12, hd = Math.min(8, (xb - xa) / 3);
-                ctx.strokeStyle = '#000'; ctx.fillStyle = '#000'; ctx.lineWidth = 1.5;
-                ctx.beginPath(); ctx.moveTo(xa + 2, ya); ctx.lineTo(xb - 2, ya); ctx.stroke();
-                [[xa, 1], [xb, -1]].forEach(function(e) {
-                    ctx.beginPath(); ctx.moveTo(e[0], ya);
-                    ctx.lineTo(e[0] + e[1] * hd, ya - 4); ctx.lineTo(e[0] + e[1] * hd, ya + 4);
-                    ctx.closePath(); ctx.fill();
-                });
-                ctx.font = 'italic bold 17px ' + FONT; ctx.textAlign = 'center';
-                ctx.fillText('Δx', (xa + xb) / 2, ya - 7);
-            }
-        }
-
-        function onScreen() {
-            var b = cv.getBoundingClientRect();
-            return b.bottom > 0 && b.top < window.innerHeight;
-        }
-        function syncTime() {
-            var f = ((time / PERIOD) % 1 + 1) % 1;
-            inTime.value = f;
-            timeVal.textContent = f.toFixed(2) + ' T';
-        }
-        function frame(ts) {
-            var dt = lastTs === null ? 0 : Math.min(0.1, (ts - lastTs) / 1000);
-            lastTs = ts;
-            if (playing) {
-                time += dt;
-                syncTime();
-                if (onScreen()) draw();
-            }
-            requestAnimationFrame(frame);
-        }
-
-        // ---------- controls ----------
-        function setN(which, v, fromNum) {
-            if (!isFinite(v) || v < 1) return;
-            v = Math.min(v, 10);
-            if (which === 1) { n1 = v; inN1.value = v; if (!fromNum) numN1.value = v.toFixed(2); }
-            else             { n2 = v; inN2.value = v; if (!fromNum) numN2.value = v.toFixed(2); }
-            coeffs(); draw();
-        }
-        inN1.addEventListener('input', function() { setN(1, parseFloat(inN1.value), false); });
-        inN2.addEventListener('input', function() { setN(2, parseFloat(inN2.value), false); });
-        numN1.addEventListener('input', function() { setN(1, parseFloat(numN1.value), true); });
-        numN2.addEventListener('input', function() { setN(2, parseFloat(numN2.value), true); });
-        numN1.addEventListener('change', function() { numN1.value = n1.toFixed(2); });
-        numN2.addEventListener('change', function() { numN2.value = n2.toFixed(2); });
-
-        function setPlaying(p) {
-            playing = p;
-            btnPlay.innerHTML = p ? '<i class="fa fa-pause"></i> Pause' : '<i class="fa fa-play"></i> Play';
-        }
-        function setDelta(d) {
-            delta = d; inDelta.value = d;
-            deltaVal.innerHTML = '&Delta;<i>x</i> = ' + d.toFixed(2) + ' &lambda;<sub>1</sub> &nbsp;(phase ' + (2 * d).toFixed(2) + '&pi;)';
-            draw();
-        }
-        function setPhi(p) {
-            phi = p; inPhi.value = p;
-            phiVal.innerHTML = p.toFixed(2) + '&pi;';
-            draw();
-        }
-        btnPlay.addEventListener('click', function() { setPlaying(!playing); });
-        inTime.addEventListener('input', function() {
-            setPlaying(false);
-            time = parseFloat(inTime.value) * PERIOD;
-            timeVal.textContent = parseFloat(inTime.value).toFixed(2) + ' T';
-            draw();
-        });
-        inDelta.addEventListener('input', function() { setDelta(parseFloat(inDelta.value)); });
-        inPhi.addEventListener('input', function() { setPhi(parseFloat(inPhi.value)); });
-        btnReset.addEventListener('click', function() {
-            time = 0;
-            chk.inc.checked = chk.ref.checked = true;
-            chkFlip.checked = false;
-            setN(1, N1_DEF, false); setN(2, N2_DEF, false);
-            syncTime(); setDelta(0); setPhi(0); setPlaying(true);
-        });
-        Object.keys(chk).forEach(function(k) { chk[k].addEventListener('change', draw); });
-        chkFlip.addEventListener('change', draw);
-
-        window.addEventListener('resize', function() { fit(); draw(); });
-        coeffs(); syncTime(); fit(); draw();
-        requestAnimationFrame(frame);
-    })();
-    </script>
-
     <!-- Interference in a thin film: air (n0) | coating (n1, 0 < x < D) | silicon (n2, x > D), normal incidence.
          Silicon's absorption is ignored (only the real index ~3.9 near 600 nm is used).
          Follows the incident wave through one round trip in the film, with Fresnel amplitudes
@@ -1412,10 +1170,11 @@
         var TWO_PI = 2 * Math.PI;
         var PERIOD = 2.5;              // seconds per oscillation
         var N0 = 1, N2 = 3.9;          // air and silicon are fixed; the coating's n and thickness are sliders
-        // default: coating index equal to silicon's, so the layer is optically invisible (bare-silicon
-        // reflection). D = 0.526 = 1/1.90: at n = 1.90 (equal red/pink amplitudes) the two reflections are
-        // in phase; shifting D by a quarter wave in the coating (0.132) makes them cancel.
-        var N1_DEF = 3.90, D_DEF = 0.526;
+        // default (applied each time the coating is switched on): n = 1.90, where the front reflection
+        // (orange) and the round-trip reflection (blue) have nearly equal amplitudes. Their relative phase
+        // is 2 k1 D = 4 pi n D: D = 0.526 puts them in phase, D = 0.395 (a quarter wave less) out of
+        // phase. D = 0.461 sits halfway (2 n D = 1.75), a quarter-cycle offset: neither in nor out of phase.
+        var N1_DEF = 1.90, D_DEF = 0.461;
         var XL = -1.6, XR = 2.0;       // plot range in vacuum wavelengths (film occupies 0 < x < D <= 1)
         var YMAX = 1.15;               // field axis range at zoom 1
         var FONT = 'Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
@@ -1616,12 +1375,18 @@
         }
         inN.addEventListener('input', function() { setFilm(parseFloat(inN.value), D); });
         inD.addEventListener('input', function() { setFilm(N1, parseFloat(inD.value)); });
-        // turning the coating on starts from just the incident wave, so the others can be added step by step
+        // turning the coating on resets the film to its defaults and shows the incident wave plus the
+        // two reflections that interfere (orange front reflection, blue round trip)
+        var COATED_ON = { 'if-inc': true, 'if-r1': true, 'if-t3': true };
         function setCoated(c) {
             coated = c; chkCoat.checked = c;
             $('if-bare').style.display = c ? 'none' : '';
             $('if-coated').style.display = c ? '' : 'none';
-            if (c) waves.forEach(function(wv) { wv.chk.checked = wv.id === 'if-inc'; });
+            if (c) {
+                waves.forEach(function(wv) { wv.chk.checked = !!COATED_ON[wv.id]; });
+                setFilm(N1_DEF, D_DEF);   // also recomputes coeffs and redraws
+                return;
+            }
             coeffs(); draw();
         }
         chkCoat.addEventListener('change', function() { setCoated(chkCoat.checked); });
