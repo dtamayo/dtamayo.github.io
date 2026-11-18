@@ -135,6 +135,14 @@
         .rot-mat td { padding:1px 8px; text-align:right; }
         .rot-mat-note { color:#555; font-size:0.85em; margin-bottom:2px; }
         .rot-help { max-width:960px; text-align:center; color:#444; font-size:18px; margin:0; }
+        .eu-sliders { display:flex; flex-direction:column; gap:10px; }
+        .eu-slider { display:flex; align-items:center; gap:10px; font-weight:normal; margin:0; }
+        .eu-slider input[type=range] { flex:1; min-width:0; }
+        .eu-name { min-width:2.4em; font-size:1.15em; }
+        .eu-val { min-width:3em; text-align:right; font-variant-numeric:tabular-nums; }
+        .eu-status { color:#555; font-size:0.9em; min-height:3em; }
+        #eu-view { cursor:grab; }
+        #eu-view.eu-dragging { cursor:grabbing; }
         @media (max-width:767px) {
             .rot-stage { font-size:17px; }
             .rot-help { font-size:15px; }
@@ -424,6 +432,52 @@
             <i>z</i> axis to rotate the view. Press Play to evolve
             the box as a torque-free rigid body: <i>L</i> stays fixed in space while <i>&omega;</i> moves through the body.
             The box has mass 1 and half-widths <span id="frb-dims">1.3, 0.8, 0.35</span>; <i>L</i> is drawn scaled by 1.25/<i>I</i><sub>3</sub>.</p>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Euler Angles</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="rot-stage">
+        <div class="rot-row">
+            <canvas class="rot-view rot-view-side" id="eu-view"></canvas>
+            <div class="rot-side">
+                <div class="rot-controls">
+                    <button type="button" class="btn btn-default" id="eu-step"><i class="fa fa-step-forward"></i> Step</button>
+                    <button type="button" class="btn btn-default" id="eu-play"><i class="fa fa-play"></i> Play all</button>
+                    <button type="button" class="btn btn-default" id="eu-reset"><i class="fa fa-undo"></i> Reset</button>
+                </div>
+                <div class="eu-sliders">
+                    <label class="eu-slider"><span class="eu-name"><span class="rt-swatch" style="background:#8e44ad"></span><i>&phi;</i></span>
+                        <input type="range" id="eu-phi" min="0" max="360" step="1" value="50">
+                        <span class="eu-val" id="eu-phi-val">50&deg;</span></label>
+                    <label class="eu-slider"><span class="eu-name"><span class="rt-swatch" style="background:#d62728"></span><i>&theta;</i></span>
+                        <input type="range" id="eu-theta" min="0" max="180" step="1" value="40">
+                        <span class="eu-val" id="eu-theta-val">40&deg;</span></label>
+                    <label class="eu-slider"><span class="eu-name"><span class="rt-swatch" style="background:#8c564b"></span><i>&psi;</i></span>
+                        <input type="range" id="eu-psi" min="0" max="360" step="1" value="70">
+                        <span class="eu-val" id="eu-psi-val">70&deg;</span></label>
+                </div>
+                <div class="rot-checks">
+                    <label><input type="checkbox" id="eu-planes" checked>Planes <i>xy</i> and <i>x&prime;y&prime;</i></label>
+                    <label><input type="checkbox" id="eu-arcs" checked>Line of nodes <i>N</i> and angles</label>
+                    <label><input type="checkbox" id="eu-box">Body</label>
+                </div>
+                <div class="eu-status" id="eu-status"></div>
+            </div>
+        </div>
+        <p class="rot-help">Starting with the body axes <i>x&prime;y&prime;z&prime;</i> on top of <i>xyz</i>, the orientation is built from
+            three rotations, each about an axis carried along by the earlier ones (the <i>z</i>-<i>x</i>-<i>z</i> convention):
+            <i>&phi;</i> about <i>z</i>, which swings the <i>x</i> axis around to the line of nodes <i>N</i>; then <i>&theta;</i> about <i>N</i>, which tilts
+            <i>z</i> to <i>z&prime;</i>; then <i>&psi;</i> about <i>z&prime;</i>, which turns <i>N</i> to <i>x&prime;</i>.
+            <i>N</i> is where the <i>xy</i> and <i>x&prime;y&prime;</i> planes intersect. Use Step to do the rotations one at a time and
+            Play all to run the whole sequence. Drag anywhere to rotate the view.</p>
     </div>
 
     <div class="container">
@@ -1849,6 +1903,319 @@
     }
     rotationViz({id: 'rot'});
     rotationViz({id: 'frb', free: true});
+    </script>
+
+    <!-- Euler angles (z-x-z): body axes built up as R = Rz(phi) Rx(theta) Rz(psi), with the line of
+         nodes N, the xy and x'y' planes, and an arc for each angle -->
+    <script>
+    (function() {
+        var DEG = Math.PI / 180;
+        var AXIS_LEN = 2.5, BODY_LEN = 2.0;
+        var R_PHI = 1.15, R_THETA = 1.15, R_PSI = 0.85;   // arc radii (psi smaller so it never sits on phi when theta = 0)
+        var SPEED = 75 * DEG;                             // animation rate, rad/s
+        var DEFAULTS = [50, 40, 70];                      // degrees
+        var NAMES = ['φ', 'θ', 'ψ'], ARC_COLS = ['#8e44ad', '#d62728', '#8c564b'];
+        var X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0), Z = new THREE.Vector3(0, 0, 1);
+
+        var canvas = document.getElementById('eu-view');
+        var stepBtn = document.getElementById('eu-step'), playBtn = document.getElementById('eu-play');
+        var resetBtn = document.getElementById('eu-reset'), status = document.getElementById('eu-status');
+        var sliders = ['phi', 'theta', 'psi'].map(function(n) {
+            return {input: document.getElementById('eu-' + n), val: document.getElementById('eu-' + n + '-val')};
+        });
+
+        var renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
+        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setClearColor(0xffffff);
+        var scene = new THREE.Scene();
+
+        // Turntable camera, z up; the default looks in from the +x +y quadrant, slightly above
+        var CAM_DIST = 12.5, EL_MAX = 1.45, VIEW_RATE = 0.008, AZ0 = 0.8, EL0 = 0.38;
+        var camAz = AZ0, camEl = EL0;
+        var camera = new THREE.PerspectiveCamera(30, 4 / 3, 0.1, 100);
+        camera.up.set(0, 0, 1);
+        function setView() {
+            camera.position.set(Math.cos(camEl) * Math.cos(camAz), Math.cos(camEl) * Math.sin(camAz), Math.sin(camEl))
+                .multiplyScalar(CAM_DIST);
+            camera.lookAt(0, 0, 0);
+        }
+        setView();
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+        var sun = new THREE.DirectionalLight(0xffffff, 0.55);
+        sun.position.set(4, 2, 8);
+        scene.add(sun);
+
+        function makeArrow(color, r, headLen, headR, parent) {
+            var mat = new THREE.MeshPhongMaterial({color: color, shininess: 40});
+            var g = new THREE.Group();
+            var shaft = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 1, 16), mat);
+            var head = new THREE.Mesh(new THREE.ConeGeometry(headR, headLen, 24), mat);
+            g.add(shaft); g.add(head);
+            (parent || scene).add(g);
+            return {
+                group: g,
+                set: function(v) {
+                    var L = v.length(), s = Math.max(L - headLen, 1e-3);
+                    shaft.scale.y = s; shaft.position.y = s / 2;
+                    head.position.y = s + headLen / 2;
+                    g.quaternion.setFromUnitVectors(Y, v.clone().divideScalar(L));
+                }
+            };
+        }
+        function makeLabel(text, color, parent) {
+            var cv = document.createElement('canvas');
+            cv.width = 256; cv.height = 128;
+            var ctx = cv.getContext('2d');
+            ctx.font = 'italic 100px "Times New Roman", Times, serif';
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, 128, 64);
+            var sp = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: new THREE.CanvasTexture(cv), depthTest: false, transparent: true
+            }));
+            sp.scale.set(0.8, 0.4, 1);
+            sp.renderOrder = 10;
+            (parent || scene).add(sp);
+            return sp;
+        }
+        function makeDisk(radius, color, opacity, parent) {
+            var g = new THREE.Group();
+            g.add(new THREE.Mesh(new THREE.CircleGeometry(radius, 96), new THREE.MeshBasicMaterial({
+                color: color, transparent: true, opacity: opacity, side: THREE.DoubleSide, depthWrite: false
+            })));
+            var pts = [];
+            for (var i = 0; i < 96; i++) pts.push(new THREE.Vector3(radius * Math.cos(i * 2 * Math.PI / 96), radius * Math.sin(i * 2 * Math.PI / 96), 0));
+            g.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
+                new THREE.LineBasicMaterial({color: color, transparent: true, opacity: Math.min(1, 3 * opacity)})));
+            parent.add(g);
+            return g;
+        }
+
+        // Fixed inertial axes
+        [['x', X], ['y', Y], ['z', Z]].forEach(function(e) {
+            makeArrow(0x444444, 0.025, 0.18, 0.07).set(e[1].clone().multiplyScalar(AXIS_LEN));
+            makeLabel(e[0], '#333').position.copy(e[1]).multiplyScalar(AXIS_LEN + 0.25);
+        });
+        var xyPlane = makeDisk(1.95, 0x888888, 0.16, scene);
+
+        // Everything fixed in the body lives in one group whose quaternion is the Euler rotation
+        var body = new THREE.Group();
+        scene.add(body);
+        var bodyPlane = makeDisk(1.7, 0x1f5fbf, 0.14, body);
+        var box = new THREE.Group();
+        box.add(new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.2, 0.5), [0xf2b880, 0xf2b880, 0x9fd49a, 0x9fd49a, 0x9fc3ee, 0x9fc3ee].map(function(c) {
+            return new THREE.MeshLambertMaterial({color: c, transparent: true, opacity: 0.6, depthWrite: false});
+        })));
+        box.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.8, 1.2, 0.5)),
+            new THREE.LineBasicMaterial({color: 0x333333})));
+        body.add(box);
+        [['x′', X, 0xd9822b, '#d9822b'], ['y′', Y, 0x3c9a3c, '#3c9a3c'], ['z′', Z, 0x1f5fbf, '#1f5fbf']].forEach(function(e) {
+            makeArrow(e[2], 0.045, 0.22, 0.1, body).set(e[1].clone().multiplyScalar(BODY_LEN));
+            makeLabel(e[0], e[3], body).position.copy(e[1]).multiplyScalar(BODY_LEN + 0.3);
+        });
+
+        // Line of nodes: a dashed line along x, turned about z by phi
+        var nodes = new THREE.Group();
+        var nLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-2.3, 0, 0), new THREE.Vector3(2.3, 0, 0)]),
+            new THREE.LineDashedMaterial({color: 0x222222, dashSize: 0.12, gapSize: 0.08}));
+        nLine.computeLineDistances();
+        nodes.add(nLine);
+        makeLabel('N', '#222', nodes).position.set(2.55, 0, 0);
+        scene.add(nodes);
+
+        // Angle arcs: a tube from angle 0 to ang in the plane spanned by unit vectors a (start) and b,
+        // with an arrowhead showing the sense of rotation and a label at the middle
+        var HEAD_L = 0.18;
+        function makeArc(i) {
+            var mat = new THREE.MeshPhongMaterial({color: ARC_COLS[i], shininess: 30});
+            var tube = new THREE.Mesh(new THREE.BufferGeometry(), mat);
+            var head = new THREE.Mesh(new THREE.ConeGeometry(0.07, HEAD_L, 20), mat);
+            var label = makeLabel(NAMES[i], ARC_COLS[i]);
+            scene.add(tube); scene.add(head);
+            return {
+                tube: tube, head: head, label: label, visible: true,
+                set: function(a, b, r, ang) {
+                    var show = this.visible && ang > 0.5 * DEG;
+                    tube.visible = head.visible = label.visible = show;
+                    if (!show) return;
+                    function p(t) { return a.clone().multiplyScalar(r * Math.cos(t)).addScaledVector(b, r * Math.sin(t)); }
+                    var withHead = ang * r > 1.6 * HEAD_L, end = withHead ? ang - HEAD_L / r : ang;
+                    var n = Math.max(2, Math.ceil(end / (3 * DEG))), pts = [];
+                    for (var k = 0; k <= n; k++) pts.push(p(end * k / n));
+                    tube.geometry.dispose();
+                    tube.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 2 * n, 0.022, 8, false);
+                    head.visible = withHead;
+                    if (withHead) {
+                        var tan = a.clone().multiplyScalar(-Math.sin(ang)).addScaledVector(b, Math.cos(ang)).normalize();
+                        head.position.copy(p(ang)).addScaledVector(tan, -HEAD_L / 2);
+                        head.quaternion.setFromUnitVectors(Y, tan);
+                    }
+                    label.position.copy(p(ang / 2)).multiplyScalar((r + 0.25) / r);
+                }
+            };
+        }
+        var arcs = [makeArc(0), makeArc(1), makeArc(2)];
+
+        // ── State ───────────────────────────────────────────────────────
+        // cur: the angles shown (radians); tgt: where a Step / Play sequence is headed.
+        // stage = number of rotations done in the current sequence (3 = none in progress).
+        var cur = DEFAULTS.map(function(d) { return d * DEG; }), tgt = cur.slice();
+        // anim: index of the rotation under way (null if none); running: whether it is advancing (false = paused)
+        var stage = 3, anim = null, running = false, auto = false, pause = 0, dirty = true;
+
+        function update() {
+            var phi = cur[0], theta = cur[1], psi = cur[2];
+            var q = new THREE.Quaternion().setFromAxisAngle(Z, phi)
+                .multiply(new THREE.Quaternion().setFromAxisAngle(X, theta))
+                .multiply(new THREE.Quaternion().setFromAxisAngle(Z, psi));
+            body.quaternion.copy(q);
+            nodes.rotation.z = phi;
+            var N = new THREE.Vector3(Math.cos(phi), Math.sin(phi), 0);
+            var zp = Z.clone().applyQuaternion(q);
+            arcs[0].set(X, Y, R_PHI, phi);                                   // x -> N, in the xy plane
+            arcs[1].set(Z, N.clone().cross(Z), R_THETA, theta);              // z -> z', about N
+            arcs[2].set(N, zp.clone().cross(N), R_PSI, psi);                 // N -> x', in the x'y' plane
+            sliders.forEach(function(s, i) {
+                var d = Math.round(cur[i] / DEG);
+                s.input.value = d;
+                s.val.textContent = d + '°';
+            });
+            status.innerHTML = statusText();
+        }
+        var STEP_TXT = ['rotate by <i>&phi;</i> about <i>z</i>', 'rotate by <i>&theta;</i> about the line of nodes <i>N</i>',
+                        'rotate by <i>&psi;</i> about <i>z&prime;</i>'];
+        function statusText() {
+            if (anim !== null) return 'Step ' + (anim + 1) + ': ' + STEP_TXT[anim] + (running ? '.' : ' (paused).');
+            if (stage < 3) return (stage === 0 ? 'Body axes on top of <i>xyz</i>. ' : '') + 'Next, step ' + (stage + 1) + ': ' + STEP_TXT[stage] + '.';
+            var th = Math.round(cur[1] / DEG);
+            if (th === 0 || th === 180)
+                return '<i>&theta;</i> = ' + th + '&deg;: <i>z&prime;</i> lies along <i>z</i>, so <i>&phi;</i> and <i>&psi;</i> turn about the same axis and only ' +
+                    (th === 0 ? '<i>&phi;</i> + <i>&psi;</i>' : '<i>&phi;</i> &minus; <i>&psi;</i>') + ' matters (gimbal lock).';
+            return '';
+        }
+
+        // ── Controls ────────────────────────────────────────────────────
+        function setAuto(a) {
+            auto = a;
+            playBtn.innerHTML = a ? '<i class="fa fa-pause"></i> Pause' : '<i class="fa fa-play"></i> Play all';
+        }
+        // Start a new sequence from the identity, heading for the current angles (or the defaults if all are zero)
+        function beginSequence() {
+            tgt = cur.every(function(c) { return c === 0; }) ? DEFAULTS.map(function(d) { return d * DEG; }) : cur.slice();
+            cur = [0, 0, 0];
+            stage = 0;
+        }
+        function startStep() {
+            if (stage >= 3) beginSequence();
+            anim = stage;
+            running = true;
+            pause = 0;
+            dirty = true;
+        }
+        stepBtn.addEventListener('click', function() {
+            setAuto(false);
+            if (anim !== null && running) {          // a click mid-rotation finishes it
+                cur[anim] = tgt[anim]; stage = anim + 1; anim = null; running = false;
+                if (stage >= 3) stage = 3;
+            } else if (anim !== null) {
+                running = true;                      // resume a paused rotation
+            } else {
+                startStep();
+            }
+            dirty = true;
+        });
+        playBtn.addEventListener('click', function() {
+            if (auto) { setAuto(false); running = false; pause = 0; dirty = true; return; }
+            setAuto(true);
+            if (anim === null) startStep(); else running = true;
+        });
+        resetBtn.addEventListener('click', function() {
+            setAuto(false);
+            anim = null; running = false;
+            if (stage >= 3) tgt = cur.every(function(c) { return c === 0; }) ? tgt : cur.slice();
+            cur = [0, 0, 0];
+            stage = 0;
+            camAz = AZ0; camEl = EL0; setView();
+            dirty = true;
+        });
+        // Moving a slider sets that angle directly and abandons any sequence in progress
+        sliders.forEach(function(s, i) {
+            s.input.addEventListener('input', function() {
+                // the sliders always show cur, so the other angles stay exactly where they are
+                setAuto(false);
+                anim = null; running = false;
+                stage = 3;
+                cur[i] = parseFloat(s.input.value) * DEG;
+                tgt = cur.slice();
+                dirty = true;
+            });
+        });
+
+        var planesBox = document.getElementById('eu-planes'), arcsBox = document.getElementById('eu-arcs');
+        var boxBox = document.getElementById('eu-box');
+        function applyChecks() {
+            xyPlane.visible = bodyPlane.visible = planesBox.checked;
+            nodes.visible = arcsBox.checked;
+            arcs.forEach(function(a) { a.visible = arcsBox.checked; });
+            box.visible = boxBox.checked;
+            dirty = true;
+        }
+        [planesBox, arcsBox, boxBox].forEach(function(cb) { cb.addEventListener('change', applyChecks); });
+        applyChecks();
+
+        // Drag anywhere to turn the view
+        var drag = null;
+        canvas.addEventListener('pointerdown', function(ev) {
+            ev.preventDefault();
+            canvas.setPointerCapture(ev.pointerId);
+            drag = {x: ev.clientX, y: ev.clientY};
+            canvas.classList.add('eu-dragging');
+        });
+        canvas.addEventListener('pointermove', function(ev) {
+            if (!drag) return;
+            camAz -= (ev.clientX - drag.x) * VIEW_RATE;
+            camEl = Math.max(-EL_MAX, Math.min(EL_MAX, camEl + (ev.clientY - drag.y) * VIEW_RATE));
+            drag.x = ev.clientX; drag.y = ev.clientY;
+            setView();
+            dirty = true;
+        });
+        function endDrag() { drag = null; canvas.classList.remove('eu-dragging'); }
+        canvas.addEventListener('pointerup', endDrag);
+        canvas.addEventListener('pointercancel', endDrag);
+
+        function resize() {
+            var W = canvas.clientWidth, H = canvas.clientHeight;
+            if (!W || !H) return;
+            renderer.setSize(W, H, false);
+            camera.aspect = W / H;
+            camera.updateProjectionMatrix();
+            dirty = true;
+        }
+        window.addEventListener('resize', resize);
+
+        var last = null;
+        function frame(t) {
+            var dt = last === null ? 0 : Math.min((t - last) / 1000, 0.05);
+            last = t;
+            if (anim !== null && running && dt > 0) {
+                cur[anim] = Math.min(tgt[anim], cur[anim] + SPEED * dt);
+                if (cur[anim] >= tgt[anim]) {
+                    stage = anim + 1;
+                    anim = null; running = false;
+                    if (stage >= 3) { stage = 3; setAuto(false); } else if (auto) pause = 0.5;
+                }
+                dirty = true;
+            } else if (auto && pause > 0 && dt > 0) {
+                pause -= dt;   // brief hold between rotations while playing through
+                if (pause <= 0) startStep();
+            }
+            if (dirty) { update(); renderer.render(scene, camera); dirty = false; }
+            requestAnimationFrame(frame);
+        }
+        resize();
+        requestAnimationFrame(frame);
+    })();
     </script>
 
     <!-- Dipole Radiation: retarded field of an arbitrarily driven point dipole -->
