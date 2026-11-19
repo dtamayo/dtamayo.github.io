@@ -111,6 +111,8 @@
         .rt-time-val { min-width:3.6em; text-align:right; font-variant-numeric:tabular-nums; }
         .if-group { font-weight:bold; font-size:15px; color:#555; margin:6px 0 -4px; }
         .if-panel { display:flex; flex-direction:column; gap:10px; }
+        .wp-wave { cursor:grab; touch-action:pan-y; }
+        .wp-hint { font-size:14px; color:#777; }
         @media (max-width:767px) {
             .rt-stage { font-size:16px; }
             .rt-row { flex-direction:column; gap:12px; }
@@ -223,6 +225,47 @@
                 <p class="lead">
                 Here are some visualizations I've been working on recently experimenting with Claude Code
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Wave Plates</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="rt-stage">
+        <div class="rt-row">
+            <canvas class="rt-wave wp-wave" id="wp-wave"></canvas>
+            <div class="rt-side">
+                <div class="rt-buttons">
+                    <button type="button" class="btn btn-default" id="wp-play"><i class="fa fa-play"></i> Play</button>
+                    <button type="button" class="btn btn-default" id="wp-reset"><i class="fa fa-undo"></i> Reset</button>
+                </div>
+                <label class="rt-n">Time
+                    <input type="range" id="wp-time" min="0" max="1" step="0.001" value="0">
+                    <span class="rt-time-val" id="wp-time-val">0.00 T</span>
+                </label>
+                <label class="rt-n">Phase shift
+                    <input type="range" id="wp-phase" min="0" max="2" step="0.01" value="0">
+                    <span class="rt-time-val" id="wp-phase-val">0.00&pi;</span>
+                </label>
+                <label class="rt-n"><span class="rt-swatch" style="background:#ff7f0e"></span><span><i>E</i><sub>x</sub></span>
+                    <input type="range" id="wp-ax" min="-1" max="1" step="0.01" value="1">
+                    <span class="rt-time-val" id="wp-ax-val">1.00 <i>E</i><sub>0</sub></span>
+                </label>
+                <label class="rt-n"><span class="rt-swatch" style="background:#1f77b4"></span><span><i>E</i><sub>y</sub></span>
+                    <input type="range" id="wp-ay" min="-1" max="1" step="0.01" value="1">
+                    <span class="rt-time-val" id="wp-ay-val">1.00 <i>E</i><sub>0</sub></span>
+                </label>
+                <label class="rt-check"><input type="checkbox" id="wp-tot"><span class="rt-swatch" style="background:#000"></span>Total <b><i>E</i></b> vector at plate</label>
+                <label class="rt-check"><input type="checkbox" id="wp-totw"><span class="rt-swatch" style="background:#000"></span>Total <b><i>E</i></b> wave</label>
+                <div class="wp-hint">Drag the plot to rotate the view</div>
             </div>
         </div>
     </div>
@@ -872,6 +915,249 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
+
+    <!-- Wave plates: two waves travelling along z, E_y (blue) polarized along y starting at the plate z = ZB, and
+         E_x (orange) polarized along x starting dz = (phi / 2 pi) lambda earlier, so past the plate E_x leads E_y
+         by phase phi. Drawn in 3D with a simple perspective projection (drag to orbit). Units: lambda = 1. -->
+    <script>
+    (function() {
+        var TWO_PI = 2 * Math.PI;
+        var PERIOD = 2.5;               // seconds per oscillation
+        var L = 4.5, ZB = 1.3;          // z range [0, L]; the plate (where E_y starts) at ZB
+        var A = 0.75, B = 1.25 * A;     // field amplitude in world units; half-size of the drawn plates
+        var DCAM = 7;                   // camera distance (smaller = stronger perspective)
+        var YAW0 = 25 * Math.PI / 180, PITCH0 = 20 * Math.PI / 180;
+        var C_X = '#ff7f0e', C_Y = '#1f77b4', C_T = '#000';
+        var FONT = 'Lato, "Helvetica Neue", Helvetica, Arial, sans-serif';
+
+        var $ = function(id) { return document.getElementById(id); };
+        var cv = $('wp-wave');
+        var btnPlay = $('wp-play'), btnReset = $('wp-reset');
+        var inTime = $('wp-time'), timeVal = $('wp-time-val');
+        var inPhase = $('wp-phase'), phaseVal = $('wp-phase-val');
+        var inAx = $('wp-ax'), axVal = $('wp-ax-val'), inAy = $('wp-ay'), ayVal = $('wp-ay-val'), chkT = $('wp-tot'), chkW = $('wp-totw');
+
+        var time = 0, phase = 0, playing = false, lastTs = null;   // phase in units of pi
+        var ax = 1, ay = 1;                                        // amplitudes in units of E0
+        var yaw = YAW0, pitch = PITCH0, drag = null;
+
+        function fit() {
+            var dpr = window.devicePixelRatio || 1;
+            var w = cv.clientWidth, h = Math.round(Math.min(w * 0.5, Math.max(260, window.innerHeight - 220)));
+            cv.style.height = h + 'px';
+            cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+            cv.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+            cv._w = w; cv._h = h;
+        }
+
+        // world (x, y, z) -> view: yaw about the vertical so +z heads right and toward the viewer,
+        // pitch so we look slightly down, then a perspective divide. Returns unscaled screen coords.
+        function proj(x, y, z) {
+            var zc = z - L / 2, cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+            var u = x * sy + zc * cy, d = -x * cy + zc * sy;     // d > 0 is toward the viewer
+            var v = y * cp - d * sp, dd = y * sp + d * cp, s = DCAM / (DCAM - dd);
+            return [u * s, v * s];
+        }
+
+        function draw() {
+            var ctx = cv.getContext('2d'), W = cv._w, H = cv._h;
+            var m = 14, mt = 40, bw = W - 2 * m, bh = H - m - mt;   // extra top margin for the Optic Axis label
+
+            // scale so the bounding box of the scene fills the canvas
+            var minu = Infinity, maxu = -Infinity, minv = Infinity, maxv = -Infinity;
+            [-B, B].forEach(function(x) { [-B, B].forEach(function(y) { [0, L + 0.4].forEach(function(z) {
+                var q = proj(x, y, z);
+                minu = Math.min(minu, q[0]); maxu = Math.max(maxu, q[0]);
+                minv = Math.min(minv, q[1]); maxv = Math.max(maxv, q[1]);
+            }); }); });
+            var F = Math.min(bw / (maxu - minu), bh / (maxv - minv));
+            var ox = m + (bw - F * (maxu - minu)) / 2 - F * minu, oy = mt + (bh - F * (maxv - minv)) / 2 + F * maxv;
+            var P = function(x, y, z) { var q = proj(x, y, z); return [ox + F * q[0], oy - F * q[1]]; };
+
+            var w = TWO_PI * time / PERIOD, dz = phase / 2, zs = ZB - dz;   // zs: where E_x starts
+            var Ex = function(z) { return ax * A * Math.cos(TWO_PI * (z - zs) - w); };
+            var Ey = function(z) { return ay * A * Math.cos(TWO_PI * (z - ZB) - w); };
+
+            ctx.clearRect(0, 0, W, H);
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+            function line(a, b, color, lw, dash) {
+                ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]);
+                ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            function arrow(a, b, color, lw, head) {
+                var dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
+                if (len < 1) return;
+                var hd = Math.min(head || 9, len * 0.45), ux = dx / len, uy = dy / len;
+                line(a, [b[0] - ux * hd * 0.8, b[1] - uy * hd * 0.8], color, lw);
+                ctx.beginPath(); ctx.moveTo(b[0], b[1]);
+                ctx.lineTo(b[0] - ux * hd - uy * hd * 0.45, b[1] - uy * hd + ux * hd * 0.45);
+                ctx.lineTo(b[0] - ux * hd + uy * hd * 0.45, b[1] - uy * hd - ux * hd * 0.45);
+                ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+            }
+            function label(p, text, color, dx, dy) {
+                ctx.font = 'italic bold 17px ' + FONT; ctx.fillStyle = color;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(text, p[0] + (dx || 0), p[1] + (dy || 0));
+            }
+            function plane(z, fill, stroke, dash) {
+                var c = [P(-B, -B, z), P(B, -B, z), P(B, B, z), P(-B, B, z)];
+                ctx.beginPath(); ctx.moveTo(c[0][0], c[0][1]);
+                for (var i = 1; i < 4; i++) ctx.lineTo(c[i][0], c[i][1]);
+                ctx.closePath();
+                if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+                ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.setLineDash(dash || []); ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // plates: where E_x starts (once shifted) and where E_y starts
+            if (dz > 0) plane(zs, 'rgba(255,127,14,0.07)', 'rgba(51,51,51,0.6)');
+            plane(ZB, 'rgba(70,110,160,0.12)', '#333');
+
+            // the plate's optic axis (along y): a vertical double-headed arrow through the middle of the plate,
+            // spanning +/- A so at t = 0 its top tip sits on the crest of E_y at the plate
+            // (shown only once the phase shift is nonzero, i.e. once the plate actually does something)
+            if (dz > 0) {
+                var oTop = P(0, A, ZB), oBot = P(0, -A, ZB), oMid = P(0, 0, ZB);
+                arrow(oMid, oTop, '#333', 2, 10); arrow(oMid, oBot, '#333', 2, 10);
+                // centered over the plate, above the higher end of its (slanted, in perspective) top edge
+                var c1 = P(-B, B, ZB), c2 = P(B, B, ZB), oLbl = P(0, B, ZB);
+                ctx.font = 'bold 15px ' + FONT; ctx.fillStyle = '#333'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+                ctx.fillText('Optic Axis', oLbl[0], Math.min(c1[1], c2[1]) - 8);
+            }
+
+            // axes: propagation along z, with a small x/y triad at the origin
+            var o = P(0, 0, 0);
+            arrow(o, P(0, 0, L + 0.4), '#888', 1.2, 10);
+            label(P(0, 0, L + 0.4), 'z', '#555', 10, -10);
+            arrow(o, P(B, 0, 0), '#888', 1.2, 8); label(P(B * 1.2, 0, 0), 'x', '#555');
+            arrow(o, P(0, B, 0), '#888', 1.2, 8); label(P(0, B * 1.2, 0), 'y', '#555');
+
+            // a wave: faint stems from the axis to the curve, then the curve; pt(z) gives the screen point of the field tip
+            function wave(pt, z0, color, lw) {
+                ctx.globalAlpha = 0.35;
+                for (var z = z0; z <= L + 1e-9; z += 1 / 16) line(P(0, 0, z), pt(z), color, 1);
+                ctx.globalAlpha = 1;
+                ctx.beginPath();
+                for (var i = 0, n = Math.ceil((L - z0) / 0.02); i <= n; i++) {
+                    var q = pt(Math.min(z0 + i * 0.02, L));
+                    if (i === 0) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+                }
+                ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.stroke();
+            }
+            wave(function(z) { return P(Ex(z), 0, z); }, zs, C_X, 2.5);
+            wave(function(z) { return P(0, Ey(z), z); }, ZB, C_Y, 2.5);
+            if (chkW.checked) wave(function(z) { return P(Ex(z), Ey(z), z); }, ZB, C_T, 2.5);
+
+            // the polarization ellipse traced by the tip of E on the plate over one period, as (Ex, Ey) pairs
+            var ellipse = function(j) {
+                var tau = TWO_PI * j / 120;
+                return [ax * A * Math.cos(TWO_PI * dz - tau), ay * A * Math.cos(-tau)];
+            };
+
+            // an arrow built in the plate's own x-y plane and then projected, so it foreshortens like a rigid
+            // object as it turns (a fixed-size head on screen makes the rotation look uneven)
+            function arrow3(ex, ey, z, color, lw) {
+                var r = Math.hypot(ex, ey);
+                if (r < 1e-3) return;
+                var ux = ex / r, uy = ey / r, h = Math.min(0.2, r * 0.45), wdt = 0.45 * h;
+                var bx = ex - ux * h, by = ey - uy * h;
+                line(P(0, 0, z), P(ex - ux * h * 0.8, ey - uy * h * 0.8, z), color, lw);
+                var t = P(ex, ey, z), c1 = P(bx - uy * wdt, by + ux * wdt, z), c2 = P(bx + uy * wdt, by - ux * wdt, z);
+                ctx.beginPath(); ctx.moveTo(t[0], t[1]); ctx.lineTo(c1[0], c1[1]); ctx.lineTo(c2[0], c2[1]);
+                ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+            }
+
+            // total E = Ex x^ + Ey y^ as a single arrow on the plate (where E_y starts); while playing, a faint
+            // dashed ellipse shows the path its tip sweeps out over one period
+            if (chkT.checked && playing) {
+                ctx.beginPath();
+                for (var j = 0; j <= 120; j++) {
+                    var e = ellipse(j), q = P(e[0], e[1], ZB);
+                    if (j === 0) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+                }
+                ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]); ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            if (chkT.checked) arrow3(Ex(ZB), Ey(ZB), ZB, C_T, 3.5);
+        }
+
+        function onScreen() {
+            var b = cv.getBoundingClientRect();
+            return b.bottom > 0 && b.top < window.innerHeight;
+        }
+        function syncTime() {
+            var f = ((time / PERIOD) % 1 + 1) % 1;
+            inTime.value = f;
+            timeVal.textContent = f.toFixed(2) + ' T';
+        }
+        function frame(ts) {
+            var dt = lastTs === null ? 0 : Math.min(0.1, (ts - lastTs) / 1000);
+            lastTs = ts;
+            if (playing) {
+                time += dt;
+                syncTime();
+                if (onScreen()) draw();
+            }
+            requestAnimationFrame(frame);
+        }
+
+        function setPlaying(p) {
+            playing = p;
+            btnPlay.innerHTML = p ? '<i class="fa fa-pause"></i> Pause' : '<i class="fa fa-play"></i> Play';
+            draw();   // the dashed tip ellipse appears only while playing
+        }
+        function setPhase(p) {
+            phase = p; inPhase.value = p;
+            phaseVal.innerHTML = p.toFixed(2) + '&pi;';
+            draw();
+        }
+        btnPlay.addEventListener('click', function() { setPlaying(!playing); });
+        inTime.addEventListener('input', function() {
+            setPlaying(false);
+            time = parseFloat(inTime.value) * PERIOD;
+            timeVal.textContent = parseFloat(inTime.value).toFixed(2) + ' T';
+            draw();
+        });
+        function setAmps(x, y) {
+            ax = x; ay = y; inAx.value = x; inAy.value = y;
+            axVal.innerHTML = x.toFixed(2) + ' <i>E</i><sub>0</sub>';
+            ayVal.innerHTML = y.toFixed(2) + ' <i>E</i><sub>0</sub>';
+            draw();
+        }
+        inPhase.addEventListener('input', function() { setPhase(parseFloat(inPhase.value)); });
+        inAx.addEventListener('input', function() { setAmps(parseFloat(inAx.value), ay); });
+        inAy.addEventListener('input', function() { setAmps(ax, parseFloat(inAy.value)); });
+        chkT.addEventListener('change', draw);
+        chkW.addEventListener('change', draw);
+        btnReset.addEventListener('click', function() {
+            time = 0; yaw = YAW0; pitch = PITCH0;
+            chkT.checked = chkW.checked = false;
+            syncTime(); setAmps(1, 1); setPhase(0); setPlaying(false);
+        });
+
+        // drag to orbit the camera
+        var clamp = function(v, a, b) { return Math.max(a, Math.min(b, v)); };
+        cv.addEventListener('pointerdown', function(e) {
+            drag = { x: e.clientX, y: e.clientY, yaw: yaw, pitch: pitch };
+            cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing';
+        });
+        cv.addEventListener('pointermove', function(e) {
+            if (!drag) return;
+            yaw = clamp(drag.yaw - (e.clientX - drag.x) * 0.008, -1.45, 1.45);
+            pitch = clamp(drag.pitch + (e.clientY - drag.y) * 0.008, -0.6, 1.3);
+            draw();
+        });
+        var endDrag = function() { drag = null; cv.style.cursor = ''; };
+        cv.addEventListener('pointerup', endDrag);
+        cv.addEventListener('pointercancel', endDrag);
+
+        window.addEventListener('resize', function() { fit(); draw(); });
+        syncTime(); fit(); setPhase(0);
+        requestAnimationFrame(frame);
+    })();
+    </script>
 
     <!-- Reflection & transmission of a normally incident plane wave at an n1 | n2 interface.
          E_i = cos(k1 x - wt), E_r = r cos(k1 x + wt) (x < 0); E_t = t cos(k2 x - wt) (x > 0);
